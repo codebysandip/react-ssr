@@ -26,6 +26,8 @@ module.exports = {
   ],
   rules: {
     "no-use-before-define": 0,
+    "dot-notation": 0,
+    "n/handle-callabck-err": 0,
     "@typescript-eslint/no-explicit-any": 0,
     "@typescript-eslint/no-empty-interface": 0,
   }

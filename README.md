@@ -27,3 +27,6 @@ Steps:
 ## How to build production build
 
 ## How to add page or route
+Steps:
+ - Add new folder in `src/pages` then component for page
+ - Add route in `src/routes.tsx`
