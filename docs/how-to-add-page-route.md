@@ -27,10 +27,9 @@ export default class About extends React.Component<AboutProps> {
 }
 
 // Replace any with Api Response Interface
-// It's good practic to create interface for Api Response.
+// It's good practice to create interface for Api Response.
 // This will help in detecting errors on compile time by typescript compiler
-// Will enable code editor to help in intellisense
-// Add 
+// Will enable code editor for intellisense
 export interface AboutProps extends PageData&ServerResponse<any> {
 }
 ```
@@ -47,3 +46,4 @@ export interface AboutProps extends PageData&ServerResponse<any> {
 
 Now you are done with adding route. 
 If about page gets data from API don't forget to add model `src/pages/about/about.model.ts` for API response.
+Check [How to add model/interface for API response](how-to-add-model-for-api-response)
