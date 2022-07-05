@@ -11,21 +11,24 @@ export const Routes: IRoute[] = [
     component: () => import(/* webpackChunkName: "home" */ "pages/home/home.component"),
     isSSR: true,
   },
-  {
-    path: "contact-us",
-    component: () =>
-      import(/* webpackChunkName: "contact-us" */ "pages/contact-us/contact-us.component"),
-    isSSR: false,
-  },
+  // Replace 404 component code with own code
   {
     path: "/404",
     component: () => import(/* webpackChunkName: "404" */ "src/pages/error/404/404.component"),
     static: true,
     isSSR: true,
   },
+  // Replace 500 component code with own code
   {
     path: "/500",
     component: () => import(/* webpackChunkName: "500" */ "src/pages/error/500/500.component"),
+    static: true,
+    isSSR: true,
+  },
+  // If no route will match 404 component will server to client
+  {
+    path: "/*",
+    component: () => import(/* webpackChunkName: "404" */ "src/pages/error/404/404.component"),
     static: true,
     isSSR: true,
   },

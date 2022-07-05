@@ -25,15 +25,23 @@ export interface PageRedirect {
 }
 
 /**
- * Common interface for page data.
- * For seo server sends meta data like title, description
- * Change this interface based on response of API.
- * Don't remove redirect key
+ * Every page interface should extend with this interface
  */
-export interface PageData {
-  seo?: PageDataSeo;
+export interface IRedirect {
   /**
-   * redirect will use to redirect to another page when getInitialProps will return redirect
+   * redirect will use to redirect to another page when getInitialProps will return redirect key
+   * from getInitialProps
    */
   redirect?: PageRedirect;
+}
+/**
+ * Common interface for page data.
+ * Don't remove IRedirect extend
+ */
+export interface PageData extends IRedirect {
+  /**
+   * Some API sends page meta information as seo key in API response
+   * change this key as per response of API
+   */
+  seo?: PageDataSeo;
 }
