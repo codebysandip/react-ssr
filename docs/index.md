@@ -1,37 +1,32 @@
-## Welcome to GitHub Pages
+# React Server Side Rendering With Nodejs
 
-You can use the [editor on GitHub](https://github.com/sandip12081992/react-ssr/edit/main/docs/index.md) to maintain and preview the content for your website in Markdown files.
+ - [How to setup and Run project](#how-to-setup-project)
+ - [Folder structure](#folder-structure)
+ - [How to build production build](#how-to-build-production-build)
+ - [How to add page or route](#how-to-add-page-or-route)
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+## How To Setup Project
+Note: Before setup of project please check node version should be 14.xx.
+Steps:
 
-### Markdown
+ - Clone this repository on your local machine.
+ - Run command `npm install`
+ - To start project, Run command `npm start`
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+## Folder structure
 ```
+├── build                                    # Compiled files
+├── config                                   # configuration files related to webpack and build
+├── src                                      # Source files
+│   ├── core                                 # all common code will reside here
+│   ├── pages                                # all routes/pages will reside here. Add new folder for every route
+│   ├── ssr                                  # nodejs related code will reside here
+│   └── app.tsx                              # main(start) component
+└── README.md                                # documentation
+```
+## How to build production build
 
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/sandip12081992/react-ssr/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+## How to add page or route
+Steps:
+ - Add new folder in `src/pages` then component for page
+ - Add route in `src/routes.tsx`
