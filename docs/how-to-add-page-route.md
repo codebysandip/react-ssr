@@ -8,7 +8,7 @@ We have interface named `IRoute` in `src/core/models/route.model.ts`.  Every rou
  - Paste following basic component code in `about.component.tsx`:
 
 
-`
+```
 import React from "react";
 import { PageData } from  "src/core/models/page-data";
 import { ServerResponse } from  "src/core/models/server-response";
@@ -34,20 +34,20 @@ export default class About extends React.Component<AboutProps> {
 // Will enable code editor for intellisense
 export interface AboutProps extends PageData&ServerResponse<any> {
 }
-`
+```
 
  - Add route in Routes array of `src/routes.tsx`. Paste following code in Routes array:
  
 
-`
+```
   {
     path: "/about",
     component: () => import(/* webpackChunkName: "home" */ "pages/about/about.component"),
     isSSR: true,
   },
 
-`
+```
 
 Now you are done with adding route. 
-If about page gets data from API don't forget to add model `src/pages/about/about.model.ts` for API response.
+If about page gets data from API, don't forget to add model `src/pages/about/about.model.ts` for API response.
 Check [How to add model/interface for API response](how-to-add-model-for-api-response)
