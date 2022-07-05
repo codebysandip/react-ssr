@@ -6,6 +6,8 @@ We have interface named `IRoute` in `src/core/models/route.model.ts`.  Every rou
  - Add a folder in `src/pages` named `about`. Now folder structure will be `src/pages/about`.
  - Add a component `about.component.tsx` in `src/pages/about`
  - Paste following basic component code in `about.component.tsx`:
+
+
 `
 import React from "react";
 import { PageData } from  "src/core/models/page-data";
@@ -35,6 +37,8 @@ export interface AboutProps extends PageData&ServerResponse<any> {
 `
 
  - Add route in Routes array of `src/routes.tsx`. Paste following code in Routes array:
+ 
+
 `
   {
     path: "/about",
