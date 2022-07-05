@@ -1,5 +1,5 @@
 import React from "react";
-import { HttpClient } from "core/http-client";
+import { HttpClient } from "src/core/services/http-client";
 import { ContextData } from "src/core/models/context.model";
 import { HomeResponse } from "./home.model";
 

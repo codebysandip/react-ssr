@@ -1,8 +1,6 @@
 import express, { Request, Response } from "express";
 import { join } from "path";
 
-import { matchPath } from "react-router";
-import { Routes } from "src/routes";
 import { getHtml } from "src/template";
 import { createContextServer } from "./core/functions/create-context";
 import { PageData } from "./core/models/page-data";
@@ -14,6 +12,7 @@ import { XMLHttpRequest } from "./ssr/functions/XMLHttpRequest";
 import { ServerResponse } from "./core/models/server-response";
 import { sendResponse } from "./ssr/functions/send-response";
 import { Empty } from "core/components/empty/empty.component";
+import { getRoute } from "./core/functions/get-route";
 
 // support for XMLHttpRequest on node
 (global as any).XMLHttpRequest = XMLHttpRequest;
@@ -78,7 +77,7 @@ app.all("/api/*", proxyMiddleware(process.env.API_BASE_URL || ""));
 // Get all request of node server
 app.get("*", async (req: Request, resp: Response) => {
   // match route from React routes
-  const route = Routes.find((r) => matchPath(r.path, req.path));
+  const route = getRoute(req.path);
   // if no match found redirect client to 404(not found) page
   if (!route) {
     resp.redirect("/404");

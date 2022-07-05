@@ -11,6 +11,8 @@ const Dotenv = require("dotenv-webpack");
 
 const { isServerFn, isLocalFn, getPath } = require("./helper-functions");
 const { join } = require("path");
+const WebpackLocalNodeServerPlugin = require("./webpack-local-node-server.plugin");
+
 /**
  * Common webpack config that will used for production as well as development env
  * @param {Object} env environment key value pair
@@ -92,6 +94,16 @@ module.exports = (env) => {
     );
   }
 
+  if (isLocal) {
+    plugins.push(
+      new WebpackLocalNodeServerPlugin({
+        command: `nodemon --inspect --watch restart build/server.js`,
+        isServer: isServerFn(env),
+        serverMainJs: "server.js",
+        clientMainJs: "client.js",
+      }),
+    );
+  }
   const config = {
     entry,
     output: {

@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import { catchError, mergeMap, Observable, of, retry, throwError, timer } from "rxjs";
 import { ajax, AjaxConfig, AjaxError, AjaxResponse } from "rxjs/ajax";
 import { COOKIE_REFRESH_TOKEN, COOKIE_TOKEN, URL_REFERESH_TOKEN } from "src/const";
-import { ServerResponse } from "./models/server-response";
-import { CookieService } from "./services/cookie.service";
+import { ServerResponse } from "../models/server-response";
+import { CookieService } from "./cookie.service";
 
 export class HttpClient {
   public static get<T>(url: string, options?: HttpClientOptions) {

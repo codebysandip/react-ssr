@@ -1,14 +1,16 @@
 {
-  "name": "ssr-demo",
+  "name": "react-ssr",
   "version": "1.0.0",
   "description": "",
   "main": "build/server.js",
   "scripts": {
-    "start": "node config/build.js IS_LOCAL=true ENV=development",
+    "start": "npm run run:dev",
+    "run:dev": "node config/build.js IS_LOCAL=true ENV=development",
+    "run:prod": "node config/build.js IS_LOCAL=true ENV=production",
     "build:dev": "node config/build.js IS_LOCAL=false ENV=development",
-    "build:prod": "node config/build.js IS_LOCAL=false ENV=production",
     "start:test-api": "nodemon --watch restart build/testApi.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:prod": "node config/build.js IS_LOCAL=false ENV=production",
+    "start:prod": "pm2 start ecosystem.config.js --env production"
   },
   "author": "Sandip",
   "license": "ISC",
@@ -53,9 +55,11 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "ignore-emit-webpack-plugin": "^2.0.6",
     "ignore-loader": "^0.1.2",
+    "mddir": "^1.1.1",
     "mini-css-extract-plugin": "^2.6.1",
     "node-sass": "^4.14.1",
     "nodemon-webpack-plugin": "^4.7.1",
+    "pm2": "^5.2.0",
     "prettier": "^2.7.1",
     "process": "^0.11.10",
     "reload": "^3.2.0",

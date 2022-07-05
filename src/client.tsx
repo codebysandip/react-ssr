@@ -1,10 +1,11 @@
 import React from "react";
 import { hydrateRoot } from "react-dom/client";
 // import { matchPath } from "react-router";
-import { BrowserRouter, matchPath } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import { App } from "./app";
 import { Routes } from "./routes";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { getRoute } from "./core/functions/get-route";
 
 const container = document.getElementById("root");
 if (!container) {
@@ -13,7 +14,7 @@ if (!container) {
 /**
  * Find route for Routes by matching current current location of browser
  */
-let route = Routes.find((r) => matchPath(r.path, window.location.pathname));
+let route = getRoute(window.location.pathname);
 /**
  * If route will not match redirect to 404 not found page
  */

@@ -1,4 +1,3 @@
-const WebpackLocalNodeServerPlugin = require("./webpack-local-node-server.plugin");
 const { merge } = require("webpack-merge");
 const commonConfig = require("./webpack.common");
 const { isServerFn, isLocalFn } = require("./helper-functions");
@@ -11,27 +10,20 @@ const { isServerFn, isLocalFn } = require("./helper-functions");
  * @returns dev env webpack config
  */
 const devConfig = (env, args) => {
-    const isLocal = isLocalFn(env);
-    const plugins = [];
-    if(isLocal) {
-        plugins.push(new WebpackLocalNodeServerPlugin({
-            command: `nodemon --inspect --watch restart build/server.js`,
-            isServer: isServerFn(env),
-            serverMainJs: "server.js",
-            clientMainJs: "client.js"
-        }));
-    }
-    return {
-        mode: "development",
-        plugins,
-        optimization: {
-            minimize: false,
-            splitChunks: false,
-        },
-        devtool: "inline-source-map",
-    }
-}
+  const isLocal = isLocalFn(env);
+  const plugins = [];
+
+  return {
+    mode: "development",
+    plugins,
+    optimization: {
+      minimize: false,
+      splitChunks: false,
+    },
+    devtool: "inline-source-map",
+  };
+};
 
 module.exports = (env, args) => {
-    return merge(commonConfig(env, args), devConfig(env, args));
+  return merge(commonConfig(env, args), devConfig(env, args));
 };
