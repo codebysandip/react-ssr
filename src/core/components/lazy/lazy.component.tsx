@@ -4,12 +4,17 @@ import { useSearchParams } from "react-router-dom";
 import { Observable } from "rxjs";
 import { createContextClient } from "src/core/functions/create-context";
 import { PageData } from "src/core/models/page-data";
-import { ServerResponse } from "src/core/models/server-response";
+import { ApiResponse } from "src/core/models/api-response";
 
+/**
+ * Lazy Load Route Component
+ * @param props {@link LazyProps}
+ * @returns Route Component or Loading Component
+ */
 export default function Lazy(props: LazyProps) {
   const Component = props.Component;
   const [Comp, setComp] = useState<{ default: any } | null>(null);
-  const [pageData, setPageData] = useState<PageData>({});
+  const [pageData, setPageData] = useState<ApiResponse<any>>({ status: 200, data: null });
   const location = useLocation();
   const searchParams = useSearchParams();
   const params = useParams();
@@ -25,21 +30,28 @@ export default function Lazy(props: LazyProps) {
             searchParams[0],
             params as Record<string, string>,
           );
-          const processInitialProps = (data: PageData & ServerResponse<any>) => {
-            if (data?.redirect) {
-              navigate(data.redirect.path, {
-                replace: data.redirect.replace || false,
-                state: data.redirect.state || {},
+          const processInitialProps = (data: ApiResponse<PageData> | PageData) => {
+            if ((data as PageData)?.redirect) {
+              const redirect = (data as PageData).redirect || { path: "/" };
+              navigate(redirect?.path, {
+                replace: redirect.replace || false,
+                state: redirect.state || {},
               });
-            } else if (data.status === 401 || data.status === 403) {
+            } else if (
+              (data as ApiResponse<any>).status === 401 ||
+              (data as ApiResponse<any>).status === 403
+            ) {
               // logout and naviage to login page
-            } else if (data.status === 500) {
+              // [TODO] navigating to 500 but change to login path
               navigate("/500");
-            } else if (data.status === 0) {
+            } else if ((data as ApiResponse<any>).status === 500) {
+              navigate("/500");
+            } else if ((data as ApiResponse<any>).status === 0) {
               // show toast or page for internet not available
+              navigate("/500");
             } else {
               // set data only in case of 200
-              setPageData(data);
+              setPageData(data as ApiResponse<PageData>);
               setComp(moduleObj);
             }
           };
@@ -50,7 +62,7 @@ export default function Lazy(props: LazyProps) {
               next: (data) => {
                 processInitialProps(data);
               },
-              error: (err: ServerResponse<any>) => {
+              error: (err: ApiResponse<any>) => {
                 console.error(
                   `Error in getInitialProps of ${moduleObj.default.constructor.name}. Error: ${err}`,
                 );

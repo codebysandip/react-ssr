@@ -25,7 +25,7 @@ export const Routes: IRoute[] = [
     static: true,
     isSSR: true,
   },
-  // If no route will match 404 component will server to client
+  // If no route will match 404 component will serve to client
   {
     path: "/*",
     component: () => import(/* webpackChunkName: "404" */ "src/pages/error/404/404.component"),

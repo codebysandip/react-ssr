@@ -12,15 +12,17 @@ We have interface named `IRoute` in `src/core/models/route.model.ts`.  Every rou
 import React from "react";
 import { PageData } from  "src/core/models/page-data";
 import { ServerResponse } from  "src/core/models/server-response";
+import { of } from "rxjs";
 
 export default class About extends React.Component<AboutProps> {
   /**
   * getInitialProps method get called by server.ts in case off SSR
   * and lazy.component.tsx in case of CSR
+  * getInitialProps should return Observable<ApiResponse>|IRedirect
   */
   public static getInitialProps() {
     // Api call will be here
-    return {};
+    return of({staus: 200: data: {}});
   }
 
   render() {
@@ -50,4 +52,4 @@ export interface AboutProps extends PageData&ServerResponse<any> {
 
 Now you are done with adding route. 
 If about page gets data from API, don't forget to add model `src/pages/about/about.model.ts` for API response.
-Check [How to add model/interface for API response](how-to-add-model-for-api-response)
+Check [How to add model/interface for API response](how-to-add-model-for-api-response.md)

@@ -3,7 +3,7 @@ import { renderToString } from "react-dom/server";
 import { StaticRouter } from "react-router-dom/server";
 import { App } from "./app";
 import { PageData } from "./core/models/page-data";
-import { ServerResponse } from "./core/models/server-response";
+import { ApiResponse } from "./core/models/api-response";
 import { getWebpackBuildHash } from "./ssr/functions/get-webpack-build-hash";
 
 const hashObj = getWebpackBuildHash();
@@ -15,8 +15,12 @@ const hashObj = getWebpackBuildHash();
 export class HtmlTemplate extends Component<HtmlTemplateProps> {
   public render() {
     const script = `
-        window.pageProps = ${JSON.stringify(this.props.pageProps || {})};
+        window.pageProps = ${JSON.stringify(this.props.pageProps)};
         `;
+    const pageProps = this.props.pageProps.data;
+    // for non SSR pages or for static pages default title will use
+    // Change Default Title here
+    const title = pageProps?.seo?.title || "React SSR";
     return (
       <html>
         <head>
@@ -32,7 +36,7 @@ export class HtmlTemplate extends Component<HtmlTemplateProps> {
             }.css`}
             rel="stylesheet"
           />
-          <title>{this.props.pageProps?.seo?.title}</title>
+          <title>{title}</title>
         </head>
         <body>
           <div id="root">{this.props.children}</div>
@@ -49,22 +53,17 @@ export class HtmlTemplate extends Component<HtmlTemplateProps> {
 
 export interface HtmlTemplateProps {
   children: ReactNode;
-  pageProps: (PageData & ServerResponse<any>) | null;
+  pageProps: ApiResponse<PageData>;
 }
 
 /**
  * Get rendered HTML
  * @param Component component to render
- * @param props Page props {@link PageData}
+ * @param props Page props {@link ApiResponse<PageData>}
  * @param url request url
  * @returns rendered HTML
  */
-export function getHtml(
-  Component: any,
-  props: (PageData & ServerResponse<any>) | null,
-  url: string,
-  isSSR = true,
-) {
+export function getHtml(Component: any, props: ApiResponse<PageData>, url: string, isSSR = true) {
   const html = renderToString(
     <HtmlTemplate pageProps={props}>
       {isSSR ? (

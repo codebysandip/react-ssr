@@ -4,7 +4,7 @@ import { hydrateRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { App } from "./app";
 import { Routes } from "./routes";
-import "bootstrap/dist/css/bootstrap.min.css";
+import "./style.scss";
 import { getRoute } from "./core/functions/get-route";
 
 const container = document.getElementById("root");

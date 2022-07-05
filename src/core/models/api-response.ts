@@ -2,7 +2,7 @@
  * Custom Response converted by HttpClient
  * for ease of frontend development
  */
-export interface ServerResponse<T> {
+export interface ApiResponse<T> {
   /**
    * status code of response
    * If server api response will send status in response body as key status then
@@ -11,9 +11,9 @@ export interface ServerResponse<T> {
   status: number;
   /**
    * response data of server
-   * HttpClient will convert api rensponse into ServerResponse
+   * HttpClient will convert api rensponse into ApiResponse
    * If API will send data key in response body as key then HttpClient will use response body data
-   * otheriwise HttpClient will put response body in ServerResponse.data
+   * otheriwise HttpClient will put response body in ApiResponse.data
    */
   data: T;
   // /**

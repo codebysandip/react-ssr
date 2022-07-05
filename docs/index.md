@@ -25,5 +25,7 @@
 ### Useful links:
 
  - [Getting Started](getting-started.md)
+ - [Folder Structure](folder-structure.md)
  - [How to add page/route](how-to-add-page-route.md)
+ - [How to add model/interface for API response](how-to-add-model-for-api-response.md)
  - [How to change port](how-to-change-port.md)

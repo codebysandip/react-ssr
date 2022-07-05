@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { catchError, mergeMap, Observable, of, retry, throwError, timer } from "rxjs";
 import { ajax, AjaxConfig, AjaxError, AjaxResponse } from "rxjs/ajax";
 import { COOKIE_REFRESH_TOKEN, COOKIE_TOKEN, URL_REFERESH_TOKEN } from "src/const";
-import { ServerResponse } from "../models/server-response";
+import { ApiResponse } from "../models/api-response";
 import { CookieService } from "./cookie.service";
 
 export class HttpClient {
@@ -76,7 +76,7 @@ export class HttpClient {
     const reqObs$ = of(process.env.IS_SERVER === "true" ? true : navigator.onLine).pipe(
       mergeMap((status) => {
         if (!status) {
-          const response: ServerResponse<null> = {
+          const response: ApiResponse<null> = {
             status: 0,
             data: null,
           };
@@ -108,11 +108,11 @@ export class HttpClient {
           // this catch will execute only when refresh token request
           // will throw error response
           catchError(() => {
-            const serverResponse: ServerResponse<null> = {
+            const apiResponse: ApiResponse<null> = {
               status: 401,
               data: null,
             };
-            return of(serverResponse);
+            return of(apiResponse);
           }),
           mergeMap((response) => {
             // response of refresh token request
@@ -152,21 +152,21 @@ export class HttpClient {
                 return ajax<T>(requestConfig);
               } else {
                 // logout && redirect to login page
-                const serverResponse: ServerResponse<null> = {
+                const apiResponse: ApiResponse<null> = {
                   status: 401,
                   data: null,
                 };
-                return of(serverResponse);
+                return of(apiResponse);
               }
             } else {
-              return of(response as ServerResponse<T | null>);
+              return of(response as ApiResponse<T | null>);
             }
           }),
           // this catch will execute only after token regenerated and error in original request
           catchError((err: AjaxError | Error) => {
             if (err instanceof AjaxError) {
               return this.handleErrorResponse<T>(err, false, options || {}) as Observable<
-                ServerResponse<T | null>
+                ApiResponse<T | null>
               >;
             }
             return throwError(() => err);
@@ -183,14 +183,14 @@ export class HttpClient {
                 false,
                 options || {},
               );
-              return handledResponse as Observable<ServerResponse<T>>;
+              return handledResponse as Observable<ApiResponse<T>>;
             }
-            return of(response as ServerResponse<T>);
+            return of(response as ApiResponse<T>);
           }),
           // this catch will catch any unknown error
           catchError((error: Error) => {
             console.error("Unknown Error!!", error);
-            const response: ServerResponse<any> = {
+            const response: ApiResponse<any> = {
               status: 600, // any client side error
               data: null,
             };
@@ -211,7 +211,7 @@ export class HttpClient {
           // retry request if status is 5xx (server error)
           retry({
             count: maxRetryCount,
-            delay: (_error: ServerResponse<T>, retryCount: number) => {
+            delay: (_error: ApiResponse<T>, retryCount: number) => {
               console.log("retry 5xx error", retryCount);
               if (retryCount === maxRetryCount) {
                 return throwError(() => _error);
@@ -222,17 +222,17 @@ export class HttpClient {
           // This catch will execute after max retry reach
           // so in any case HttpClient will always send success
           // Error can detect from status of response/result of HttpClient
-          catchError((error: ServerResponse<T | null>) => {
+          catchError((error: ApiResponse<T | null>) => {
             return of(error);
           }),
         );
       }),
       // this catch will execute when internet will not available or
       // any error not catch by ajax request
-      catchError((err: ServerResponse<null>) => {
+      catchError((err: ApiResponse<null>) => {
         console.log(err);
         // show toast message of internet not available
-        const serverResponse: ServerResponse<null> = {
+        const serverResponse: ApiResponse<null> = {
           status: 0,
           data: null,
         };
@@ -242,13 +242,18 @@ export class HttpClient {
     return reqObs$;
   }
 
+  /**
+   * Get ServerResponse object
+   * @param response {@link AjaxResponse} response object of ajax request
+   * @returns {@link ServerResponse}
+   */
   private static getServerResponseObject<T>(response: AjaxResponse<T> | AjaxError) {
-    const serverResponse: ServerResponse<T> = {
+    const apiResponse: ApiResponse<T> = {
       status: (response.response as any)?.status || response.status,
       // some api send data in response and data field contain actual data
       data: response.response?.data || response.response,
     };
-    return serverResponse;
+    return apiResponse;
   }
 
   private static handleResponse<T>(
@@ -285,15 +290,15 @@ export class HttpClient {
   }
 
   private static handleErrorServerResponse<T>(
-    serverResponse: ServerResponse<T | null>,
+    apiResponse: ApiResponse<T | null>,
     isFirst: boolean,
     options: HttpClientOptions,
   ) {
-    if (serverResponse.status === 401) {
+    if (apiResponse.status === 401) {
       if (!isFirst) {
         // logout & redirect to login. Check src/app.tsx
-        serverResponse.data = null;
-        return of(serverResponse);
+        apiResponse.data = null;
+        return of(apiResponse);
       }
       // token is invalid
       // regenerate token from refresh token
@@ -307,22 +312,22 @@ export class HttpClient {
           return new XMLHttpRequest();
         },
       });
-    } else if (serverResponse.status.toString().startsWith("5")) {
+    } else if (apiResponse.status.toString().startsWith("5")) {
       // server error
       if (!options.sendResponseWhenError) {
-        serverResponse.data = null;
+        apiResponse.data = null;
       }
-      return of(serverResponse);
-    } else if (serverResponse.status === 403) {
+      return of(apiResponse);
+    } else if (apiResponse.status === 403) {
       // unauthorized. logout & redirect to login. Check src/app.tsx
-      serverResponse.data = null;
-      return of(serverResponse);
-    } else if (serverResponse.status === 400) {
+      apiResponse.data = null;
+      return of(apiResponse);
+    } else if (apiResponse.status === 400) {
       // show error message as toast/snackbar
-      return of(options.sendResponseWhenError ? serverResponse.data : null);
+      return of(options.sendResponseWhenError ? apiResponse.data : null);
     }
-    serverResponse.data = null;
-    return of(serverResponse);
+    apiResponse.data = null;
+    return of(apiResponse);
   }
 }
 

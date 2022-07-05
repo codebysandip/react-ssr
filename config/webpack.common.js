@@ -122,7 +122,7 @@ module.exports = (env) => {
         core: getPath("src/core"),
         pages: getPath("src/pages"),
       },
-      extensions: [".ts", ".tsx", ".js"],
+      extensions: [".ts", ".tsx", ".js", ".scss", ".css"],
       fallback: {
         // url: false,
         // path: false,
