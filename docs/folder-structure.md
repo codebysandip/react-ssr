@@ -50,6 +50,7 @@
     |   |-- const.ts                                             # constants
     |   |-- routes.tsx                                           # Pages/Routes
     |   |-- server.ts                                            # Node server start file
+    |   |-- style.scss                                           # Scss file for vendor and common style
     |   |-- template.tsx                                         # Project Html Head part reside in this component. Can think of index.html
     |-- typings                                                  # typescript typing file
         |-- env.d.ts

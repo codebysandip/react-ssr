@@ -19,3 +19,5 @@ export default class Home extends React.Component<HomeProps> {
 }
 
 export interface HomeProps extends HomeResponse {}
+// can directly extend props with ApiResponse
+// export interface HomeProps extends ApiResponse<HomeData> {}
