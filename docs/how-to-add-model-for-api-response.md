@@ -7,7 +7,7 @@ For every API response we must create a model. In Typescript, We create a interf
 Let's talk about what are benefits to create a model:
   1. Compile time error checking by typescript compiler.
     If you will create interface with required and optional then typescript compiler will check errors when you will use in component.
-    Let's take example:
+    Let's take example:<br />
 ```
 export interface Address {
   street: string;
@@ -20,11 +20,10 @@ export interface Employee {
   address?: Address
 }
 ```
-    
+
 We declared a employee interface and address can be undefined for few employess.
 Let's see employee detail in Action:
-    
-    
+
 ```
 export const EmployeeDetail = (props: EmployeeDetailProps) => {
   const { employee } = props;
@@ -43,7 +42,7 @@ export interface EmployeeDetailProps {
   employee: Employee;
 }
 ```
-
+<br />
 In Javascript environment above component will work fine.
 But in typescript environment above component will throw error
     
@@ -55,6 +54,7 @@ But in typescript environment above component will throw error
 In [How to add page/route](how-to-add-page-route.md) we added a page/route for about page. Let's take same example and add a model for api response.
 Add a model interface file with name `about.model.ts` in folder `src/pages/about`.
 Let's support api returning following json response for about page api:
+<br />
 ```
 {
   "seo": {
@@ -86,6 +86,7 @@ Let's support api returning following json response for about page api:
   ]
 }
 ```
+<br />
 For above json interface will be: 
 ```
 export interface Seo {
@@ -111,6 +112,7 @@ export interface AboutPage {
 }
 
 ```
+<br />
 You can create interface for any json from [this link](http://json2ts.com/).<br />
 [HttpClient](https://github.com/sandip12081992/react-ssr/blob/main/src/core/services/http-client.ts) will convert api response into [ApiResponse](https://github.com/sandip12081992/react-ssr/blob/main/src/core/models/api-response.ts).
 So your data will come in ApiResponse.data. It means your component prop should look like this:<br />
