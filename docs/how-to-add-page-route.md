@@ -8,7 +8,7 @@ We have interface named `IRoute` in `src/core/models/route.model.ts`.  Every rou
  - Paste following basic component code in `about.component.tsx`:
 
 
-```
+```typescript
 import React from "react";
 import { PageData } from  "src/core/models/page-data";
 import { ServerResponse } from  "src/core/models/server-response";
@@ -41,7 +41,7 @@ export interface AboutProps extends PageData&ServerResponse<any> {
  - Add route in Routes array of `src/routes.tsx`. Paste following code in Routes array:
  
 
-```
+```typescript
   {
     path: "/about",
     component: () => import(/* webpackChunkName: "home" */ "pages/about/about.component"),
