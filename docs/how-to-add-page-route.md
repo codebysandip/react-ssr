@@ -1,7 +1,7 @@
 # How to add page/route
 
 Adding route is same as you did in any React application. In this architecture we have routes file where we add all routes. Every route point to a component. React router matches path then render component. So you need to create a route in route file and component for route.
-We have interface named `IRoute` in `src/core/models/route.model.ts`.  Every route must follow `IRoute` interface. Let suppose we want to about page. These are the following simple steps to add a about page:
+We have interface named `IRoute` in `src/core/models/route.model.ts`.  Every route must follow `IRoute` interface. Let suppose we want to add about page. These are the following simple steps to add a about page:
 
  - Add a folder in `src/pages` named `about`. Now folder structure will be `src/pages/about`.
  - Add a component `about.component.tsx` in `src/pages/about`
@@ -22,7 +22,7 @@ export default class About extends React.Component<AboutProps> {
   */
   public static getInitialProps() {
     // Api call will be here
-    return of({staus: 200: data: {}});
+    return of({staus: 200, data: {}});
   }
 
   render() {
@@ -44,7 +44,7 @@ export interface AboutProps extends PageData&ServerResponse<any> {
 ```typescript
   {
     path: "/about",
-    component: () => import(/* webpackChunkName: "home" */ "pages/about/about.component"),
+    component: () => import(/* webpackChunkName: "about" */ "pages/about/about.component"),
     isSSR: true,
   },
 
@@ -52,4 +52,4 @@ export interface AboutProps extends PageData&ServerResponse<any> {
 
 Now you are done with adding route. 
 If about page gets data from API, don't forget to add model `src/pages/about/about.model.ts` for API response.
-Check [How to add model/interface for API response](how-to-add-model-for-api-response.md)
+Check [How to add model/interface for API response](how-to-add-model-for-api-response.md).
