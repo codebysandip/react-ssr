@@ -1,4 +1,4 @@
-# React SSR - How to add page/route
+# How to add page/route
 
 Adding route is same as you did in any React application. In this architecture we have routes file where we add all routes. Every route point to a component. React router matches path then render component. So you need to create a route in route file and component for route.
 We have interface named `IRoute` in `src/core/models/route.model.ts`.  Every route must follow `IRoute` interface. Let suppose we want to about page. These are the following simple steps to add a about page:

@@ -1,4 +1,4 @@
-## React SSR - How to change port
+## How to change port
 
 React SSR architecture have inbuilt support for environment management using [dotEnv](https://www.npmjs.com/package/dotenv). Node server loads `.env` constants through dotEnv pacakage.
 `.env` file have PORT constant with prefined value of 5000. To change port, change the PORT value from 5000 to desired port number.

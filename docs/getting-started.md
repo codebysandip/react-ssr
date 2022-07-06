@@ -1,5 +1,5 @@
 
-# React SSR -Getting Started
+# Getting Started
 
 To start using React SSR architecture follow these simple steps:
 

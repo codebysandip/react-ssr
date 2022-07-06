@@ -5,13 +5,9 @@ baseUrl: https://sandip12081992.github.io/react-ssr
 links:
   - text: Getting Started
     link: /getting-started.html
-
   - text: Folder Structure
     link: /folder-structure.html
-
-  - text: How To
-    links:
-      - text: How to add page/route
-        link: /how-to-add-page-route.html
-      - text: How to change port
-        link: /how-to-change-port.html
+  - text: How to add page/route
+    link: /how-to-add-page-route.html
+  - text: How to change port
+    link: /how-to-change-port.html
