@@ -123,7 +123,7 @@ export class HttpClient {
               new URL((response as AjaxResponse<AuthResponse>).request.url).pathname ===
                 URL_REFERESH_TOKEN
             ) {
-              const serverResponse = this.getServerResponseObject<AuthResponse>(
+              const serverResponse = this.getApiResponseObject<AuthResponse>(
                 response as AjaxResponse<AuthResponse>,
               );
               // if status 200 then token generated
@@ -247,7 +247,7 @@ export class HttpClient {
    * @param response {@link AjaxResponse} response object of ajax request
    * @returns {@link ServerResponse}
    */
-  private static getServerResponseObject<T>(response: AjaxResponse<T> | AjaxError) {
+  private static getApiResponseObject<T>(response: AjaxResponse<T> | AjaxError) {
     const apiResponse: ApiResponse<T> = {
       status: (response.response as any)?.status || response.status,
       // some api send data in response and data field contain actual data
@@ -273,7 +273,7 @@ export class HttpClient {
       }
     }
     // some api follow a response structure and sends response status in response body as status
-    const serverResponse = this.getServerResponseObject<T>(response);
+    const serverResponse = this.getApiResponseObject<T>(response);
     if (serverResponse.status.toString().startsWith("2")) {
       return of(serverResponse);
     }
@@ -285,7 +285,7 @@ export class HttpClient {
     isFirst: boolean,
     options: HttpClientOptions,
   ) {
-    const serverResponse = this.getServerResponseObject<T>(response);
+    const serverResponse = this.getApiResponseObject<T>(response);
     return this.handleErrorServerResponse(serverResponse, isFirst, options);
   }
 
