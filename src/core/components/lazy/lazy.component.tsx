@@ -14,7 +14,12 @@ import { ApiResponse } from "src/core/models/api-response";
 export default function Lazy(props: LazyProps) {
   const Component = props.Component;
   const [Comp, setComp] = useState<{ default: any } | null>(null);
-  const [pageData, setPageData] = useState<ApiResponse<any>>({ status: 200, data: null });
+  const [pageData, setPageData] = useState<ApiResponse<any>>({
+    status: 200,
+    data: null,
+    message: [],
+    errorCode: -1,
+  });
   const location = useLocation();
   const searchParams = useSearchParams();
   const params = useParams();

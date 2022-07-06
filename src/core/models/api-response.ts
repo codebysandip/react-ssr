@@ -16,15 +16,17 @@ export interface ApiResponse<T> {
    * otheriwise HttpClient will put response body in ApiResponse.data
    */
   data: T;
-  // /**
-  //  * Error Message in case of error
-  //  * Error message can be multiple in case of validation of form
-  //  */
-  // errorMessage?: string[];
-  // /**
-  //  * Error Code. Some api send error code.
-  //  * Error code helps in logging and also helps in multi language to show message
-  //  * based on error code
-  //  */
-  // errorCode?: string;
+  /**
+   * Message in case of success and error
+   * Error message can be multiple in case of validation of form
+   */
+  message: string[];
+  /**
+   * Error Code. Some api sends error code.
+   * Error code helps in logging and also helps in multi language to show message
+   * based on error code
+   * If API will not send error then default value will return
+   * @default -1
+   */
+  errorCode: number | string;
 }

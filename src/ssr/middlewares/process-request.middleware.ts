@@ -33,7 +33,12 @@ export const processRequest = (staticPageCache: any) => {
     // check if route is for SSR
     // if not send only template.
     if (!route.isSSR) {
-      const props: ApiResponse<PageData> | PageData = { status: 200, data: {} };
+      const props: ApiResponse<PageData> | PageData = {
+        status: 200,
+        data: {},
+        message: [],
+        errorCode: -1,
+      };
       const html = getHtml(Empty, props, req.url, false);
       sendResponse(html, resp, req);
       return;
@@ -41,7 +46,12 @@ export const processRequest = (staticPageCache: any) => {
     // get component asychronously
     route.component().then(async (dComp) => {
       const Component = dComp.default;
-      let props: ApiResponse<any> | IRedirect = { status: 200, data: {} };
+      let props: ApiResponse<any> | IRedirect = {
+        status: 200,
+        data: {},
+        message: [],
+        errorCode: -1,
+      };
       const sendHtml = () => {
         if (resp.headersSent) {
           return;

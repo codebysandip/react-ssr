@@ -4,6 +4,9 @@ import { ajax, AjaxConfig, AjaxError, AjaxResponse } from "rxjs/ajax";
 import { COOKIE_REFRESH_TOKEN, COOKIE_TOKEN, URL_REFERESH_TOKEN } from "src/const";
 import { ApiResponse } from "../models/api-response";
 import { CookieService } from "./cookie.service";
+import ReactSsrConfig from "src/react-ssr.config";
+
+const HttClientConfig = ReactSsrConfig.httpClient;
 
 export class HttpClient {
   public static get<T>(url: string, options?: HttpClientOptions) {
@@ -48,7 +51,7 @@ export class HttpClient {
     }
     if (options.isAuth === undefined) {
       // change based on requirement
-      options.isAuth = false;
+      options.isAuth = HttClientConfig.isAuthDefault;
     }
     if (options.isAuth) {
       // add code here to send Authorization header
@@ -62,7 +65,7 @@ export class HttpClient {
     }
     url = this.getUrl(url);
     // let retryCount = 0;
-    const maxRetryCount = options.maxRetryCount || 3;
+    const maxRetryCount = HttClientConfig.maxRetryCount || 3;
     const requestConfig: AjaxConfig = {
       url,
       method,
@@ -79,6 +82,8 @@ export class HttpClient {
           const response: ApiResponse<null> = {
             status: 0,
             data: null,
+            message: [],
+            errorCode: -1,
           };
 
           return throwError(() => response);
@@ -111,6 +116,8 @@ export class HttpClient {
             const apiResponse: ApiResponse<null> = {
               status: 401,
               data: null,
+              message: [],
+              errorCode: -1,
             };
             return of(apiResponse);
           }),
@@ -155,6 +162,8 @@ export class HttpClient {
                 const apiResponse: ApiResponse<null> = {
                   status: 401,
                   data: null,
+                  message: [],
+                  errorCode: -1,
                 };
                 return of(apiResponse);
               }
@@ -190,9 +199,12 @@ export class HttpClient {
           // this catch will catch any unknown error
           catchError((error: Error) => {
             console.error("Unknown Error!!", error);
+            // [TODO] this error should log in database to get client side errors
             const response: ApiResponse<any> = {
               status: 600, // any client side error
               data: null,
+              message: [],
+              errorCode: -1,
             };
             return of(response);
           }),
@@ -232,11 +244,13 @@ export class HttpClient {
       catchError((err: ApiResponse<null>) => {
         console.log(err);
         // show toast message of internet not available
-        const serverResponse: ApiResponse<null> = {
+        const apiResponse: ApiResponse<null> = {
           status: 0,
           data: null,
+          message: ["Please check your network connection. Internet not available"],
+          errorCode: -1,
         };
-        return of(serverResponse);
+        return of(apiResponse);
       }),
     );
     return reqObs$;
@@ -248,10 +262,16 @@ export class HttpClient {
    * @returns {@link ServerResponse}
    */
   private static getApiResponseObject<T>(response: AjaxResponse<T> | AjaxError) {
+    const status: number =
+      (response.response && response.response[HttClientConfig.apiResponse.statusKey]) ||
+      response.status;
+    const message = HttClientConfig.processMessage(response);
     const apiResponse: ApiResponse<T> = {
-      status: (response.response as any)?.status || response.status,
-      // some api send data in response and data field contain actual data
-      data: response.response?.data || response.response,
+      status,
+      data: HttClientConfig.processData(response),
+      message,
+      errorCode:
+        (response.response && response.response[HttClientConfig.apiResponse.errorCodeKey]) || -1,
     };
     return apiResponse;
   }
@@ -272,12 +292,13 @@ export class HttpClient {
         }
       }
     }
-    // some api follow a response structure and sends response status in response body as status
-    const serverResponse = this.getApiResponseObject<T>(response);
-    if (serverResponse.status.toString().startsWith("2")) {
-      return of(serverResponse);
+    const apiResponse = this.getApiResponseObject<T>(response);
+    if (apiResponse.status.toString().startsWith("2")) {
+      return of(apiResponse);
     }
-    return this.handleErrorServerResponse(serverResponse, isFirst, options);
+    // some api always send 200 status and follow a response structure
+    // and sends actual response status in response body
+    return this.handleErrorServerResponse(apiResponse, isFirst, options);
   }
 
   private static handleErrorResponse<T>(
@@ -296,14 +317,13 @@ export class HttpClient {
   ) {
     if (apiResponse.status === 401) {
       if (!isFirst) {
-        // logout & redirect to login. Check src/app.tsx
         apiResponse.data = null;
         return of(apiResponse);
       }
-      // token is invalid
-      // regenerate token from refresh token
+      // This code will execute when token is invalid
       // get refresh token from cookie storage
       const refreshToken = CookieService.get(COOKIE_REFRESH_TOKEN, options.nodeReqObj);
+      // regenerate token from refresh token
       return ajax<AuthResponse>({
         url: this.getUrl(URL_REFERESH_TOKEN),
         body: { refreshToken },
@@ -312,22 +332,12 @@ export class HttpClient {
           return new XMLHttpRequest();
         },
       });
-    } else if (apiResponse.status.toString().startsWith("5")) {
-      // server error
+    } else {
       if (!options.sendResponseWhenError) {
         apiResponse.data = null;
       }
       return of(apiResponse);
-    } else if (apiResponse.status === 403) {
-      // unauthorized. logout & redirect to login. Check src/app.tsx
-      apiResponse.data = null;
-      return of(apiResponse);
-    } else if (apiResponse.status === 400) {
-      // show error message as toast/snackbar
-      return of(options.sendResponseWhenError ? apiResponse.data : null);
     }
-    apiResponse.data = null;
-    return of(apiResponse);
   }
 }
 

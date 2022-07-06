@@ -1,10 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "./build/ts/",
-    "typeRoots": [
-      "./node_modules/@types",
-      "./typings"
-    ],
+    "typeRoots": ["./node_modules/@types", "./typings"],
     "baseUrl": "./",
     "sourceMap": true,
     "noImplicitAny": true,
@@ -29,9 +26,5 @@
     },
     "downlevelIteration": true
   },
-  "exclude": [
-    "node_modules",
-    "build",
-    "config"
-  ]
+  "exclude": ["node_modules", "build", "config"]
 }
