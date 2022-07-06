@@ -1,12 +1,12 @@
 # React SSR - Add Model/Interface for API Response
-For every API response we must create a model. In Typescript, We create a interface for model.We divided this doc into two parts:
+For every API response we must create a model. In Typescript, We create a interface for model/data. We divided this doc into two parts:
   1. [Benefits of using typescript](#benefits-of-using-typescript)
   2. [How to add model/interface](#how-to-add-model)
   
 ## Benefits of using typescript
-Let's talk about what are benefits to create a model:
+Let's talk about what are benefits when we create a model:
   1. Compile time error checking by typescript compiler.
-    If you will create interface with required and optional then typescript compiler will check errors when you will use in component.
+    If you will create interface with required and optional data keys then typescript compiler will check errors when you will use in component.
     Let's take example:<br />
 
 
@@ -24,7 +24,7 @@ export interface Employee {
 ```
 
 We declared a employee interface and address can be undefined for few employess.
-Let's see employee detail in Action:
+Let's see employee detail component in Action:
 
 ```typescript
 export const EmployeeDetail = (props: EmployeeDetailProps) => {
@@ -53,9 +53,9 @@ But in typescript environment above component will throw error
   4. Can add jsdoc for interface for code documentation. Check documentation for [typescript jsdoc](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.htm)
 
 ## How to add model
-In [How to add page/route](how-to-add-page-route.md) we added a page/route for about page. Let's take same example and add a model for api response.
+In [How to add page/route](how-to-add-page-route.md) doc, we added a page/route for about page. Let's take same example and add a model for about page api response.
 Add a model interface file with name `about.model.ts` in folder `src/pages/about`.
-Let's support api returning following json response for about page api:
+Let's suppose api returning following json response for about page api:
 <br />
 ```json
   {
@@ -90,7 +90,7 @@ Let's support api returning following json response for about page api:
 ```
 
 
-For above json interface will be:
+For above json, Typescript Interface will be:
 
 
 ```typescript
