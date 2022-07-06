@@ -22,10 +22,3 @@
 10.  Out of box support for non SEO pages to render on client side only. SSR is only meant to be used for SEO. It's not a good idea to use server resources if it's not for SEO. This will enable frontend server to serve more requests and will save on server cost and bandwidth cost.
 11.  Most features are configurable through json. But you can get this json data through api. If you get configuration through api then you can change configuration anytime and wow changed in production without sending production deployment. One more reason to have 🍻.
 
-### Useful links:
-
- - [Getting Started](getting-started.md)
- - [Folder Structure](folder-structure.md)
- - [How to add page/route](how-to-add-page-route.md)
- - [How to add model/interface for API response](how-to-add-model-for-api-response.md)
- - [How to change port](how-to-change-port.md)
