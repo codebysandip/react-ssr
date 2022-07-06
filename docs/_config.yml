@@ -4,6 +4,7 @@ description: [React SSR is a ready to use in production architecture for React s
 baseUrl: https://sandip12081992.github.io/react-ssr
 links:
   - text: Getting Started
-  - link: /getting-started.md
+    link: /getting-started.html
+
   - text: Folder Structure
-  - link: /folder-structure.html
+    link: /folder-structure.html
