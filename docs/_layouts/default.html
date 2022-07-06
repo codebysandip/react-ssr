@@ -41,7 +41,7 @@
                       </li>
                     {% endif %}
                     {% if link.links %}
-                    {% assign accordianId = link.text | replace: ' ', '-'}
+                      {% assign accordianId = link.text | replace: ' ', '-' %}
                       <div class="accordion accordion-flush w-100" id="accordionFlushExample">
                         <div class="accordion-item">
                           <h2 class="accordion-header" id="flush-heading-{{}}">
@@ -62,20 +62,6 @@
                           </div>
                         </div>
                       </div>
-                        <!-- <li>
-                          <a href="#submenu1" data-bs-toggle="collapse" class="nav-link px-0 align-middle">
-                              <span class="ms-1 d-none d-sm-inline">{{link.text}}</span>
-                          </a>
-                          <ul class="collapse show nav flex-column ms-1" id="submenu1" data-bs-parent="#menu">
-                            {% for nlink in link.links %}
-                              <li class="w-100 ps-2">
-                                  <a href="{{site.baseUrl | append: nlink.link}}" class="nav-link px-0">
-                                    <span class="d-none d-sm-inline">{{nlink.text}}</span>
-                                  </a>
-                              </li>
-                            {% endfor %}
-                          </ul>
-                        </li> -->
                     {% endif %}
                   {% endfor %}
                 </ul>
