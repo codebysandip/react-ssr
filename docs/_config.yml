@@ -8,3 +8,10 @@ links:
 
   - text: Folder Structure
     link: /folder-structure.html
+
+  - text: How To
+    links:
+      - text: How to add page/route
+        link: /how-to-add-page-route.html
+      - text: How to change port
+        link: /how-to-change-port.html
