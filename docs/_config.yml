@@ -11,3 +11,5 @@ links:
     link: /how-to-add-page-route.html
   - text: How to change port
     link: /how-to-change-port.html
+  - text: How to make API call (HttpClient)
+    link: /http-client-service.html
