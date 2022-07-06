@@ -8,6 +8,8 @@ Let's talk about what are benefits to create a model:
   1. Compile time error checking by typescript compiler.
     If you will create interface with required and optional then typescript compiler will check errors when you will use in component.
     Let's take example:<br />
+
+
 ```typescript
 export interface Address {
   street: string;
