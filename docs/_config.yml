@@ -1,8 +1,9 @@
 theme: jekyll-theme-cayman
 title: React Server Side Rendering with NodeJS
 description: [React SSR is a ready to use in production architecture for React server side rendering. It saves weeks of initial development time]
+baseUrl: https://sandip12081992.github.io/react-ssr
 links:
   - text: Getting Started
-  - link: getting-started.md
+  - link: /getting-started.md
   - text: Folder Structure
-  - link: ./folder-structure.md
+  - link: /folder-structure.html

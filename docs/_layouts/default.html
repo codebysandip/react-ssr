@@ -37,8 +37,8 @@
                   <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
                     {% for link in site.links %}
                       <li class="nav-item">
-                        <a href="{{link.link}}" class="nav-link align-middle px-0">
-                            <span class="ms-1 d-none d-sm-inline">{{link.text}}</span>
+                        <a href="{{site.baseUrl | append: link.link}}" class="nav-link align-middle px-0">
+                            <span class="ms-1 d-none d-sm-inline">{{link.text}}{{site.baseUrl | append: link.link}}</span>
                         </a>
                       </li>
                     {% endfor %}
