@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { catchError, mergeMap, Observable, of, retry, throwError, timer } from "rxjs";
+import { catchError, mergeMap, Observable, of, throwError, timer } from "rxjs";
+import { retry } from "rxjs/operators";
 import { ajax, AjaxConfig, AjaxError, AjaxResponse } from "rxjs/ajax";
 import { COOKIE_REFRESH_TOKEN, COOKIE_TOKEN, URL_REFERESH_TOKEN } from "src/const";
 import { ApiResponse } from "../models/api-response";
@@ -85,7 +86,6 @@ export class HttpClient {
             message: [],
             errorCode: -1,
           };
-
           return throwError(() => response);
         }
         return of(status);
@@ -100,16 +100,11 @@ export class HttpClient {
           return timer(retryCount * 500);
         },
       }),
-
       mergeMap(() => {
         return ajax<T>(requestConfig).pipe(
-          mergeMap((response) => {
-            return this.handleResponse<T>(response, true, options || {});
-          }),
+          mergeMap((response) => this.handleResponse<T>(response, true, options || {})),
           // this catch will execute When error in original request
-          catchError((err: AjaxError) => {
-            return this.handleErrorResponse<T>(err, true, options || {});
-          }),
+          catchError((err: AjaxError) => this.handleErrorResponse<T>(err, true, options || {})),
           // this catch will execute only when refresh token request
           // will throw error response
           catchError(() => {
@@ -130,21 +125,21 @@ export class HttpClient {
               new URL((response as AjaxResponse<AuthResponse>).request.url).pathname ===
                 URL_REFERESH_TOKEN
             ) {
-              const serverResponse = this.getApiResponseObject<AuthResponse>(
+              const apiResponse = this.getApiResponseObject<AuthResponse>(
                 response as AjaxResponse<AuthResponse>,
               );
               // if status 200 then token generated
-              if (serverResponse.status === 200) {
+              if (apiResponse.status === 200) {
                 // save new token in cookie storage
                 CookieService.set(
                   COOKIE_TOKEN,
-                  serverResponse.data?.token || "",
+                  apiResponse.data?.token || "",
                   10,
                   options?.nodeRespObj,
                 );
                 CookieService.set(
                   COOKIE_REFRESH_TOKEN,
-                  serverResponse.data?.refreshToken || "",
+                  apiResponse.data?.refreshToken || "",
                   10,
                   options?.nodeRespObj,
                 );
@@ -154,7 +149,7 @@ export class HttpClient {
                 }
                 (requestConfig as any).headers[
                   "Authorization"
-                ] = `Bearer ${serverResponse.data?.token}`;
+                ] = `Bearer ${apiResponse.data?.token}`;
                 // send original request again
                 return ajax<T>(requestConfig);
               } else {
@@ -200,7 +195,7 @@ export class HttpClient {
           catchError((error: Error) => {
             console.error("Unknown Error!!", error);
             // [TODO] this error should log in database to get client side errors
-            const response: ApiResponse<any> = {
+            const response: ApiResponse<T | null> = {
               status: 600, // any client side error
               data: null,
               message: [],
@@ -224,7 +219,7 @@ export class HttpClient {
           retry({
             count: maxRetryCount,
             delay: (_error: ApiResponse<T>, retryCount: number) => {
-              console.log("retry 5xx error", retryCount);
+              // console.log("retry 5xx error", retryCount);
               if (retryCount === maxRetryCount) {
                 return throwError(() => _error);
               }
@@ -241,8 +236,7 @@ export class HttpClient {
       }),
       // this catch will execute when internet will not available or
       // any error not catch by ajax request
-      catchError((err: ApiResponse<null>) => {
-        console.log(err);
+      catchError(() => {
         // show toast message of internet not available
         const apiResponse: ApiResponse<null> = {
           status: 0,
@@ -253,13 +247,13 @@ export class HttpClient {
         return of(apiResponse);
       }),
     );
-    return reqObs$;
+    return reqObs$ as Observable<ApiResponse<T | null>>;
   }
 
   /**
-   * Get ServerResponse object
+   * Get ApiResponse object
    * @param response {@link AjaxResponse} response object of ajax request
-   * @returns {@link ServerResponse}
+   * @returns {@link ApiResponse}
    */
   private static getApiResponseObject<T>(response: AjaxResponse<T> | AjaxError) {
     const status: number =
@@ -273,6 +267,9 @@ export class HttpClient {
       errorCode:
         (response.response && response.response[HttClientConfig.apiResponse.errorCodeKey]) || -1,
     };
+    if (process.env.NODE_ENV === "test") {
+      apiResponse.ajaxResponse = response;
+    }
     return apiResponse;
   }
 
@@ -306,8 +303,8 @@ export class HttpClient {
     isFirst: boolean,
     options: HttpClientOptions,
   ) {
-    const serverResponse = this.getApiResponseObject<T>(response);
-    return this.handleErrorServerResponse(serverResponse, isFirst, options);
+    const apiResponse = this.getApiResponseObject<T>(response);
+    return this.handleErrorServerResponse(apiResponse, isFirst, options);
   }
 
   private static handleErrorServerResponse<T>(

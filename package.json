@@ -10,7 +10,8 @@
     "build:dev": "node config/build.js IS_LOCAL=false ENV=development",
     "start:test-api": "nodemon --watch restart build/testApi.js",
     "build:prod": "node config/build.js IS_LOCAL=false ENV=production",
-    "start:prod": "pm2 start ecosystem.config.js --env production"
+    "start:prod": "pm2 start ecosystem.config.js --env production",
+    "test": "jest"
   },
   "author": "Sandip",
   "license": "ISC",
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@types/express": "^4.17.13",
     "@types/express-http-proxy": "^1.6.3",
+    "@types/jest": "^28.1.4",
     "@types/react": "^18.0.12",
     "@types/react-dom": "^18.0.5",
     "@types/react-router-dom": "^5.3.3",
@@ -55,6 +57,8 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "ignore-emit-webpack-plugin": "^2.0.6",
     "ignore-loader": "^0.1.2",
+    "jest": "^28.1.2",
+    "jest-environment-jsdom": "^28.1.2",
     "mddir": "^1.1.1",
     "mini-css-extract-plugin": "^2.6.1",
     "node-sass": "^4.14.1",
@@ -68,6 +72,7 @@
     "stream-browserify": "^3.0.0",
     "style-loader": "^3.3.1",
     "terser-webpack-plugin": "^5.3.3",
+    "ts-jest": "^28.0.5",
     "ts-loader": "^9.3.0",
     "ts-node": "^10.8.1",
     "typescript": "^4.7.3",
