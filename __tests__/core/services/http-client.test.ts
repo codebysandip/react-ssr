@@ -100,7 +100,7 @@ describe("HttpClient", () => {
     expect(apiResponse.data).toStrictEqual(request.badRequestWithResponse.responseBody);
   });
 
-  it.only("Should set Authoration Header when HttpClientOptions.isAuth true", async () => {
+  it("Should set Authoration Header when HttpClientOptions.isAuth true", async () => {
     const token = "my-test-token";
     window.document.cookie = `${COOKIE_TOKEN}=${token}`;
     const apiResponse = await lastValueFrom(HttpClient.get(request.success.url, { isAuth: true }));
