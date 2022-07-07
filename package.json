@@ -10,6 +10,7 @@
     "build:dev": "node config/build.js IS_LOCAL=false ENV=development",
     "start:test-api": "nodemon --watch restart build/testApi.js",
     "build:prod": "node config/build.js IS_LOCAL=false ENV=production",
+    "build:prod:action": "cross-env GITHUB_ACTION=true node config/build.js IS_LOCAL=false ENV=production",
     "start:prod": "pm2 start ecosystem.config.js --env production",
     "test": "jest"
   },
@@ -44,6 +45,7 @@
     "compression-webpack-plugin": "^10.0.0",
     "concurrently": "^7.2.1",
     "copy-webpack-plugin": "^11.0.0",
+    "cross-env": "^7.0.3",
     "css-loader": "^6.7.1",
     "dotenv-webpack": "^7.1.1",
     "eslint": "^8.17.0",
