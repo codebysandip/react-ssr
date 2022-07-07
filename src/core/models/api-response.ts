@@ -1,3 +1,5 @@
+import { AjaxError, AjaxResponse } from "rxjs/ajax";
+
 /**
  * Custom Response converted by HttpClient
  * for ease of frontend development
@@ -29,4 +31,9 @@ export interface ApiResponse<T> {
    * @default -1
    */
   errorCode: number | string;
+  /**
+   * ajaxResponse will available only in case of jest test
+   * Don't use in service/component. It will always be undefined
+   */
+  ajaxResponse?: AjaxResponse<T> | AjaxError;
 }

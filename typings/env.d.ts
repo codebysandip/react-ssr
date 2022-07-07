@@ -8,6 +8,7 @@ declare global {
             ENV: string;
             API_BASE_URL?: string;
             LOCAL_API_SERVER: string;
+            NODE_ENV?: string;
         }
     }
 }

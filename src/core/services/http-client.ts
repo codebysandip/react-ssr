@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { catchError, mergeMap, Observable, of, retry, throwError, timer } from "rxjs";
+import { catchError, mergeMap, Observable, of, throwError, timer } from "rxjs";
+import { retry } from "rxjs/operators";
 import { ajax, AjaxConfig, AjaxError, AjaxResponse } from "rxjs/ajax";
 import { COOKIE_REFRESH_TOKEN, COOKIE_TOKEN, URL_REFERESH_TOKEN } from "src/const";
 import { ApiResponse } from "../models/api-response";
@@ -33,6 +34,23 @@ export class HttpClient {
 
   private static getUrl(url: string) {
     return `${process.env.IS_SERVER === "true" ? process.env.API_BASE_URL : ""}${url}`;
+  }
+
+  private static getDefaultApiResponseObj() {
+    const response: ApiResponse<null> = {
+      status: 200,
+      data: null,
+      message: [],
+      errorCode: -1,
+    };
+    return response;
+  }
+
+  private static retry(_error: any, retryCount: number) {
+    if (retryCount === HttClientConfig.maxRetryCount) {
+      return throwError(() => _error);
+    }
+    return timer(retryCount * 500);
   }
 
   private static sendRequest<T>(
@@ -79,13 +97,8 @@ export class HttpClient {
     const reqObs$ = of(process.env.IS_SERVER === "true" ? true : navigator.onLine).pipe(
       mergeMap((status) => {
         if (!status) {
-          const response: ApiResponse<null> = {
-            status: 0,
-            data: null,
-            message: [],
-            errorCode: -1,
-          };
-
+          const response = this.getDefaultApiResponseObj();
+          response.status = 0;
           return throwError(() => response);
         }
         return of(status);
@@ -94,57 +107,53 @@ export class HttpClient {
       retry({
         count: maxRetryCount,
         delay: (_error, retryCount: number) => {
-          if (retryCount === maxRetryCount) {
-            return throwError(() => _error);
-          }
-          return timer(retryCount * 500);
+          return this.retry(_error, retryCount);
         },
       }),
-
       mergeMap(() => {
         return ajax<T>(requestConfig).pipe(
-          mergeMap((response) => {
-            return this.handleResponse<T>(response, true, options || {});
-          }),
+          mergeMap((response) => this.handleResponse<T>(response, true, options || {})),
           // this catch will execute When error in original request
-          catchError((err: AjaxError) => {
-            return this.handleErrorResponse<T>(err, true, options || {});
-          }),
+          catchError((err: AjaxError) => this.handleErrorResponse<T>(err, true, options || {})),
           // this catch will execute only when refresh token request
           // will throw error response
-          catchError(() => {
-            const apiResponse: ApiResponse<null> = {
-              status: 401,
-              data: null,
-              message: [],
-              errorCode: -1,
-            };
-            return of(apiResponse);
+          catchError((err: AjaxError | ApiResponse<T>) => {
+            if (err instanceof AjaxError) {
+              const apiResponse = this.getDefaultApiResponseObj();
+              apiResponse.status = 401;
+              return of(apiResponse);
+            } else if (err.status && err.message) {
+              return of(err);
+            } else {
+              // this will execute only for any client error
+              const apiResponse = this.getDefaultApiResponseObj();
+              apiResponse.status = 600;
+              return of(apiResponse);
+            }
           }),
           mergeMap((response) => {
             // response of refresh token request
             if (
-              response &&
               (response as AjaxResponse<AuthResponse>).request &&
               (response as AjaxResponse<AuthResponse>).request.url &&
               new URL((response as AjaxResponse<AuthResponse>).request.url).pathname ===
                 URL_REFERESH_TOKEN
             ) {
-              const serverResponse = this.getApiResponseObject<AuthResponse>(
+              const apiResponse = this.getApiResponseObject<AuthResponse>(
                 response as AjaxResponse<AuthResponse>,
               );
               // if status 200 then token generated
-              if (serverResponse.status === 200) {
+              if (apiResponse.status === 200) {
                 // save new token in cookie storage
                 CookieService.set(
                   COOKIE_TOKEN,
-                  serverResponse.data?.token || "",
+                  apiResponse.data?.token || "",
                   10,
                   options?.nodeRespObj,
                 );
                 CookieService.set(
                   COOKIE_REFRESH_TOKEN,
-                  serverResponse.data?.refreshToken || "",
+                  apiResponse.data?.refreshToken || "",
                   10,
                   options?.nodeRespObj,
                 );
@@ -154,18 +163,14 @@ export class HttpClient {
                 }
                 (requestConfig as any).headers[
                   "Authorization"
-                ] = `Bearer ${serverResponse.data?.token}`;
+                ] = `Bearer ${apiResponse.data?.token}`;
                 // send original request again
                 return ajax<T>(requestConfig);
               } else {
                 // logout && redirect to login page
-                const apiResponse: ApiResponse<null> = {
-                  status: 401,
-                  data: null,
-                  message: [],
-                  errorCode: -1,
-                };
-                return of(apiResponse);
+                const apiResponseN = this.getDefaultApiResponseObj();
+                apiResponse.status = 401;
+                return of(apiResponseN);
               }
             } else {
               return of(response as ApiResponse<T | null>);
@@ -183,7 +188,6 @@ export class HttpClient {
           mergeMap((response) => {
             // response of original request after token regenertated
             if (
-              response &&
               (response as AjaxResponse<T>).request &&
               (response as AjaxResponse<T>).request.url === requestConfig.url
             ) {
@@ -200,12 +204,8 @@ export class HttpClient {
           catchError((error: Error) => {
             console.error("Unknown Error!!", error);
             // [TODO] this error should log in database to get client side errors
-            const response: ApiResponse<any> = {
-              status: 600, // any client side error
-              data: null,
-              message: [],
-              errorCode: -1,
-            };
+            const response = this.getDefaultApiResponseObj();
+            response.status = 600;
             return of(response);
           }),
           // this will execute after request process and we have response from server
@@ -224,11 +224,7 @@ export class HttpClient {
           retry({
             count: maxRetryCount,
             delay: (_error: ApiResponse<T>, retryCount: number) => {
-              console.log("retry 5xx error", retryCount);
-              if (retryCount === maxRetryCount) {
-                return throwError(() => _error);
-              }
-              return timer(retryCount * 500);
+              return this.retry(_error, retryCount);
             },
           }),
           // This catch will execute after max retry reach
@@ -241,8 +237,7 @@ export class HttpClient {
       }),
       // this catch will execute when internet will not available or
       // any error not catch by ajax request
-      catchError((err: ApiResponse<null>) => {
-        console.log(err);
+      catchError(() => {
         // show toast message of internet not available
         const apiResponse: ApiResponse<null> = {
           status: 0,
@@ -253,13 +248,13 @@ export class HttpClient {
         return of(apiResponse);
       }),
     );
-    return reqObs$;
+    return reqObs$ as Observable<ApiResponse<T | null>>;
   }
 
   /**
-   * Get ServerResponse object
+   * Get ApiResponse object
    * @param response {@link AjaxResponse} response object of ajax request
-   * @returns {@link ServerResponse}
+   * @returns {@link ApiResponse}
    */
   private static getApiResponseObject<T>(response: AjaxResponse<T> | AjaxError) {
     const status: number =
@@ -273,6 +268,9 @@ export class HttpClient {
       errorCode:
         (response.response && response.response[HttClientConfig.apiResponse.errorCodeKey]) || -1,
     };
+    if (process.env.NODE_ENV === "test") {
+      apiResponse.ajaxResponse = response;
+    }
     return apiResponse;
   }
 
@@ -306,8 +304,8 @@ export class HttpClient {
     isFirst: boolean,
     options: HttpClientOptions,
   ) {
-    const serverResponse = this.getApiResponseObject<T>(response);
-    return this.handleErrorServerResponse(serverResponse, isFirst, options);
+    const apiResponse = this.getApiResponseObject<T>(response);
+    return this.handleErrorServerResponse(apiResponse, isFirst, options);
   }
 
   private static handleErrorServerResponse<T>(
