@@ -15,7 +15,7 @@ Object.defineProperty(window.document, "cookie", {
     const cookieNameLength = cookieName.length;
     let cookieIndex = -1;
     cookies.forEach((value, index) => {
-      if (`${value.substr(0, cookieNameLength)}=` === `${cookieName}=`) {
+      if (`${value.substring(0, cookieNameLength)}=` === `${cookieName}=`) {
         cookieIndex = index;
       }
     });

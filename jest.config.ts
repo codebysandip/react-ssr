@@ -5,7 +5,7 @@
 
 import { Config } from "jest";
 
-const config: Config = {
+const jestConfig: Config = {
   // Automatically clear mock calls, instances, contexts and results before every test
   clearMocks: true,
 
@@ -153,4 +153,4 @@ const config: Config = {
   // Whether to use watchman for file crawling
   // watchman: true,
 };
-export default config;
+export default jestConfig;

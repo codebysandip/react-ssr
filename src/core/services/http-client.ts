@@ -46,6 +46,13 @@ export class HttpClient {
     return response;
   }
 
+  private static retry(_error: any, retryCount: number) {
+    if (retryCount === HttClientConfig.maxRetryCount) {
+      return throwError(() => _error);
+    }
+    return timer(retryCount * 500);
+  }
+
   private static sendRequest<T>(
     url: string,
     method: "GET" | "POST" | "PUT" | "DELETE",
@@ -100,10 +107,7 @@ export class HttpClient {
       retry({
         count: maxRetryCount,
         delay: (_error, retryCount: number) => {
-          if (retryCount === maxRetryCount) {
-            return throwError(() => _error);
-          }
-          return timer(retryCount * 500);
+          return this.retry(_error, retryCount);
         },
       }),
       mergeMap(() => {
@@ -164,9 +168,9 @@ export class HttpClient {
                 return ajax<T>(requestConfig);
               } else {
                 // logout && redirect to login page
-                const apiResponse = this.getDefaultApiResponseObj();
+                const apiResponseN = this.getDefaultApiResponseObj();
                 apiResponse.status = 401;
-                return of(apiResponse);
+                return of(apiResponseN);
               }
             } else {
               return of(response as ApiResponse<T | null>);
@@ -220,11 +224,7 @@ export class HttpClient {
           retry({
             count: maxRetryCount,
             delay: (_error: ApiResponse<T>, retryCount: number) => {
-              // console.log("retry 5xx error", retryCount);
-              if (retryCount === maxRetryCount) {
-                return throwError(() => _error);
-              }
-              return timer(retryCount * 500);
+              return this.retry(_error, retryCount);
             },
           }),
           // This catch will execute after max retry reach
