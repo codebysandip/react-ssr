@@ -36,6 +36,16 @@ export class HttpClient {
     return `${process.env.IS_SERVER === "true" ? process.env.API_BASE_URL : ""}${url}`;
   }
 
+  private static getDefaultApiResponseObj() {
+    const response: ApiResponse<null> = {
+      status: 200,
+      data: null,
+      message: [],
+      errorCode: -1,
+    };
+    return response;
+  }
+
   private static sendRequest<T>(
     url: string,
     method: "GET" | "POST" | "PUT" | "DELETE",
@@ -80,12 +90,8 @@ export class HttpClient {
     const reqObs$ = of(process.env.IS_SERVER === "true" ? true : navigator.onLine).pipe(
       mergeMap((status) => {
         if (!status) {
-          const response: ApiResponse<null> = {
-            status: 0,
-            data: null,
-            message: [],
-            errorCode: -1,
-          };
+          const response = this.getDefaultApiResponseObj();
+          response.status = 0;
           return throwError(() => response);
         }
         return of(status);
@@ -107,19 +113,23 @@ export class HttpClient {
           catchError((err: AjaxError) => this.handleErrorResponse<T>(err, true, options || {})),
           // this catch will execute only when refresh token request
           // will throw error response
-          catchError(() => {
-            const apiResponse: ApiResponse<null> = {
-              status: 401,
-              data: null,
-              message: [],
-              errorCode: -1,
-            };
-            return of(apiResponse);
+          catchError((err: AjaxError | ApiResponse<T>) => {
+            if (err instanceof AjaxError) {
+              const apiResponse = this.getDefaultApiResponseObj();
+              apiResponse.status = 401;
+              return of(apiResponse);
+            } else if (err.status && err.message) {
+              return of(err);
+            } else {
+              // this will execute only for any client error
+              const apiResponse = this.getDefaultApiResponseObj();
+              apiResponse.status = 600;
+              return of(apiResponse);
+            }
           }),
           mergeMap((response) => {
             // response of refresh token request
             if (
-              response &&
               (response as AjaxResponse<AuthResponse>).request &&
               (response as AjaxResponse<AuthResponse>).request.url &&
               new URL((response as AjaxResponse<AuthResponse>).request.url).pathname ===
@@ -154,12 +164,8 @@ export class HttpClient {
                 return ajax<T>(requestConfig);
               } else {
                 // logout && redirect to login page
-                const apiResponse: ApiResponse<null> = {
-                  status: 401,
-                  data: null,
-                  message: [],
-                  errorCode: -1,
-                };
+                const apiResponse = this.getDefaultApiResponseObj();
+                apiResponse.status = 401;
                 return of(apiResponse);
               }
             } else {
@@ -178,7 +184,6 @@ export class HttpClient {
           mergeMap((response) => {
             // response of original request after token regenertated
             if (
-              response &&
               (response as AjaxResponse<T>).request &&
               (response as AjaxResponse<T>).request.url === requestConfig.url
             ) {
@@ -195,12 +200,8 @@ export class HttpClient {
           catchError((error: Error) => {
             console.error("Unknown Error!!", error);
             // [TODO] this error should log in database to get client side errors
-            const response: ApiResponse<T | null> = {
-              status: 600, // any client side error
-              data: null,
-              message: [],
-              errorCode: -1,
-            };
+            const response = this.getDefaultApiResponseObj();
+            response.status = 600;
             return of(response);
           }),
           // this will execute after request process and we have response from server
