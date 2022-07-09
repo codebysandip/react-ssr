@@ -9,7 +9,7 @@ declare global {
         pageProps?: ApiResponse<PageData>;
     }
     class SsrComponent<P={}, S={}> extends React.Component<P, S> {
-        getInitialProps: (context: ContextData) => Observable<ApiResponse<PageData>> | IRedirect;
+        getInitialProps: (context: ContextData) => Observable<ApiResponse<PageData>|IRedirect>;
     }
 }
 

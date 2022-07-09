@@ -44,4 +44,6 @@ export interface PageData extends IRedirect {
    * change this key as per response of API
    */
   seo?: PageDataSeo;
+  // uncomment following code if header comes from api
+  // header?: HeaderData;
 }

@@ -2,7 +2,7 @@ import { ApiResponse } from "src/core/models/api-response";
 import { sendResponse } from "src/ssr/functions/send-response";
 import { Empty } from "core/components/empty/empty.component";
 import { getRoute } from "core/functions/get-route";
-import { Observable } from "rxjs";
+import { forkJoin, Observable } from "rxjs";
 import { getHtml } from "src/template";
 import { createContextServer } from "core/functions/create-context";
 import { IRedirect, PageData } from "core/models/page-data";
@@ -95,11 +95,17 @@ export const processRequest = (staticPageCache: any) => {
         // this data will pass as props to page/route component
         const initialProps = (Component as SsrComponent).getInitialProps(ctx);
         if (initialProps instanceof Observable) {
-          initialProps.subscribe({
-            next: (prop) => {
-              if (prop && typeof prop.status === "number") {
-                props = prop;
+          // add common api calls in fork join
+          // common api like header/footer api and put in PageData.header
+          forkJoin([initialProps]).subscribe({
+            next: (result) => {
+              if (result[0]) {
+                props = result[0];
               }
+              // uncomment this code for header api call. Also uncomment from PageData
+              // if (result[1]) {
+              //   (props as ApiResponse<PageData>).header = result[1];
+              // }
               sendHtml();
             },
             error: (err) => {
@@ -107,11 +113,8 @@ export const processRequest = (staticPageCache: any) => {
               resp.redirect("/500");
             },
           });
-        } else if (initialProps.redirect && initialProps.redirect.path) {
-          props = initialProps;
-          sendHtml();
         } else {
-          sendHtml();
+          throw new Error("getInitialProps must return observable");
         }
       } else {
         sendHtml();

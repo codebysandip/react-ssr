@@ -1,6 +1,6 @@
 const { merge } = require("webpack-merge");
 const commonConfig = require("./webpack.common");
-const { isServerFn, isLocalFn } = require("./helper-functions");
+const { isLocalFn } = require("./helper-functions");
 
 /**
  * Dev config for webpack. This build should not use for production.
@@ -9,8 +9,7 @@ const { isServerFn, isLocalFn } = require("./helper-functions");
  * @param {*} args args
  * @returns dev env webpack config
  */
-const devConfig = (env, args) => {
-  const isLocal = isLocalFn(env);
+const devConfig = (env) => {
   const plugins = [];
 
   return {

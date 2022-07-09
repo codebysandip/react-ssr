@@ -7,8 +7,7 @@ import { ApiResponse } from "../models/api-response";
 import { CookieService } from "./cookie.service";
 import ReactSsrConfig from "src/react-ssr.config";
 
-const HttClientConfig = ReactSsrConfig.httpClient;
-
+const HttClientConfig = ReactSsrConfig().httpClient;
 export class HttpClient {
   public static get<T>(url: string, options?: HttpClientOptions) {
     return this.sendRequest<T>(url, "GET", options);

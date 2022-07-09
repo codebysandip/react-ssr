@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate } from "react-router";
 import { useSearchParams } from "react-router-dom";
 import { Observable } from "rxjs";
 import { createContextClient } from "src/core/functions/create-context";
-import { PageData } from "src/core/models/page-data";
+import { IRedirect, PageData } from "src/core/models/page-data";
 import { ApiResponse } from "src/core/models/api-response";
 
 /**
@@ -35,8 +35,8 @@ export default function Lazy(props: LazyProps) {
             searchParams[0],
             params as Record<string, string>,
           );
-          const processInitialProps = (data: ApiResponse<PageData> | PageData) => {
-            if ((data as PageData)?.redirect) {
+          const processInitialProps = (data: ApiResponse<PageData> | IRedirect) => {
+            if ((data as IRedirect)?.redirect) {
               const redirect = (data as PageData).redirect || { path: "/" };
               navigate(redirect?.path, {
                 replace: redirect.replace || false,
@@ -75,7 +75,7 @@ export default function Lazy(props: LazyProps) {
               },
             });
           } else {
-            processInitialProps(initialProps);
+            throw new Error("getInitialProps must return observable");
           }
         } else {
           setComp(moduleObj);
