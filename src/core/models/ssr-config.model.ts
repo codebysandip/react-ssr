@@ -1,6 +1,6 @@
 import { AjaxResponse, AjaxError } from "rxjs/ajax";
 
-export interface ApiResponse {
+export interface ApiResponseKeys {
   statusKey: string;
   successMessageKey: string;
   errorMessageKey: string;
@@ -10,7 +10,7 @@ export interface ApiResponse {
 export interface HttpClient {
   maxRetryCount: number;
   isAuthDefault: boolean;
-  apiResponse: ApiResponse;
+  apiResponse: ApiResponseKeys;
   processMessage: (response: AjaxResponse<any> | AjaxError) => string[];
   processData: (response: AjaxResponse<any> | AjaxError) => any;
 }

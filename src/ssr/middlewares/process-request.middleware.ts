@@ -1,11 +1,10 @@
 import { ApiResponse } from "src/core/models/api-response";
 import { sendResponse } from "src/ssr/functions/send-response";
-import { Empty } from "core/components/empty/empty.component";
 import { getRoute } from "core/functions/get-route";
 import { forkJoin, Observable } from "rxjs";
 import { getHtml } from "src/template";
 import { createContextServer } from "core/functions/create-context";
-import { IRedirect, PageData } from "core/models/page-data";
+import { IRedirect } from "core/models/page-data";
 import { Request, Response } from "express";
 
 /**
@@ -32,17 +31,17 @@ export const processRequest = (staticPageCache: any) => {
 
     // check if route is for SSR
     // if not send only template.
-    if (!route.isSSR) {
-      const props: ApiResponse<PageData> | PageData = {
-        status: 200,
-        data: {},
-        message: [],
-        errorCode: -1,
-      };
-      const html = getHtml(Empty, props, req.url, false);
-      sendResponse(html, resp, req);
-      return;
-    }
+    // if (!route.isSSR) {
+    //   const props: ApiResponse<PageData> | PageData = {
+    //     status: 200,
+    //     data: {},
+    //     message: [],
+    //     errorCode: -1,
+    //   };
+    //   const html = getHtml(Empty, props, req.url, false);
+    //   sendResponse(html, resp, req);
+    //   return;
+    // }
     // get component asychronously
     route.component().then(async (dComp) => {
       const Component = dComp.default;
@@ -58,10 +57,7 @@ export const processRequest = (staticPageCache: any) => {
         }
         if ((props as IRedirect).redirect) {
           resp.redirect((props as IRedirect).redirect?.path || "/");
-        } else if (
-          (props as ApiResponse<any>).status === 401 ||
-          (props as ApiResponse<any>).status === 403
-        ) {
+        } else if ((props as ApiResponse<any>).status === 401 || (props as ApiResponse<any>).status === 403) {
           // logout and naviage to login page
           // for now redirecting to 500 but can take step here
           resp.redirect("/500");

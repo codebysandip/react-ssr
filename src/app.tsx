@@ -5,6 +5,7 @@ import Lazy from "./core/components/lazy/lazy.component";
 import { matchPath, useLocation } from "react-router";
 import { Routes as PageRoutes } from "./routes";
 import { NO_HEADER_PATHS } from "./const";
+import { Notification } from "./core/components/notification/notification.component";
 
 /**
  * Check for rendering is first time.
@@ -48,19 +49,14 @@ export function App(props: AppProps) {
             return (
               <Route
                 path={r.path}
-                element={
-                  <Lazy
-                    moduleProvider={r.component}
-                    Component={isFirst ? props.comp : undefined}
-                    {...props}
-                  />
-                }
+                element={<Lazy moduleProvider={r.component} Component={isFirst ? props.comp : undefined} {...props} />}
                 key={idx}
               />
             );
           })}
         </Routes>
       )}
+      <Notification />
     </>
   );
 }
