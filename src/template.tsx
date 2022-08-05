@@ -31,9 +31,7 @@ export class HtmlTemplate extends Component<HtmlTemplateProps> {
           />
           <link rel="shortcut icon" href="/favicon.ico" />
           <link
-            href={`/assets/css/style${
-              process.env.IS_LOCAL === "false" ? "." + hashObj?.styleHash : ""
-            }.css`}
+            href={`/assets/css/style${process.env.IS_LOCAL === "false" ? "." + hashObj?.styleHash : ""}.css`}
             rel="stylesheet"
           />
           <title>{title}</title>
@@ -41,9 +39,7 @@ export class HtmlTemplate extends Component<HtmlTemplateProps> {
         <body>
           <div id="root">{this.props.children}</div>
           <script dangerouslySetInnerHTML={{ __html: script }}></script>
-          <script
-            src={`/client${process.env.IS_LOCAL === "false" ? "." + hashObj?.clientJsHash : ""}.js`}
-          ></script>
+          <script src={`/client${process.env.IS_LOCAL === "false" ? "." + hashObj?.clientJsHash : ""}.js`}></script>
           {JSON.parse(process.env.IS_LOCAL) && <script src="/reload/reload.js"></script>}
         </body>
       </html>
@@ -64,15 +60,16 @@ export interface HtmlTemplateProps {
  * @returns rendered HTML
  */
 export function getHtml(Component: any, props: ApiResponse<PageData>, url: string, isSSR = true) {
+  console.log("isSSR!!", isSSR);
   const html = renderToString(
     <HtmlTemplate pageProps={props}>
-      {isSSR ? (
-        <StaticRouter location={url}>
-          <App comp={Component} pageProps={props} />
-        </StaticRouter>
-      ) : (
+      {/* {isSSR ? ( */}
+      <StaticRouter location={url}>
+        <App comp={Component} pageProps={props} />
+      </StaticRouter>
+      {/* ) : (
         <Component {...(props || {})} />
-      )}
+      )} */}
     </HtmlTemplate>,
   );
   return html;

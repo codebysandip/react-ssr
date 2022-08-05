@@ -52,11 +52,7 @@ export class HttpClient {
     return timer(retryCount * 500);
   }
 
-  private static sendRequest<T>(
-    url: string,
-    method: "GET" | "POST" | "PUT" | "DELETE",
-    options?: HttpClientOptions,
-  ) {
+  private static sendRequest<T>(url: string, method: "GET" | "POST" | "PUT" | "DELETE", options?: HttpClientOptions) {
     if (!options) {
       options = {};
     }
@@ -135,34 +131,19 @@ export class HttpClient {
             if (
               (response as AjaxResponse<AuthResponse>).request &&
               (response as AjaxResponse<AuthResponse>).request.url &&
-              new URL((response as AjaxResponse<AuthResponse>).request.url).pathname ===
-                URL_REFERESH_TOKEN
+              new URL((response as AjaxResponse<AuthResponse>).request.url).pathname === URL_REFERESH_TOKEN
             ) {
-              const apiResponse = this.getApiResponseObject<AuthResponse>(
-                response as AjaxResponse<AuthResponse>,
-              );
+              const apiResponse = this.getApiResponseObject<AuthResponse>(response as AjaxResponse<AuthResponse>);
               // if status 200 then token generated
               if (apiResponse.status === 200) {
                 // save new token in cookie storage
-                CookieService.set(
-                  COOKIE_TOKEN,
-                  apiResponse.data?.token || "",
-                  10,
-                  options?.nodeRespObj,
-                );
-                CookieService.set(
-                  COOKIE_REFRESH_TOKEN,
-                  apiResponse.data?.refreshToken || "",
-                  10,
-                  options?.nodeRespObj,
-                );
+                CookieService.set(COOKIE_TOKEN, apiResponse.data?.token || "", 10, options?.nodeRespObj);
+                CookieService.set(COOKIE_REFRESH_TOKEN, apiResponse.data?.refreshToken || "", 10, options?.nodeRespObj);
                 // add new token in Authorization header
                 if (!requestConfig.headers) {
                   requestConfig.headers = {};
                 }
-                (requestConfig as any).headers[
-                  "Authorization"
-                ] = `Bearer ${apiResponse.data?.token}`;
+                (requestConfig as any).headers["Authorization"] = `Bearer ${apiResponse.data?.token}`;
                 // send original request again
                 return ajax<T>(requestConfig);
               } else {
@@ -178,9 +159,7 @@ export class HttpClient {
           // this catch will execute only after token regenerated and error in original request
           catchError((err: AjaxError | Error) => {
             if (err instanceof AjaxError) {
-              return this.handleErrorResponse<T>(err, false, options || {}) as Observable<
-                ApiResponse<T | null>
-              >;
+              return this.handleErrorResponse<T>(err, false, options || {}) as Observable<ApiResponse<T | null>>;
             }
             return throwError(() => err);
           }),
@@ -190,11 +169,7 @@ export class HttpClient {
               (response as AjaxResponse<T>).request &&
               (response as AjaxResponse<T>).request.url === requestConfig.url
             ) {
-              const handledResponse = this.handleResponse<T>(
-                response as AjaxResponse<T>,
-                false,
-                options || {},
-              );
+              const handledResponse = this.handleResponse<T>(response as AjaxResponse<T>, false, options || {});
               return handledResponse as Observable<ApiResponse<T>>;
             }
             return of(response as ApiResponse<T>);
@@ -257,15 +232,13 @@ export class HttpClient {
    */
   private static getApiResponseObject<T>(response: AjaxResponse<T> | AjaxError) {
     const status: number =
-      (response.response && response.response[HttClientConfig.apiResponse.statusKey]) ||
-      response.status;
+      (response.response && response.response[HttClientConfig.apiResponse.statusKey]) || response.status;
     const message = HttClientConfig.processMessage(response);
     const apiResponse: ApiResponse<T> = {
       status,
       data: HttClientConfig.processData(response),
       message,
-      errorCode:
-        (response.response && response.response[HttClientConfig.apiResponse.errorCodeKey]) || -1,
+      errorCode: (response.response && response.response[HttClientConfig.apiResponse.errorCodeKey]) || -1,
     };
     if (process.env.NODE_ENV === "test") {
       apiResponse.ajaxResponse = response;
@@ -273,16 +246,11 @@ export class HttpClient {
     return apiResponse;
   }
 
-  private static handleResponse<T>(
-    response: AjaxResponse<T>,
-    isFirst: boolean,
-    options: HttpClientOptions,
-  ) {
+  private static handleResponse<T>(response: AjaxResponse<T>, isFirst: boolean, options: HttpClientOptions) {
     if (process.env.IS_SERVER === "true") {
       // check if api sending cookie to set
       const setCookie =
-        response.responseHeaders["Set-Cookie"] ||
-        response.responseHeaders["Set-Cookie".toLocaleLowerCase()];
+        response.responseHeaders["Set-Cookie"] || response.responseHeaders["Set-Cookie".toLocaleLowerCase()];
       if (setCookie) {
         if (options.nodeRespObj) {
           options.nodeRespObj.setHeader("Set-Cookie", setCookie.replace(/\r?\n|\r/g, ""));
@@ -298,11 +266,7 @@ export class HttpClient {
     return this.handleErrorServerResponse(apiResponse, isFirst, options);
   }
 
-  private static handleErrorResponse<T>(
-    response: AjaxError,
-    isFirst: boolean,
-    options: HttpClientOptions,
-  ) {
+  private static handleErrorResponse<T>(response: AjaxError, isFirst: boolean, options: HttpClientOptions) {
     const apiResponse = this.getApiResponseObject<T>(response);
     return this.handleErrorServerResponse(apiResponse, isFirst, options);
   }
@@ -378,6 +342,16 @@ export interface HttpClientOptions {
    * cookie on server
    */
   nodeRespObj?: Response;
+  /**
+   * Show loader
+   * @default true
+   */
+  showLoader?: boolean;
+  /**
+   * Show toast/snackbar when error
+   * @default true
+   */
+  showNotificationMessage?: boolean;
 }
 
 export interface AuthResponse {

@@ -5,6 +5,7 @@ import { Observable } from "rxjs";
 import { createContextClient } from "src/core/functions/create-context";
 import { IRedirect, PageData } from "src/core/models/page-data";
 import { ApiResponse } from "src/core/models/api-response";
+import { Notification$ } from "src/app-subject";
 
 /**
  * Lazy Load Route Component
@@ -30,11 +31,7 @@ export default function Lazy(props: LazyProps) {
     if (!Component) {
       props.moduleProvider().then((moduleObj) => {
         if (moduleObj.default.getInitialProps) {
-          const ctx = createContextClient(
-            location,
-            searchParams[0],
-            params as Record<string, string>,
-          );
+          const ctx = createContextClient(location, searchParams[0], params as Record<string, string>);
           const processInitialProps = (data: ApiResponse<PageData> | IRedirect) => {
             if ((data as IRedirect)?.redirect) {
               const redirect = (data as PageData).redirect || { path: "/" };
@@ -42,23 +39,33 @@ export default function Lazy(props: LazyProps) {
                 replace: redirect.replace || false,
                 state: redirect.state || {},
               });
-            } else if (
-              (data as ApiResponse<any>).status === 401 ||
-              (data as ApiResponse<any>).status === 403
-            ) {
+            } else if ((data as ApiResponse<any>).status === 401 || (data as ApiResponse<any>).status === 403) {
               // logout and naviage to login page
               // [TODO] navigating to 500 but change to login path
-              navigate("/500");
+              if ((data as ApiResponse<any>).status === 401) {
+                navigate("/login");
+              } else {
+                Notification$.next({
+                  message: (data as ApiResponse<any>).message[0],
+                  notificationType: "error",
+                });
+              }
             } else if ((data as ApiResponse<any>).status === 500) {
-              navigate("/500");
+              Notification$.next({
+                message: (data as ApiResponse<any>).message[0],
+                notificationType: "error",
+              });
+              // navigate("/500");
             } else if ((data as ApiResponse<any>).status === 0) {
               // show toast or page for internet not available
-              navigate("/500");
-            } else {
-              // set data only in case of 200
-              setPageData(data as ApiResponse<PageData>);
-              setComp(moduleObj);
+              Notification$.next({
+                message: "Internet Not Available",
+                notificationType: "error",
+              });
             }
+            // set data only in case of 200
+            setPageData(data as ApiResponse<PageData>);
+            setComp(moduleObj);
           };
 
           const initialProps = (moduleObj.default as SsrComponent).getInitialProps(ctx);
@@ -68,9 +75,7 @@ export default function Lazy(props: LazyProps) {
                 processInitialProps(data);
               },
               error: (err: ApiResponse<any>) => {
-                console.error(
-                  `Error in getInitialProps of ${moduleObj.default.constructor.name}. Error: ${err}`,
-                );
+                console.error(`Error in getInitialProps of ${moduleObj.default.constructor.name}. Error: ${err}`);
                 navigate("/500");
               },
             });
