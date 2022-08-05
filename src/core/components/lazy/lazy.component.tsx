@@ -55,7 +55,6 @@ export default function Lazy(props: LazyProps) {
                 message: (data as ApiResponse<any>).message[0],
                 notificationType: "error",
               });
-              // navigate("/500");
             } else if ((data as ApiResponse<any>).status === 0) {
               // show toast or page for internet not available
               Notification$.next({

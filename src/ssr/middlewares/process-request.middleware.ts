@@ -1,6 +1,5 @@
 import { ApiResponse } from "src/core/models/api-response";
 import { sendResponse } from "src/ssr/functions/send-response";
-// import { Empty } from "core/components/empty/empty.component";
 import { getRoute } from "core/functions/get-route";
 import { forkJoin, Observable } from "rxjs";
 import { getHtml } from "src/template";
