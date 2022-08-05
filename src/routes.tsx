@@ -11,6 +11,11 @@ export const Routes: IRoute[] = [
     component: () => import(/* webpackChunkName: "home" */ "pages/home/home.component"),
     isSSR: true,
   },
+  {
+    path: "/notification",
+    component: () => import(/* webpackChunkName: "notification" */ "pages/notification/notification.comp"),
+    isSSR: false,
+  },
   // Replace 404 component code with own code
   {
     path: "/404",

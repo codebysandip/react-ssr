@@ -33,4 +33,10 @@ app.post("/api/auth/refresh-token", (req, res) => {
   });
 });
 
+app.get("/api/notification-demo", (req, resp) => {
+  resp.status(500).json({
+    message: "Something went wrong!!",
+  });
+});
+
 app.listen(3002, () => console.log("App listening on port 3002"));
