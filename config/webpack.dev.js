@@ -1,6 +1,5 @@
-const { merge } = require("webpack-merge");
-const commonConfig = require("./webpack.common");
-const { isLocalFn } = require("./helper-functions");
+import { merge } from "webpack-merge";
+import commonConfig from "./webpack.common.js";
 
 /**
  * Dev config for webpack. This build should not use for production.
@@ -23,6 +22,7 @@ const devConfig = (env) => {
   };
 };
 
-module.exports = (env, args) => {
+const config = (env, args) => {
   return merge(commonConfig(env, args), devConfig(env, args));
 };
+export default config;

@@ -1,10 +1,10 @@
 import React, { Component, ReactNode } from "react";
 import { renderToString } from "react-dom/server";
-import { StaticRouter } from "react-router-dom/server";
-import { App } from "./app";
-import { PageData } from "./core/models/page-data";
-import { ApiResponse } from "./core/models/api-response";
-import { getWebpackBuildHash } from "./ssr/functions/get-webpack-build-hash";
+import { StaticRouter } from "react-router-dom/server.js";
+import { App } from "./app.js";
+import { PageData } from "./core/models/page-data.js";
+import { ApiResponse } from "./core/models/api-response.js";
+import { getWebpackBuildHash } from "./ssr/functions/get-webpack-build-hash.js";
 
 const hashObj = getWebpackBuildHash();
 

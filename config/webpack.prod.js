@@ -1,11 +1,10 @@
-const WebpackLocalNodeServerPlugin = require("./webpack-local-node-server.plugin");
-const { merge } = require("webpack-merge");
-const commonConfig = require("./webpack.common");
-const { isServerFn, isLocalFn, getPath } = require("./helper-functions");
-const TerserPlugin = require("terser-webpack-plugin");
-const MetaInfoPlugin = require("./meta-info.plugin");
-const CompressionPlugin = require("compression-webpack-plugin");
-const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
+import { merge } from "webpack-merge";
+import commonConfig from "./webpack.common.js";
+import { isServerFn, getPath } from "./helper-functions.js";
+import TerserPlugin from "terser-webpack-plugin";
+import MetaInfoPlugin from "./meta-info.plugin.js";
+import CompressionPlugin from "compression-webpack-plugin";
+import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 
 /**
  * Prod config for webpack. This build will use for production.
@@ -13,7 +12,7 @@ const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPl
  * @param {*} args args
  * @returns prod env webpack config
  */
-const prodConfig = (env, args) => {
+const prodConfig = (env) => {
   const isServer = isServerFn(env);
   const plugins = [];
 
@@ -48,6 +47,7 @@ const prodConfig = (env, args) => {
     plugins,
     optimization: {
       minimize: true,
+      mergeDuplicateChunks: true,
       minimizer: [
         new TerserPlugin({
           test: /\.js(\?.*)?$/i,
@@ -67,6 +67,8 @@ const prodConfig = (env, args) => {
   };
 };
 
-module.exports = (env, args) => {
-  return merge(commonConfig(env, args), prodConfig(env, args));
+const config = (env, args) => {
+  return merge(commonConfig(env, args, true), prodConfig(env, args));
 };
+
+export default config;

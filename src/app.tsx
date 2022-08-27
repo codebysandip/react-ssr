@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Header } from "core/components/header/header";
+import { Header } from "core/components/header/header.js";
 import { Route, Routes } from "react-router-dom";
-import Lazy from "./core/components/lazy/lazy.component";
+import Lazy from "./core/components/lazy/lazy.component.js";
 import { matchPath, useLocation } from "react-router";
-import { Routes as PageRoutes } from "./routes";
-import { NO_HEADER_PATHS } from "./const";
-import { Notification } from "./core/components/notification/notification.component";
+import { Routes as PageRoutes } from "./routes.js";
+import { NO_HEADER_PATHS } from "./const.js";
+import { Notification } from "./core/components/notification/notification.component.js";
 
 /**
  * Check for rendering is first time.

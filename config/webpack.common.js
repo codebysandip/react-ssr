@@ -1,24 +1,27 @@
 /** @type {import("webpack").Configuration} */
 
-const webpack = require("webpack");
+import webpack from "webpack";
 
-const nodeExternals = require("webpack-node-externals");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-const IgnoreEmitPlugin = require("ignore-emit-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
-const Dotenv = require("dotenv-webpack");
+import nodeExternals from "webpack-node-externals";
+import { CleanWebpackPlugin } from "clean-webpack-plugin";
+import IgnoreEmitPlugin from "ignore-emit-webpack-plugin";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import CopyWebpackPlugin from "copy-webpack-plugin";
+import Dotenv from "dotenv-webpack";
 
-const { isServerFn, isLocalFn, getPath } = require("./helper-functions");
-const { join } = require("path");
-const WebpackLocalNodeServerPlugin = require("./webpack-local-node-server.plugin");
+import { isServerFn, isLocalFn, getPath } from "./helper-functions.js";
+import { join } from "path";
+import WebpackLocalNodeServerPlugin from "./webpack-local-node-server.plugin.js";
+import { readFileSync } from "fs";
 
 /**
  * Common webpack config that will used for production as well as development env
  * @param {Object} env environment key value pair
  * @returns webpack common config
  */
-module.exports = (env) => {
+export default function (env, args, isProd = false) {
+  const packageJson = JSON.parse(readFileSync(join(process.cwd(), "package.json"), { encoding: "utf-8" }));
+
   /**
    * Is Build running for Server or Client
    */
@@ -60,9 +63,11 @@ module.exports = (env) => {
     definePluginObj[`process.env.${key}`] = JSON.stringify(env[key]);
   });
   const miniCssFileName = !isLocal ? "assets/css/style.[contenthash].css" : "assets/css/style.css";
-  const miniCssChunkName = !isLocal
-    ? "assets/css/[name].[contenthash].chunk.css"
-    : "assets/css/[name].chunk.css";
+  const miniCssChunkName = !isLocal ? "assets/css/[name].[contenthash].chunk.css" : "assets/css/[name].chunk.css";
+  let slash = "/";
+  if (process.platform === "win32") {
+    slash = "\\";
+  }
 
   const plugins = [
     new webpack.DefinePlugin(definePluginObj),
@@ -71,6 +76,23 @@ module.exports = (env) => {
       chunkFilename: miniCssChunkName,
     }),
     new Dotenv(),
+    new webpack.NormalModuleReplacementPlugin(/.js$/, (resource) => {
+      const context = resource.context
+        .replace(process.cwd(), "")
+        .replace(`${slash}node_modules`, "")
+        .substring(1)
+        .split(slash)[0];
+      if (
+        packageJson.dependencies[context] ||
+        packageJson.devDependencies[context] ||
+        packageJson.dependencies[resource.request] ||
+        packageJson.devDependencies[resource.request]
+      ) {
+        return;
+      }
+      console.log("resource!!", resource.context.replace(process.cwd(), ""), resource.request);
+      resource.request = resource.request.replace(/.js$/, "");
+    }),
   ];
 
   if (isServer) {
@@ -104,13 +126,17 @@ module.exports = (env) => {
       }),
     );
   }
-  const config = {
+  return {
     entry,
     output: {
       filename: `[name]${!isLocal && !isServer ? ".[contenthash]" : ""}.js`,
       chunkFilename: `[name]${!isLocal && !isServer ? ".[contenthash]" : ""}.chunk.js`,
       path: outFolder,
       publicPath: "/",
+      chunkFormat: isServer ? "module" : "array-push",
+    },
+    experiments: {
+      outputModule: true,
     },
     watch: isLocal,
     watchOptions: {
@@ -121,6 +147,7 @@ module.exports = (env) => {
         src: getPath("src"),
         core: getPath("src/core"),
         pages: getPath("src/pages"),
+        assets: getPath("src/assets"),
       },
       extensions: [".ts", ".tsx", ".js", ".scss", ".css"],
       fallback: {
@@ -136,7 +163,15 @@ module.exports = (env) => {
       },
     },
     target: isServer ? "node" : "web",
-    externals: isServer ? [nodeExternals()] : [],
+    externals: isServer
+      ? [
+          nodeExternals({
+            importType: function (moduleName) {
+              return moduleName;
+            },
+          }),
+        ]
+      : [],
     externalsPresets: { node: isServer },
     module: {
       rules: [
@@ -145,9 +180,13 @@ module.exports = (env) => {
           exclude: "/node_modules/",
           use: [
             {
-              loader: "ts-loader",
+              loader: "swc-loader",
               options: {
-                configFile: "tsconfig.json",
+                jsc: {
+                  parser: {
+                    syntax: "typescript",
+                  },
+                },
               },
             },
           ],
@@ -172,20 +211,13 @@ module.exports = (env) => {
         },
         {
           test: /\.(png|jpe?g|gif|svg|woff2?)$/i,
-          use: [
-            {
-              loader: "file-loader",
-              options: {
-                name: `[path][name].[ext]`,
-                emitFile: !isServer,
-              },
-            },
-          ],
+          type: "asset/resource",
+          generator: {
+            emit: !isServer,
+          },
         },
       ],
     },
     plugins,
   };
-  // console.log("webpack config!!", config);
-  return config;
-};
+}

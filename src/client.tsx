@@ -2,10 +2,10 @@ import React from "react";
 import { hydrateRoot } from "react-dom/client";
 // import { matchPath } from "react-router";
 import { BrowserRouter } from "react-router-dom";
-import { App } from "./app";
-import { Routes } from "./routes";
+import { App } from "./app.js";
+import { Routes } from "./routes.js";
 import "./style.scss";
-import { getRoute } from "./core/functions/get-route";
+import { getRoute } from "./core/functions/get-route.js";
 
 const container = document.getElementById("root");
 if (!container) {

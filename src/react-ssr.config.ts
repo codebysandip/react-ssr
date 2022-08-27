@@ -1,6 +1,6 @@
 import { AjaxResponse, AjaxError } from "rxjs/ajax";
-import { SSRConfig } from "./core/models/ssr-config.model";
-import { HttpClient } from "./core/services/http-client";
+import { SSRConfig } from "./core/models/ssr-config.model.js";
+import { HttpClient } from "./core/services/http-client.js";
 
 let dbConfig: SSRConfig;
 

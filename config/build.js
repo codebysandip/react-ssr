@@ -1,8 +1,11 @@
-const shell = require('shelljs');
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+
+const shell = require("shelljs");
 const args = process.argv.slice(2);
 
-const isLocalArg = args.find(arg => arg.startsWith("IS_LOCAL"));
-const envArg = args.find(arg => arg.startsWith("ENV"));
+const isLocalArg = args.find((arg) => arg.startsWith("IS_LOCAL"));
+const envArg = args.find((arg) => arg.startsWith("ENV"));
 /**
  * isLocal will tell webpack that build running on local system
  * for development
@@ -15,38 +18,50 @@ let isLocal = false;
 let env = "development";
 
 if (isLocalArg) {
-    if (isLocalArg.split("=").length !== 2) {
-        throw new Error(`IS_LOCAL is not valid. Valid values IS_LOCAL=true|false`)
-    }
-    isLocal = JSON.parse(isLocalArg.split("=")[1]);
+  if (isLocalArg.split("=").length !== 2) {
+    throw new Error(`IS_LOCAL is not valid. Valid values IS_LOCAL=true|false`);
+  }
+  isLocal = JSON.parse(isLocalArg.split("=")[1]);
 }
 
 if (envArg) {
-    if (envArg.split("=").length !== 2) {
-        throw new Error(`ENV is not valid. Valid values ENV=development|production`)
-    }
-    env = envArg.split("=")[1];
+  if (envArg.split("=").length !== 2) {
+    throw new Error(`ENV is not valid. Valid values ENV=development|production`);
+  }
+  env = envArg.split("=")[1];
 }
 /**
  * Build React for client side(src/client.tsx)
  */
-const clientScript = `npx webpack --config ./config/webpack.${env === "development" ? "dev" : "prod"}.js --env IS_LOCAL=${isLocal} --env IS_SERVER=false`;
+const clientScript = `npx webpack --config ./config/webpack.${
+  env === "development" ? "dev" : "prod"
+}.js --env IS_LOCAL=${isLocal} --env IS_SERVER=false --stats-error-details`;
 /**
  * Build React for server side(src/server.ts)
  */
-const serverScript = `npx webpack --config ./config/webpack.${env === "development" ? "dev" : "prod"}.js --env IS_LOCAL=${isLocal} --env IS_SERVER=true`;
+const serverScript = `npx webpack --config ./config/webpack.${
+  env === "development" ? "dev" : "prod"
+}.js --env IS_LOCAL=${isLocal} --env IS_SERVER=true --stats-error-details`;
 
 console.log("clientScript", clientScript);
 console.log("serverScript", serverScript);
-shell.exec(serverScript, {
+shell.exec(
+  serverScript,
+  {
     async: true,
     cwd: process.cwd(),
-}, (code, stdout, stderr) => {
+  },
+  (code, stdout, stderr) => {
     console.log("error!!", code, stdout, stderr);
-});
-shell.exec(clientScript, {
+  },
+);
+shell.exec(
+  clientScript,
+  {
     async: true,
     cwd: process.cwd(),
-}, (code, stdout, stderr) => {
+  },
+  (code, stdout, stderr) => {
     console.log("error!!", code, stdout, stderr);
-});
+  },
+);

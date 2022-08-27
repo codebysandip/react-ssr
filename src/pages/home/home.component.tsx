@@ -1,7 +1,7 @@
 import React from "react";
-import { HttpClient } from "src/core/services/http-client";
-import { ContextData } from "src/core/models/context.model";
-import { HomeResponse } from "./home.model";
+import { HttpClient } from "src/core/services/http-client.js";
+import { ContextData } from "src/core/models/context.model.js";
+import { HomeResponse } from "./home.model.js";
 
 export default class Home extends React.Component<HomeProps> {
   public static getInitialProps(ctx: ContextData) {

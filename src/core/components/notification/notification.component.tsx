@@ -1,6 +1,6 @@
 import React from "react";
 import { Subscription } from "rxjs";
-import { Notification$ } from "src/app-subject";
+import { Notification$ } from "src/app-subject.js";
 
 export class Notification extends React.Component<Record<string, any>, NotificationState> {
   public state: Readonly<NotificationState> = {
