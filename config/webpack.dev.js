@@ -1,5 +1,8 @@
 import { merge } from "webpack-merge";
+import { isServerFn } from "./functions/helper-functions.js";
 import commonConfig from "./webpack.common.js";
+import webpack from "webpack";
+import { getDevServerConfig } from "./functions/get-devServer-config.js";
 
 /**
  * Dev config for webpack. This build should not use for production.
@@ -9,9 +12,12 @@ import commonConfig from "./webpack.common.js";
  * @returns dev env webpack config
  */
 const devConfig = (env) => {
+  const isServer = isServerFn(env);
   const plugins = [];
-
-  return {
+  if (!isServer) {
+    plugins.push(new webpack.HotModuleReplacementPlugin());
+  }
+  const config = {
     mode: "development",
     plugins,
     optimization: {
@@ -20,9 +26,13 @@ const devConfig = (env) => {
     },
     devtool: "inline-source-map",
   };
+  if (!isServer) {
+    config.devServer = getDevServerConfig();
+  }
+  return config;
 };
 
 const config = (env, args) => {
-  return merge(commonConfig(env, args), devConfig(env, args));
+  return merge(commonConfig(env, args), devConfig(env));
 };
 export default config;

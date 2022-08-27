@@ -29,5 +29,5 @@
     "skipLibCheck": true,
     "resolveJsonModule": true
   },
-  "exclude": ["node_modules", "build", "config"]
+  "exclude": ["node_modules", "build"]
 }

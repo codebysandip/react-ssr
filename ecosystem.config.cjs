@@ -6,7 +6,8 @@ module.exports = {
        */
       name: "React-SSR",
       script: "./build/server.js",
-      instances: "max",
+      instances: "1",
+      exec_mode: "fork",
       env_production: {
         NODE_ENV: "production",
         ENV: "production",

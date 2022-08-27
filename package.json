@@ -5,14 +5,21 @@
   "main": "build/server.js",
   "type": "module",
   "scripts": {
-    "start": "npm run run:dev",
-    "run:dev": "node config/build.js IS_LOCAL=true ENV=development",
-    "run:prod": "node config/build.js IS_LOCAL=true ENV=production",
+    "start": "npm run build:server && npx nodemon --watch restart --exec node build/server.js",
+    "build:server": "npx webpack --config ./config/webpack.dev.js --env IS_LOCAL=true --env IS_SERVER=true --env WATCH=false --env ENV=development",
+    "build:server:prod-local": "npx webpack --config ./config/webpack.prod.js --env IS_LOCAL=true --env IS_SERVER=true --env WATCH=false  --env ENV=production",
+    "run:prod": "npm run build:server:prod-local && nodemon --watch restart --exec node build/server.js",
     "build:dev": "node config/build.js IS_LOCAL=false ENV=development",
     "start:test-api": "nodemon --watch restart build/testApi.js",
-    "build:prod": "node config/build.js IS_LOCAL=false ENV=production",
-    "build:prod:action": "cross-env GITHUB_ACTION=true node config/build.js IS_LOCAL=false ENV=production",
-    "start:prod": "pm2 start ecosystem.config.js --env production",
+    "build:client:prod": "npx webpack --config ./config/webpack.prod.js --env IS_LOCAL=false --env IS_SERVER=false --env ENV=production",
+    "build:server:prod": "npx webpack --config ./config/webpack.prod.js --env IS_LOCAL=false --env IS_SERVER=true --env ENV=production",
+    "build:prod": "npm run build:server:prod && npm run build:client:prod",
+    "build:prod:action": "cross-env GITHUB_ACTION=true npm run build:prod",
+    "start:prod": "pm2 start ecosystem.config.cjs --env production",
+    "sass:compile": "node-sass src/assets/css/main-style.scss -o src/assets/css && node-sass src/assets/css/main-style.scss -o src/assets/css -w src/assets",
+    "sass:compile:win": "node-sass src/assets/css/main-style.scss -o src/assets/css -w src/assets",
+    "start:html": "nodemon --watch html html/index.js",
+    "run:html": "npm run sass:compile & npm run start:html",
     "test": "jest"
   },
   "author": "Sandip",
@@ -33,6 +40,7 @@
     "rxjs": "^7.5.6"
   },
   "devDependencies": {
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.7",
     "@swc/core": "^1.2.244",
     "@swc/jest": "^0.2.22",
     "@types/express": "^4.17.13",
@@ -42,8 +50,10 @@
     "@types/react-dom": "^18.0.5",
     "@types/react-router-dom": "^5.3.3",
     "@types/webpack": "^5.28.0",
+    "@types/webpack-hot-middleware": "^2.25.6",
     "@typescript-eslint/eslint-plugin": "^5.28.0",
     "@typescript-eslint/parser": "^5.28.0",
+    "browserslist": "^4.21.3",
     "clean-webpack-plugin": "^4.0.0",
     "compression-webpack-plugin": "^10.0.0",
     "concurrently": "^7.2.1",
@@ -85,8 +95,15 @@
     "webpack": "^5.74.0",
     "webpack-bundle-analyzer": "^4.5.0",
     "webpack-cli": "^4.9.2",
+    "webpack-dev-middleware": "^5.3.3",
+    "webpack-hot-middleware": "^2.25.2",
     "webpack-merge": "^5.8.0",
-    "webpack-node-externals": "^3.0.0",
-    "webpack-shell-plugin-next": "^2.2.2"
-  }
+    "webpack-node-externals": "^3.0.0"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }

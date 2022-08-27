@@ -40,7 +40,6 @@ export class HtmlTemplate extends Component<HtmlTemplateProps> {
           <div id="root">{this.props.children}</div>
           <script dangerouslySetInnerHTML={{ __html: script }}></script>
           <script src={`/client${process.env.IS_LOCAL === "false" ? "." + hashObj?.clientJsHash : ""}.js`}></script>
-          {JSON.parse(process.env.IS_LOCAL) && <script src="/reload/reload.js"></script>}
         </body>
       </html>
     );
