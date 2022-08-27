@@ -1,10 +1,12 @@
 import { merge } from "webpack-merge";
 import commonConfig from "./webpack.common.js";
-import { isServerFn, getPath } from "./helper-functions.js";
+import { isServerFn, getPath, isLocalFn } from "./functions/helper-functions.js";
 import TerserPlugin from "terser-webpack-plugin";
-import MetaInfoPlugin from "./meta-info.plugin.js";
+import MetaInfoPlugin from "./plugins/meta-info.plugin.js";
 import CompressionPlugin from "compression-webpack-plugin";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
+import { getDevServerConfig } from "./functions/get-devServer-config.js";
+import webpack from "webpack";
 
 /**
  * Prod config for webpack. This build will use for production.
@@ -42,7 +44,7 @@ const prodConfig = (env) => {
       }),
     );
   }
-  return {
+  const config = {
     mode: "production",
     plugins,
     optimization: {
@@ -55,7 +57,7 @@ const prodConfig = (env) => {
           terserOptions: {
             ie8: false,
             safari10: false,
-            ecma: "2016",
+            ecma: 2016,
             output: {
               comments: false,
             },
@@ -65,10 +67,15 @@ const prodConfig = (env) => {
       ],
     },
   };
+  if (isLocalFn(env) && !isServer) {
+    config.devServer = getDevServerConfig();
+    config.plugins.push(new webpack.HotModuleReplacementPlugin());
+  }
+  return config;
 };
 
 const config = (env, args) => {
-  return merge(commonConfig(env, args, true), prodConfig(env, args));
+  return merge(commonConfig(env, args, true), prodConfig(env));
 };
 
 export default config;

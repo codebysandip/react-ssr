@@ -8,10 +8,10 @@ import IgnoreEmitPlugin from "ignore-emit-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import Dotenv from "dotenv-webpack";
+import ReactRefreshPlugin from "@pmmmwh/react-refresh-webpack-plugin";
 
-import { isServerFn, isLocalFn, getPath } from "./helper-functions.js";
+import { isServerFn, isLocalFn, getPath } from "./functions/helper-functions.js";
 import { join } from "path";
-import WebpackLocalNodeServerPlugin from "./webpack-local-node-server.plugin.js";
 import { readFileSync } from "fs";
 
 /**
@@ -20,6 +20,7 @@ import { readFileSync } from "fs";
  * @returns webpack common config
  */
 export default function (env, args, isProd = false) {
+  const isWatch = JSON.parse(env.WATCH || env.IS_LOCAL);
   const packageJson = JSON.parse(readFileSync(join(process.cwd(), "package.json"), { encoding: "utf-8" }));
 
   /**
@@ -49,7 +50,13 @@ export default function (env, args, isProd = false) {
     /**
      * entry.server will produce client.js in build/public folder
      */
-    entry.client = getPath("src/client.tsx");
+    entry.client = [getPath("src/client.tsx")];
+    if (isLocal) {
+      entry.client.push(
+        "webpack-hot-middleware/client?reload=true&noInfo=true&timeout=10000",
+        "/node_modules/react-refresh/runtime.js",
+      );
+    }
   }
   if (isLocal && isServer) {
     entry.testApi = getPath("test-api.ts");
@@ -77,20 +84,23 @@ export default function (env, args, isProd = false) {
     }),
     new Dotenv(),
     new webpack.NormalModuleReplacementPlugin(/.js$/, (resource) => {
+      if (resource.context.indexOf("node_modules") !== -1) {
+        return;
+      }
       const context = resource.context
         .replace(process.cwd(), "")
         .replace(`${slash}node_modules`, "")
         .substring(1)
         .split(slash)[0];
       if (
-        packageJson.dependencies[context] ||
-        packageJson.devDependencies[context] ||
+        // packageJson.dependencies[context] ||
+        // packageJson.devDependencies[context] ||
         packageJson.dependencies[resource.request] ||
-        packageJson.devDependencies[resource.request]
+        packageJson.devDependencies[resource.request] ||
+        context === "config"
       ) {
         return;
       }
-      console.log("resource!!", resource.context.replace(process.cwd(), ""), resource.request);
       resource.request = resource.request.replace(/.js$/, "");
     }),
   ];
@@ -114,17 +124,13 @@ export default function (env, args, isProd = false) {
         ],
       }),
     );
+    // plugins.push(new LoadablePlugin());
   }
 
   if (isLocal) {
-    plugins.push(
-      new WebpackLocalNodeServerPlugin({
-        command: `nodemon --inspect --watch restart build/server.js`,
-        isServer: isServerFn(env),
-        serverMainJs: "server.js",
-        clientMainJs: "client.js",
-      }),
-    );
+    if (!isServer) {
+      plugins.push(new ReactRefreshPlugin());
+    }
   }
   return {
     entry,
@@ -138,9 +144,9 @@ export default function (env, args, isProd = false) {
     experiments: {
       outputModule: true,
     },
-    watch: isLocal,
+    watch: isWatch,
     watchOptions: {
-      ignored: /node_modules/,
+      ignored: ["**/node_modules", "**/config"],
     },
     resolve: {
       alias: {
@@ -185,7 +191,22 @@ export default function (env, args, isProd = false) {
                 jsc: {
                   parser: {
                     syntax: "typescript",
+                    dynamicImports: true,
                   },
+                  target: "es2020",
+                  transform: {
+                    react: {
+                      runtime: "automatic",
+                      refresh: isLocal && !isServer,
+                    },
+                  },
+                },
+                isModule: true,
+                sourceMaps: isLocal,
+                inlineSourcesContent: isLocal,
+                module: {
+                  type: "es6",
+                  lazy: true,
                 },
               },
             },
