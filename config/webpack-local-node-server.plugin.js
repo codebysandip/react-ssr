@@ -1,9 +1,10 @@
 const pluginName = "WebpackLocalNodeServerPlugin";
-const shell = require("shelljs");
-const fs = require("fs");
-const os = require("os");
+import shell from "shelljs";
+import { writeFileSync, readFileSync } from "fs";
+import os from "os";
+import path from "path";
+
 const tempDir = os.tmpdir();
-const path = require("path");
 
 /**
  * WebpackLocalNodeServerPlugin manages restart of application when there is change in
@@ -12,7 +13,7 @@ const path = require("path");
  * Webpack watches src folder for file changes so webpack will compile two times and nodemon
  * will restart two times.
  */
-class WebpackLocalNodeServerPlugin {
+export default class WebpackLocalNodeServerPlugin {
   constructor(options = {}) {
     this.options = options;
     this.defaultBuildData = {
@@ -27,18 +28,18 @@ class WebpackLocalNodeServerPlugin {
   }
 
   readTempFile() {
-    return JSON.parse(fs.readFileSync(this.getPath()));
+    return JSON.parse(readFileSync(this.getPath()));
   }
 
   writeTempFile(data) {
-    fs.writeFileSync(this.getPath(), JSON.stringify(data));
+    writeFileSync(this.getPath(), JSON.stringify(data));
   }
 
   restart() {
     // write a restart file to restart nodemon
     // nodemon will watch restart file
     const file = path.join(process.cwd(), "restart");
-    fs.writeFileSync(file, Math.random().toString());
+    writeFileSync(file, Math.random().toString());
     console.log("Server restarting...");
   }
 
@@ -92,5 +93,3 @@ class WebpackLocalNodeServerPlugin {
     });
   }
 }
-
-module.exports = WebpackLocalNodeServerPlugin;

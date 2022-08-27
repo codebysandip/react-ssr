@@ -1,10 +1,10 @@
 import { lastValueFrom, of } from "rxjs";
-import { HttpClient } from "src/core/services/http-client";
-import { navigatorOnline } from "../../../__tests__/utils/spy-on/navigator.spy";
+import { HttpClient } from "src/core/services/http-client.js";
+import { navigatorOnline } from "../../../__tests__/utils/spy-on/navigator.spy.js";
 import {
   getAjaxResponse,
   getAjaxErrorResponse,
-} from "../../../__tests__/utils/mock-data/core/services/http-client.mock";
+} from "../../../__tests__/utils/mock-data/core/services/http-client.mock.js";
 import { AjaxConfig } from "rxjs/ajax";
 import { COOKIE_TOKEN } from "src/const";
 

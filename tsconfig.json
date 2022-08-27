@@ -9,22 +9,25 @@
     "noEmitOnError": true,
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
-    "module": "ESNext",
+    "module": "ES2020",
     "strict": true,
-    "moduleResolution": "node",
+    "moduleResolution": "Node",
     "strictNullChecks": true,
     "strictFunctionTypes": true,
     "esModuleInterop": true,
     "removeComments": false,
-    "allowJs": false,
-    "target": "es5",
+    "allowJs": true,
+    "target": "ES2017",
     "jsx": "react",
     "paths": {
       "src/*": ["src/*"],
       "pages/*": ["src/pages/*"],
-      "core/*": ["src/core/*"]
+      "core/*": ["src/core/*"],
+      "assets/*": ["src/assets/*"]
     },
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   },
   "exclude": ["node_modules", "build", "config"]
 }

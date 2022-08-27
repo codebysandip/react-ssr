@@ -1,5 +1,5 @@
 import { matchPath } from "react-router";
-import { Routes } from "src/routes";
+import { Routes } from "src/routes.js";
 
 /**
  * Match route from {@link Routes} for given path

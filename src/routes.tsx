@@ -1,4 +1,4 @@
-import { IRoute } from "./core/models/route.model";
+import { IRoute } from "./core/models/route.model.js";
 
 /**
  * React routes of all pages.
@@ -8,27 +8,27 @@ import { IRoute } from "./core/models/route.model";
 export const Routes: IRoute[] = [
   {
     path: "/",
-    component: () => import(/* webpackChunkName: "home" */ "pages/home/home.component"),
+    component: () => import(/* webpackChunkName: "home" */ "pages/home/home.component.js"),
     isSSR: true,
   },
   // Replace 404 component code with own code
   {
     path: "/404",
-    component: () => import(/* webpackChunkName: "404" */ "src/pages/error/404/404.component"),
+    component: () => import(/* webpackChunkName: "404" */ "src/pages/error/404/404.component.js"),
     static: true,
     isSSR: true,
   },
   // Replace 500 component code with own code
   {
     path: "/500",
-    component: () => import(/* webpackChunkName: "500" */ "src/pages/error/500/500.component"),
+    component: () => import(/* webpackChunkName: "500" */ "src/pages/error/500/500.component.js"),
     static: true,
     isSSR: true,
   },
   // If no route will match 404 component will serve to client
   {
     path: "/*",
-    component: () => import(/* webpackChunkName: "404" */ "src/pages/error/404/404.component"),
+    component: () => import(/* webpackChunkName: "404" */ "src/pages/error/404/404.component.js"),
     static: true,
     isSSR: true,
   },

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { CookieService } from "./src/core/services/cookie.service";
+import { CookieService } from "./src/core/services/cookie.service.js";
 import express from "express";
 
 const app = express();

@@ -1,5 +1,5 @@
-import { PageData } from "src/core/models/page-data";
-import { ApiResponse } from "src/core/models/api-response";
+import { PageData } from "src/core/models/page-data.js";
+import { ApiResponse } from "src/core/models/api-response.js";
 
 /**
  * This interface is just for reference purpose.

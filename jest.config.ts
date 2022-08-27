@@ -3,7 +3,9 @@
  * https://jestjs.io/docs/configuration
  */
 
-import { Config } from "jest";
+import type { Config } from "jest";
+import { pathsToModuleNameMapper } from 'ts-jest';
+import tsconfigJson from "./tsconfig.json";
 
 const jestConfig: Config = {
   // Automatically clear mock calls, instances, contexts and results before every test
@@ -49,12 +51,7 @@ const jestConfig: Config = {
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
-  moduleNameMapper: {
-    "^src(.*)": "<rootDir>/src/$1",
-    "^Core(.*)": "<rootDir>/src/core/$1",
-    "\\.(css|scss|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$":
-      "<rootDir>/__tests__/utils/config/asset-transformer.js",
-  },
+  moduleNameMapper: pathsToModuleNameMapper(tsconfigJson.compilerOptions.paths, { prefix: '<rootDir>/' }),
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   // modulePathIgnorePatterns: [],
 
@@ -80,7 +77,7 @@ const jestConfig: Config = {
   // resetModules: false,
 
   // A path to a custom resolver
-  // resolver: undefined,
+  resolver: "ts-jest-resolver",
 
   // Automatically restore mock state and implementation before every test
   // restoreMocks: false,
@@ -133,12 +130,20 @@ const jestConfig: Config = {
 
   // A map from regular expressions to paths to transformers
   transform: {
-    "^.+\\.tsx?$": "ts-jest",
+    "^.+\\.tsx?$": ["@swc/jest", {
+      jsc: {
+        transform: {
+          react: {
+            runtime: 'automatic',
+          },
+        },
+      },
+    }],
     ".+\\.(css|styl|less|sass|scss|png|jpg|ttf|woff|woff2)$":
       "<rootDir>/__tests__/utils/config/asset-transformer.js",
   },
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
-  transformIgnorePatterns: ["\\\\node_modules\\\\"],
+  transformIgnorePatterns: ["/node_modules/"],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
   // unmockedModulePathPatterns: undefined,

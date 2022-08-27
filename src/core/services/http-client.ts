@@ -2,10 +2,10 @@ import { Request, Response } from "express";
 import { catchError, mergeMap, Observable, of, throwError, timer } from "rxjs";
 import { retry } from "rxjs/operators";
 import { ajax, AjaxConfig, AjaxError, AjaxResponse } from "rxjs/ajax";
-import { COOKIE_REFRESH_TOKEN, COOKIE_TOKEN, URL_REFERESH_TOKEN } from "src/const";
-import { ApiResponse } from "../models/api-response";
-import { CookieService } from "./cookie.service";
-import ReactSsrConfig from "src/react-ssr.config";
+import { COOKIE_REFRESH_TOKEN, COOKIE_TOKEN, URL_REFERESH_TOKEN } from "src/const.js";
+import { ApiResponse } from "../models/api-response.js";
+import { CookieService } from "./cookie.service.js";
+import ReactSsrConfig from "src/react-ssr.config.js";
 
 const HttClientConfig = ReactSsrConfig().httpClient;
 export class HttpClient {

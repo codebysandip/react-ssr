@@ -1,22 +1,25 @@
 import express from "express";
 import { join } from "path";
 
-import { proxyMiddleware } from "src/ssr/middlewares/proxy-middleware";
+import { proxyMiddleware } from "src/ssr/middlewares/proxy-middleware.js";
 import bodyParser from "body-parser";
-import { StaticRoute } from "./ssr/middlewares/static-files.middleware";
-import { XMLHttpRequest } from "./ssr/functions/XMLHttpRequest";
-import { processRequest } from "./ssr/middlewares/process-request.middleware";
+import { StaticRoute } from "./ssr/middlewares/static-files.middleware.js";
+import { XMLHttpRequest } from "./ssr/functions/XMLHttpRequest.js";
+import { processRequest } from "./ssr/middlewares/process-request.middleware.js";
 import NodeCache from "node-cache";
-
-// support for XMLHttpRequest on node
-(global as any).XMLHttpRequest = XMLHttpRequest;
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
 /**
  * reload module is used for reload of browser when there is change
  * in React or Node
  */
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const reload = require("reload");
+
+// support for XMLHttpRequest on node
+(global as any).XMLHttpRequest = XMLHttpRequest;
+
+
 const staticPageCache = new NodeCache();
 const app = express();
 

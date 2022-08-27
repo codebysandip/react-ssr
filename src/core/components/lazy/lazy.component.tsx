@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router";
 import { useSearchParams } from "react-router-dom";
 import { Observable } from "rxjs";
-import { createContextClient } from "src/core/functions/create-context";
-import { IRedirect, PageData } from "src/core/models/page-data";
-import { ApiResponse } from "src/core/models/api-response";
-import { Notification$ } from "src/app-subject";
+import { createContextClient } from "src/core/functions/create-context.js";
+import { IRedirect, PageData } from "src/core/models/page-data.js";
+import { ApiResponse } from "src/core/models/api-response.js";
+import { Notification$ } from "src/app-subject.js";
 
 /**
  * Lazy Load Route Component
