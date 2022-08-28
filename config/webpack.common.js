@@ -45,7 +45,7 @@ export default function (env, args, isProd = false) {
     /**
      * entry.server will produce server.js in build folder
      */
-    entry.server = getPath("src/server.ts");
+    entry.server = getPath("src/ssr/server.ts");
   } else {
     /**
      * entry.server will produce client.js in build/public folder

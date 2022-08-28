@@ -3,24 +3,26 @@ import { join } from "path";
 
 import { proxyMiddleware } from "src/ssr/middlewares/proxy-middleware.js";
 import bodyParser from "body-parser";
-import { StaticRoute } from "./ssr/middlewares/static-files.middleware.js";
-import { XMLHttpRequest } from "./ssr/functions/XMLHttpRequest.js";
-import { processRequest } from "./ssr/middlewares/process-request.middleware.js";
+import { StaticRoute } from "./middlewares/static-files.middleware.js";
+import { XMLHttpRequest } from "./functions/XMLHttpRequest.js";
+import { processRequest } from "./middlewares/process-request.middleware.js";
 import NodeCache from "node-cache";
 import WebpackDevMiddleware from "webpack-dev-middleware";
 import WebpackHotMiddleware from "webpack-hot-middleware";
 import webpack from "webpack";
-import webpackDevConfig from "../config/webpack.dev.js";
-import webpackProdConfig from "../config/webpack.prod.js";
+import webpackDevConfig from "../../config/webpack.dev.js";
+import webpackProdConfig from "../../config/webpack.prod.js";
 import { createRequire } from 'node:module';
+
 
 const require = createRequire(import.meta.url);
 
 // support for XMLHttpRequest on node
 (global as any).XMLHttpRequest = XMLHttpRequest;
+(global as any).staticPageCache = new NodeCache();
 
 
-const staticPageCache = new NodeCache();
+// const staticPageCache = new NodeCache();
 const app = express();
 
 const isLocal = JSON.parse(process.env.IS_LOCAL);
@@ -37,17 +39,6 @@ if (isLocal) {
   }
   const compiler = webpack(webpackClientConfig, () => {
     console.log("client file changed!!");
-  });
-  baseEnv.IS_SERVER = "true";
-  let webpackServerConfig: any;
-  if (env === "development") {
-    webpackServerConfig = webpackDevConfig(baseEnv, {});
-  } else {
-    webpackServerConfig = webpackProdConfig(baseEnv, {});
-  }
-
-  webpack(webpackServerConfig, () => {
-    console.log("server file changed!!");
   });
 
   app.use(
@@ -84,7 +75,7 @@ app.use(express.static(join(process.cwd(), "build/public")));
 app.all("/api/*", proxyMiddleware(process.env.API_BASE_URL || ""));
 
 // Get all request of node server
-app.get("*", processRequest(staticPageCache));
+app.get("*", processRequest());
 const PORT = process.env.PORT || 5000;
 
 const startServer = () => {

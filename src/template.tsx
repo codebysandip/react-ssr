@@ -1,75 +1,81 @@
-import React, { Component, ReactNode } from "react";
-import { renderToString } from "react-dom/server";
+import { Response } from "express";
+import { renderToPipeableStream, renderToString } from "react-dom/server";
 import { StaticRouter } from "react-router-dom/server.js";
 import { App } from "./app.js";
 import { PageData } from "./core/models/page-data.js";
-import { ApiResponse } from "./core/models/api-response.js";
-import { getWebpackBuildHash } from "./ssr/functions/get-webpack-build-hash.js";
+import ServerError from "pages/error/500/500.component.js";
+import { getHtmlEndPart, getHtmlMidPart, getHtmlStartPart } from "./ssr/functions/getHtml.js";
+import { Writable } from "stream";
 
-const hashObj = getWebpackBuildHash();
+class HtmlWritable extends Writable {
+  private resp: Response;
+  private chunks: any = [];
+  private html = '';
+  constructor(resp: Response) {
+    super();
+    this.resp = resp;
+  }
 
-/**
- * Base HTML template.
- * This component will use as index.html
- */
-export class HtmlTemplate extends Component<HtmlTemplateProps> {
-  public render() {
-    const script = `
-        window.pageProps = ${JSON.stringify(this.props.pageProps)};
-        `;
-    const pageProps = this.props.pageProps.data;
-    // for non SSR pages or for static pages default title will use
-    // Change Default Title here
-    const title = pageProps?.seo?.title || "React SSR";
-    return (
-      <html>
-        <head>
-          <meta charSet="utf-8" />
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1.0, user-scalable=0"
-          />
-          <link rel="shortcut icon" href="/favicon.ico" />
-          <link
-            href={`/assets/css/style${process.env.IS_LOCAL === "false" ? "." + hashObj?.styleHash : ""}.css`}
-            rel="stylesheet"
-          />
-          <title>{title}</title>
-        </head>
-        <body>
-          <div id="root">{this.props.children}</div>
-          <script dangerouslySetInnerHTML={{ __html: script }}></script>
-          <script src={`/client${process.env.IS_LOCAL === "false" ? "." + hashObj?.clientJsHash : ""}.js`}></script>
-        </body>
-      </html>
-    );
+  getHtml() {
+      return this.html;
+  }
+
+  _write(chunk: any, encoding: BufferEncoding, callback: Function) {
+      this.chunks.push(chunk);
+      // console.log("chunk!!", Buffer.from(chunk).toString());
+      this.resp.write(chunk);
+      callback();
+  }
+
+  _final(callback: any) {
+      this.html = Buffer.concat(this.chunks).toString();
+      callback();
   }
 }
-
-export interface HtmlTemplateProps {
-  children: ReactNode;
-  pageProps: ApiResponse<PageData>;
-}
-
 /**
  * Get rendered HTML
  * @param Component component to render
  * @param props Page props {@link ApiResponse<PageData>}
  * @param url request url
+ * @param isError isError page
  * @returns rendered HTML
  */
-export function getHtml(Component: any, props: ApiResponse<PageData>, url: string, isSSR = true) {
-  console.log("isSSR!!", isSSR);
-  const html = renderToString(
-    <HtmlTemplate pageProps={props}>
-      {/* {isSSR ? ( */}
-      <StaticRouter location={url}>
-        <App comp={Component} pageProps={props} />
-      </StaticRouter>
-      {/* ) : (
-        <Component {...(props || {})} />
-      )} */}
-    </HtmlTemplate>,
+export function pipeHtml(resp: Response, Component: any, props: PageData, url: string, isError: boolean, doCache: boolean) {
+  const htmlMidPart = getHtmlMidPart(props);
+  resp.write(htmlMidPart);
+  const htmlEndPart = getHtmlEndPart(props, isError, url);
+  let didError = isError;
+  const writeable = new HtmlWritable(resp);
+  const stream = renderToPipeableStream(
+    <StaticRouter location={url}>
+      <App comp={Component} pageProps={props} />
+    </StaticRouter>,
+    {
+      onShellReady() {
+        resp.statusCode = didError ? 500 : 200;
+
+        stream.pipe(writeable);
+      },
+      onShellError() {
+        console.log("onShellError!!");
+        resp.statusCode = 500;
+        const errorHtml = renderToString(<ServerError />);
+        resp.send(errorHtml + htmlEndPart);
+      },
+      onError(err) {
+        console.log("error!!", err);
+        didError = true;
+      },
+    }
   );
-  return html;
+  writeable.on('finish', () => {
+    // const html = writeable.getHtml();
+    // console.log("html!!", html);
+    // resp.write(html);
+    resp.write(htmlEndPart);
+    resp.end();
+    if (!isError && doCache) {
+      staticPageCache.set(url, getHtmlStartPart() + htmlMidPart + writeable.getHtml() + htmlEndPart);
+    }
+});
 }

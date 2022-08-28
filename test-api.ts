@@ -15,12 +15,14 @@ app.get("/api/home", (req, res) => {
   //   res.status(401).json({});
   //   return;
   // }
-  res.json({
-    seo: {
-      title: "Home Page",
-    },
-    data: { count: 5 },
-  });
+  setTimeout(() => {
+    res.status(200).json({
+      seo: {
+        title: "Home Page",
+      },
+      data: { count: 5 },
+    });  
+  }, 2000);
 });
 
 app.post("/api/auth/refresh-token", (req, res) => {

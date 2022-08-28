@@ -1,18 +1,43 @@
 import { ApiResponse } from "src/core/models/api-response.js";
-import { sendResponse } from "src/ssr/functions/send-response.js";
 import { getRoute } from "core/functions/get-route.js";
 import { forkJoin, Observable } from "rxjs";
-import { getHtml } from "src/template.js";
+import { pipeHtml } from "src/template.js";
 import { createContextServer } from "core/functions/create-context.js";
-import { IRedirect } from "core/models/page-data.js";
+import { IRedirect, PageData } from "core/models/page-data.js";
 import { Request, Response } from "express";
+import { getHtmlStartPart } from "../functions/getHtml.js";
+import { sendResponse } from "../functions/send-response.js";
+import { Empty } from "core/components/empty/empty.component";
 
+/**
+ * Validate response of api and return redirect path in case of error
+ * @param response ApiResponse
+ * @returns redirect path
+ */
+function validateApiResponse(response: ApiResponse<any>) {
+  if (response.status === 401 || response.status === 403) {
+    // logout and naviage to login page
+    // for now redirecting to 500 but can take step here
+    return "/login";
+  } else if (
+    response.status.toString().startsWith("5") ||
+    response.status === 0
+  ) {
+    return "/500";
+  } else if (response.status.toString().startsWith("4")) {
+    // client err
+    // [TODO] for now redirecting to 500 but can take step here
+    return "/500";
+  } else {
+    return "";
+  }
+}
 /**
  * Process all get requests
  * @param staticPageCache node-cache object
  * @returns void
  */
-export const processRequest = (staticPageCache: any) => {
+export const processRequest = () => {
   return (req: Request, resp: Response) => {
     // match route from React routes
     const route = getRoute(req.path);
@@ -22,68 +47,30 @@ export const processRequest = (staticPageCache: any) => {
       return;
     }
     if (route.static || !route.isSSR) {
-      const html = staticPageCache.get(req.url);
+      const html = staticPageCache.get(req.url) as string;
       if (html) {
+        console.log("static page!!", req.url);
         sendResponse(html, resp, req);
         return;
       }
     }
 
-    // check if route is for SSR
-    // if not send only template.
-    // if (!route.isSSR) {
-    //   const props: ApiResponse<PageData> | PageData = {
-    //     status: 200,
-    //     data: {},
-    //     message: [],
-    //     errorCode: -1,
-    //   };
-    //   const html = getHtml(Empty, props, req.url, false);
-    //   sendResponse(html, resp, req);
-    //   return;
-    // }
+    resp.setHeader('Content-type', 'text/html');
+    resp.write(getHtmlStartPart());
+    if (!route.isSSR) {
+      pipeHtml(resp, Empty, {}, req.path, false, true);
+      return;         
+    }
     // get component asychronously
     route
       .component()
-      .then(async (dComp) => {
-        const Component = dComp.default;
-        let props: ApiResponse<any> | IRedirect = {
-          status: 200,
-          data: {},
-          message: [],
-          errorCode: -1,
-        };
-        const sendHtml = () => {
-          if (resp.headersSent) {
-            return;
+      .then(async (module) => {
+        let Component = module.default;
+        const sendHtml = (url:string, pageData?: PageData, isError = false) => {
+          if (!pageData) {
+            pageData = {};
           }
-          if ((props as IRedirect).redirect) {
-            resp.redirect((props as IRedirect).redirect?.path || "/");
-          } else if ((props as ApiResponse<any>).status === 401 || (props as ApiResponse<any>).status === 403) {
-            // logout and naviage to login page
-            // for now redirecting to 500 but can take step here
-            resp.redirect("/500");
-          } else if (
-            (props as ApiResponse<any>).status.toString().startsWith("5") ||
-            (props as ApiResponse<any>).status === 0
-          ) {
-            resp.redirect("/500");
-          } else if ((props as ApiResponse<any>).status.toString().startsWith("4")) {
-            // client err
-            // [TODO] for now redirecting to 500 but can take step here
-            resp.redirect("/500");
-          } else {
-            try {
-              const html = getHtml(Component, props as ApiResponse<any>, req.url);
-              if (route.static) {
-                staticPageCache.set(req.url, html);
-              }
-              sendResponse(html, resp, req);
-            } catch (err: any) {
-              console.log("Error in rendering !!", err);
-              resp.redirect("/500");
-            }
-          }
+          pipeHtml(resp, Component, pageData, url, isError, route.static || false);          
         };
         // get page data
         if (Component.getInitialProps) {
@@ -91,31 +78,47 @@ export const processRequest = (staticPageCache: any) => {
 
           // call page/route getInitialProps static method to get sync data to render page
           // this data will pass as props to page/route component
-          const initialProps = (Component as SsrComponent).getInitialProps(ctx);
-          if (initialProps instanceof Observable) {
+          const initialProps$ = (Component as SsrComponent).getInitialProps(ctx);
+          if (initialProps$ instanceof Observable) {
             // add common api calls in fork join
             // common api like header/footer api and put in PageData.header
-            forkJoin([initialProps]).subscribe({
+            forkJoin([initialProps$]).subscribe({
               next: (result) => {
-                if (result[0]) {
-                  props = result[0];
+                let errorPath = "";
+                if ((result[0] as IRedirect).redirect) {
+                  errorPath = (result[0] as IRedirect).redirect?.path || "/";
+                } else {
+                  errorPath = validateApiResponse(result[0] as ApiResponse<PageData>);
                 }
                 // uncomment this code for header api call. Also uncomment from PageData
                 // if (result[1]) {
-                //   (props as ApiResponse<PageData>).header = result[1];
+                //   errorPath = validateApiResponse(result[1] as ApiResponse<PageData>);
+                //   (props as PageData).header = result[1];
                 // }
-                sendHtml();
+                if (errorPath) {
+                  // resp.statusCode = parseInt(errorPath.substring(1)) || 500;
+                  console.log("errorPath!!", errorPath, resp.headersSent);
+                  // resp.setHeader("location", "/500");
+                  const newRoute = getRoute(errorPath);
+                  newRoute?.component().then(module => {
+                    Component = module.default;
+                    sendHtml(errorPath, undefined, true);
+                  });
+                } else {
+                  let pageData: PageData = (result[0] as ApiResponse<PageData>).data;
+                  sendHtml(errorPath || req.url, pageData);
+                }
               },
               error: (err) => {
                 console.error(`Error in getInitialProps of ${req.url}. Error: ${err}`);
-                resp.redirect("/500");
+                sendHtml("/500", undefined, true);
               },
             });
           } else {
             throw new Error("getInitialProps must return observable");
           }
         } else {
-          sendHtml();
+          sendHtml(req.url);
         }
       })
       .catch((err) => {

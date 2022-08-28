@@ -247,7 +247,7 @@ export class HttpClient {
   }
 
   private static handleResponse<T>(response: AjaxResponse<T>, isFirst: boolean, options: HttpClientOptions) {
-    if (process.env.IS_SERVER === "true") {
+    if (process.env.IS_SERVER === "true" && options.nodeRespObj && !options.nodeRespObj.headersSent) {
       // check if api sending cookie to set
       const setCookie =
         response.responseHeaders["Set-Cookie"] || response.responseHeaders["Set-Cookie".toLocaleLowerCase()];

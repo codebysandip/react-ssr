@@ -1,4 +1,3 @@
-import React from "react";
 import { hydrateRoot, createRoot } from "react-dom/client";
 // import { matchPath } from "react-router";
 import { BrowserRouter } from "react-router-dom";
@@ -48,7 +47,7 @@ if (process.env.IS_LOCAL === "true" && (module as any).hot) {
   } else {
     /**
      * During hydration Client side HTML should match with virtual DOM.
-     * Rendering is synchronousn but lazy loading of component is asynchronuse.
+     * Rendering is synchronousn but lazy loading of component is asynchronus.
      * So while getting route component(asynchronous lazy loading), Hydration will complete
      * creation of virtual DOM synchronousally. When React will compare vitual DOM with actual DOM
      * then route component HTML will not be there. In this case hydration will fail and React will re render

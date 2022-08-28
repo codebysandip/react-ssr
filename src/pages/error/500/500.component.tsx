@@ -1,4 +1,3 @@
-import React from "react";
 import "./500.component.scss";
 
 export default function InternalServerError() {

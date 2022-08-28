@@ -22,8 +22,7 @@ export const Routes: IRoute[] = [
   {
     path: "/500",
     component: () => import(/* webpackChunkName: "500" */ "src/pages/error/500/500.component.js"),
-    static: true,
-    isSSR: true,
+    isSSR: false,
   },
   // If no route will match 404 component will serve to client
   {

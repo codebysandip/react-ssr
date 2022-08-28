@@ -1,6 +1,7 @@
 export interface PageMetaData {
   description?: string;
   canonicalUrl?: string;
+  keywords?: string;
 }
 
 export interface PageDataSeo {
