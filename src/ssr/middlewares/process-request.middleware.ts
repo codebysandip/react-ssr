@@ -103,7 +103,7 @@ export const processRequest = () => {
                     sendHtml(errorPath, undefined, true);
                   });
                 } else {
-                  let pageData: PageData = (result[0] as ApiResponse<PageData>).data;
+                  const pageData: PageData = (result[0] as ApiResponse<PageData>).data;
                   sendHtml(errorPath || req.url, pageData);
                 }
             }).catch((err) => {

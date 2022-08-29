@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Request, Response } from "express";
 import { COOKIE_REFRESH_TOKEN, COOKIE_TOKEN, URL_REFERESH_TOKEN } from "src/const.js";
 import { ApiResponse } from "../models/api-response.js";
@@ -70,25 +71,32 @@ export class HttpClient {
     return options;
   }
 
-  private static retryPromise = (fn: Function, ms=1000,maxRetries=5, retries = 0, rejectFn: Function|undefined = undefined) => {
-    return new Promise((resolve,reject) => {
+  private static retryPromise = (
+    fn: () => Promise<any>,
+    ms = 1000,
+    maxRetries = 5,
+    retries = 0,
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    rejectFn: Function | undefined = undefined,
+  ) => {
+    return new Promise((resolve, reject) => {
       if (!rejectFn) {
         rejectFn = reject;
       }
       fn()
-      .then(resolve)
-      .catch(() => {
+        .then(resolve)
+        .catch(() => {
           setTimeout(() => {
-              console.log('retrying failed promise...', retries);
-              ++retries;
-              if(retries==maxRetries) {
-                  return rejectFn && rejectFn('maximum retries exceeded');
-              }
-              this.retryPromise(fn, ms, maxRetries, retries, rejectFn).then(resolve);
+            console.log("retrying failed promise...", retries);
+            ++retries;
+            if (retries === maxRetries) {
+              return rejectFn && rejectFn("maximum retries exceeded");
+            }
+            this.retryPromise(fn, ms, maxRetries, retries, rejectFn).then(resolve);
           }, ms);
-      })
+        });
     });
-  }
+  };
 
   private static isOnline() {
     return new Promise((resolve, reject) => {
@@ -98,11 +106,14 @@ export class HttpClient {
       } else {
         reject(status);
       }
-    })
+    });
   }
 
-  private static sendRequest<T>(url: string, method: "GET" | "POST" | "PUT" | "DELETE", options: HttpClientOptions = {})
-    : Promise<ApiResponse<T|null>> {
+  private static sendRequest<T>(
+    url: string,
+    method: "GET" | "POST" | "PUT" | "DELETE",
+    options: HttpClientOptions = {},
+  ): Promise<ApiResponse<T | null>> {
     options = this.getDefaultHttpClientOptions(options);
     url = this.getUrl(url);
     // let retryCount = 0;
@@ -115,126 +126,139 @@ export class HttpClient {
       headers: options.headers,
     };
     // @ts-ignore
-    return this.retryPromise(this.isOnline, 1000, maxRetryCount)
-      .then(() => {
-        return axios(requestConfig)
-          // @ts-ignore
-          .then(response => {
-            return this.handleResponse<T>(response, true, options);
-          })
-          // this catch will execute When error in original request
-          // @ts-ignore
-          .catch((err) => {
-            return this.handleErrorResponse<T>(err, true, options)
-          })
-          // this catch will execute only when refresh token request
-          // will throw error response
-          .catch((err: AxiosError<T>|ApiResponse<T>) => {
-            if ((err as AxiosError).isAxiosError) {
-              const apiResponse = this.getDefaultApiResponseObj();
-              apiResponse.status = 401;
-              return apiResponse;
-            } else if (err.status && err.message) {
-              return err;
-            } else {
-              // this will execute only for any client error
-              const apiResponse = this.getDefaultApiResponseObj();
-              apiResponse.status = 600;
-              return apiResponse;
-            }
-          })
-          // @ts-ignore
-          .then((response) => {
-            // response of refresh token request
-            if (
-              (response as AxiosResponse<AuthResponse>).request &&
-              (response as AxiosResponse<AuthResponse>).request.url &&
-              new URL((response as AxiosResponse<AuthResponse>).request.url).pathname === URL_REFERESH_TOKEN
-            ) {
-              const apiResponse = this.getApiResponseObject<AuthResponse>(response as AxiosResponse<AuthResponse>);
-              // if status 200 then token generated
-              if (apiResponse.status === 200) {
-                // save new token in cookie storage
-                CookieService.set(COOKIE_TOKEN, apiResponse.data?.token || "", 10, options?.nodeRespObj);
-                CookieService.set(COOKIE_REFRESH_TOKEN, apiResponse.data?.refreshToken || "", 10, options?.nodeRespObj);
-                // add new token in Authorization header
-                if (!requestConfig.headers) {
-                  requestConfig.headers = {};
+    return (
+      this.retryPromise(this.isOnline, 1000, maxRetryCount)
+        .then(() => {
+          return (
+            axios(requestConfig)
+              // @ts-ignore
+              .then((response) => {
+                return this.handleResponse<T>(response, true, options);
+              })
+              // this catch will execute When error in original request
+              // @ts-ignore
+              .catch((err) => {
+                return this.handleErrorResponse<T>(err, true, options);
+              })
+              // this catch will execute only when refresh token request
+              // will throw error response
+              .catch((err: AxiosError<T> | ApiResponse<T>) => {
+                if ((err as AxiosError).isAxiosError) {
+                  const apiResponse = this.getDefaultApiResponseObj();
+                  apiResponse.status = 401;
+                  return apiResponse;
+                } else if (err.status && err.message) {
+                  return err;
+                } else {
+                  // this will execute only for any client error
+                  const apiResponse = this.getDefaultApiResponseObj();
+                  apiResponse.status = 600;
+                  return apiResponse;
                 }
-                requestConfig.headers["Authorization"] = `Bearer ${apiResponse.data?.token}`;
-                // send original request again
-                return axios(requestConfig);
-              } else {
-                // logout && redirect to login page
-                const apiResponseN = this.getDefaultApiResponseObj();
-                apiResponse.status = 401;
-                return apiResponseN;
-              }
-            } else {
-              return response as ApiResponse<T | null>;
-            }
-          })
-          // this catch will execute only after token regenerated and error in original request
-          .catch((err: AxiosError<T>) => {
-            // @ts-ignore
-            return this.handleErrorResponse<T>(err, false, options || {}) as Promise<ApiResponse<T | null>>;
-          })
-          .then((response: any) => {
-            // response of original request after token regenertated
-            if (
-              (response as AxiosResponse<T>).request &&
-              (response as AxiosResponse<T>).request.url === requestConfig.url
-            ) {
-              const handledResponse = this.handleResponse<T>(response as AxiosResponse<T>, false, options || {});
-              return handledResponse as ApiResponse<T>;
-            }
-            return response as ApiResponse<T>;
-          })
-          // this catch will catch any unknown error
-          .catch((error: Error) => {
-            console.error("Unknown Error!!", error);
-            // [TODO] this error should log in database to get client side errors
-            const response = this.getDefaultApiResponseObj();
-            response.status = 600;
-            return response as ApiResponse<null>;
-          })
-          // this will execute after request process and we have response from server
-          .then((response) => {
-            // only checking for 5xx because retry should happen only in case of server error
-            // not in the case of 4xx which is client error or 2xx success case
-            if (response.status.toString().startsWith("5") || response.status === 0) {
-              // throw Error as strigify response because we will need response
-              // to return to component
-              // throwing error because retry will retry request
-              return this.retryPromise(() => {
+              })
+              // @ts-ignore
+              .then((response) => {
+                // response of refresh token request
+                if (
+                  (response as AxiosResponse<AuthResponse>).request &&
+                  (response as AxiosResponse<AuthResponse>).request.url &&
+                  new URL((response as AxiosResponse<AuthResponse>).request.url).pathname === URL_REFERESH_TOKEN
+                ) {
+                  const apiResponse = this.getApiResponseObject<AuthResponse>(response as AxiosResponse<AuthResponse>);
+                  // if status 200 then token generated
+                  if (apiResponse.status === 200) {
+                    // save new token in cookie storage
+                    CookieService.set(COOKIE_TOKEN, apiResponse.data?.token || "", 10, options?.nodeRespObj);
+                    CookieService.set(
+                      COOKIE_REFRESH_TOKEN,
+                      apiResponse.data?.refreshToken || "",
+                      10,
+                      options?.nodeRespObj,
+                    );
+                    // add new token in Authorization header
+                    if (!requestConfig.headers) {
+                      requestConfig.headers = {};
+                    }
+                    requestConfig.headers["Authorization"] = `Bearer ${apiResponse.data?.token}`;
+                    // send original request again
+                    return axios(requestConfig);
+                  } else {
+                    // logout && redirect to login page
+                    const apiResponseN = this.getDefaultApiResponseObj();
+                    apiResponse.status = 401;
+                    return apiResponseN;
+                  }
+                } else {
+                  return response as ApiResponse<T | null>;
+                }
+              })
+              // this catch will execute only after token regenerated and error in original request
+              .catch((err: AxiosError<T>) => {
                 // @ts-ignore
-                return axios(requestConfig).then((res: AxiosResponse<T>) => {
-                  return this.handleResponse<T>(res, false, options);
-                });
-              }, 1000, maxRetryCount).catch(() => {
+                return this.handleErrorResponse<T>(err, false, options || {}) as Promise<ApiResponse<T | null>>;
+              })
+              .then((response: any) => {
+                // response of original request after token regenertated
+                if (
+                  (response as AxiosResponse<T>).request &&
+                  (response as AxiosResponse<T>).request.url === requestConfig.url
+                ) {
+                  const handledResponse = this.handleResponse<T>(response as AxiosResponse<T>, false, options || {});
+                  return handledResponse as ApiResponse<T>;
+                }
+                return response as ApiResponse<T>;
+              })
+              // this catch will catch any unknown error
+              .catch((error: Error) => {
+                console.error("Unknown Error!!", error);
+                // [TODO] this error should log in database to get client side errors
+                const response = this.getDefaultApiResponseObj();
+                response.status = 600;
+                return response as ApiResponse<null>;
+              })
+              // this will execute after request process and we have response from server
+              .then((response) => {
+                // only checking for 5xx because retry should happen only in case of server error
+                // not in the case of 4xx which is client error or 2xx success case
+                if (response.status.toString().startsWith("5") || response.status === 0) {
+                  // throw Error as strigify response because we will need response
+                  // to return to component
+                  // throwing error because retry will retry request
+                  return this.retryPromise(
+                    () => {
+                      // @ts-ignore
+                      return axios(requestConfig).then((res: AxiosResponse<T>) => {
+                        return this.handleResponse<T>(res, false, options);
+                      });
+                    },
+                    1000,
+                    maxRetryCount,
+                  ).catch(() => {
+                    return response;
+                  });
+                }
                 return response;
               })
-            }
-            return response;
-          })
-          // This catch will execute after max retry reach
-          // so in any case HttpClient will always send success
-          // Error can detect from status of response/result of HttpClient
-          .catch((error: ApiResponse<T | null>) => {
-            return error;
-          })
-      })
-      // this catch will only when internet not available
-      .catch(() => {
-        // show toast message of internet not available
-        const apiResponse: ApiResponse<null> = {
-          status: 0,
-          data: null,
-          message: ["Please check your network connection. Internet not available"],
-          errorCode: -1,
-        };
-        return apiResponse;
-      });
+              // This catch will execute after max retry reach
+              // so in any case HttpClient will always send success
+              // Error can detect from status of response/result of HttpClient
+              .catch((error: ApiResponse<T | null>) => {
+                return error;
+              })
+          );
+        })
+        // this catch will only when internet not available
+        .catch(() => {
+          // show toast message of internet not available
+          const apiResponse: ApiResponse<null> = {
+            status: 0,
+            data: null,
+            message: ["Please check your network connection. Internet not available"],
+            errorCode: -1,
+          };
+          return apiResponse;
+        })
+    );
   }
 
   /**
@@ -242,15 +266,15 @@ export class HttpClient {
    * @param response {@link AjaxResponse} response object of ajax request
    * @returns {@link ApiResponse}
    */
-  private static getApiResponseObject<T>(response: AxiosResponse<T>|AxiosError<T>) {
-    let resp: AxiosResponse|undefined;
+  private static getApiResponseObject<T>(response: AxiosResponse<T> | AxiosError<T>) {
+    let resp: AxiosResponse | undefined;
     if (!(response as AxiosError).isAxiosError) {
-      resp = (response as AxiosResponse<any>);
+      resp = response as AxiosResponse<any>;
     } else {
       resp = (response as AxiosError<any>).response;
     }
 
-    let data: any = resp?.data;
+    const data: any = resp?.data;
 
     const message = HttClientConfig.processMessage(response);
     const apiResponse: ApiResponse<T> = {
@@ -268,8 +292,7 @@ export class HttpClient {
   private static handleResponse<T>(response: AxiosResponse<T>, isFirst: boolean, options: HttpClientOptions) {
     if (process.env.IS_SERVER === "true" && options.nodeRespObj && !options.nodeRespObj.headersSent) {
       // check if api sending cookie to set
-      const setCookie =
-        response.headers["Set-Cookie"] || response.headers["Set-Cookie".toLocaleLowerCase()];
+      const setCookie = response.headers["Set-Cookie"] || response.headers["Set-Cookie".toLocaleLowerCase()];
       if (setCookie) {
         if (options.nodeRespObj) {
           options.nodeRespObj.setHeader("Set-Cookie", setCookie.replace(/\r?\n|\r/g, ""));
@@ -285,7 +308,11 @@ export class HttpClient {
     return this.handleErrorServerResponse(apiResponse, isFirst, options);
   }
 
-  private static handleErrorResponse<T>(response: AxiosResponse<T>|AxiosError<T>, isFirst: boolean, options: HttpClientOptions) {
+  private static handleErrorResponse<T>(
+    response: AxiosResponse<T> | AxiosError<T>,
+    isFirst: boolean,
+    options: HttpClientOptions,
+  ) {
     const apiResponse = this.getApiResponseObject<T>(response);
     return this.handleErrorServerResponse(apiResponse, isFirst, options);
   }
@@ -308,7 +335,7 @@ export class HttpClient {
         url: this.getUrl(URL_REFERESH_TOKEN),
         data: { refreshToken },
         method: "POST",
-      }) as Promise<AxiosResponse<T>|AxiosError<T>>;
+      }) as Promise<AxiosResponse<T> | AxiosError<T>>;
     } else {
       if (!options.sendResponseWhenError) {
         apiResponse.data = null;

@@ -81,7 +81,7 @@ const config = () => {
           resp = (response as AxiosError<any>).response;
         }
     
-        let data: any = resp?.data;
+        const data: any = resp?.data;
         let message: string[] = [];
         const status: number =
           (data && data[config().httpClient.apiResponse.statusKey]) ||
@@ -121,7 +121,7 @@ const config = () => {
           resp = (response as AxiosError<any>).response;
         }
     
-        let data: any = resp?.data;
+        const data: any = resp?.data;
         // can check instanceOf to know response type
         // some api send data in response and data field contain actual data
         return data?.data || data;
