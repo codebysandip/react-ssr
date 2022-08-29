@@ -25,44 +25,6 @@ const request = {
     responseBody: null,
   },
 };
-// jest.mock("rxjs/ajax", () => ({
-//   __esModule: true,
-//   ajax: (options: AjaxConfig) => {
-//     if (options.url === request.success.url) {
-//       return of(
-//         getAjaxResponse(
-//           options.url,
-//           200,
-//           request.success.responseBody,
-//           undefined,
-//           undefined,
-//           options.headers,
-//         ),
-//       );
-//     } else if (options.url === request.badRequest.url) {
-//       return of(
-//         getAjaxErrorResponse(
-//           options.url,
-//           400,
-//           request.badRequest.responseBody,
-//           undefined,
-//           undefined,
-//           options.headers,
-//         ),
-//       );
-//     } else if (options.url === request.badRequestWithResponse.url) {
-//       return of(
-//         getAjaxErrorResponse(
-//           options.url,
-//           400,
-//           request.badRequestWithResponse.responseBody,
-//           undefined,
-//           options.headers,
-//         ),
-//       );
-//     }
-//   },
-// }));
 
 describe("HttpClient", () => {
   beforeEach(() => {
@@ -92,8 +54,7 @@ describe("HttpClient", () => {
 
   it("Should return response body in ApiResponse.data when HttpClientOptions.sendResponseWhenError true", async () => {
     mock.onGet(request.badRequestWithResponse.url).replyOnce(400, request.badRequestWithResponse.responseBody);
-    const apiResponse = await 
-      HttpClient.get(request.badRequestWithResponse.url, { sendResponseWhenError: true });
+    const apiResponse = await HttpClient.get(request.badRequestWithResponse.url, { sendResponseWhenError: true });
     expect(apiResponse.status).toEqual(400);
     expect(apiResponse.data).toStrictEqual(request.badRequestWithResponse.responseBody);
   });

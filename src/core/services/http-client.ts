@@ -136,6 +136,8 @@ export class HttpClient {
                 return this.handleResponse<T>(response, true, options);
               })
               // this catch will execute When error in original request
+              // if 401 status will come then handleErrorResponse will try to
+              // regenerate token from refresh token
               // @ts-ignore
               .catch((err) => {
                 return this.handleErrorResponse<T>(err, true, options);
@@ -214,7 +216,7 @@ export class HttpClient {
                 // [TODO] this error should log in database to get client side errors
                 const response = this.getDefaultApiResponseObj();
                 response.status = 600;
-                return response as ApiResponse<null>;
+                return response;
               })
               // this will execute after request process and we have response from server
               .then((response) => {
@@ -281,7 +283,7 @@ export class HttpClient {
       status: resp?.status || 0,
       data: HttClientConfig.processData(response),
       message,
-      errorCode: (data && (data as any)[HttClientConfig.apiResponse.errorCodeKey]) || -1,
+      errorCode: (data && data[HttClientConfig.apiResponse.errorCodeKey]) || -1,
     };
     if (process.env.NODE_ENV === "test") {
       apiResponse.response = response;
