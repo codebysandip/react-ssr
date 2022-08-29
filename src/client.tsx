@@ -42,9 +42,6 @@ if (process.env.IS_LOCAL === "true" && (module as any).hot) {
     </BrowserRouter>) 
   });
 } else {
-  if (!route?.isSSR) {
-    hydrateApp();
-  } else {
     /**
      * During hydration Client side HTML should match with virtual DOM.
      * Rendering is synchronousn but lazy loading of component is asynchronus.
@@ -55,7 +52,5 @@ if (process.env.IS_LOCAL === "true" && (module as any).hot) {
      */
     route?.component().then((module) => {
       hydrateApp(module);
-    });
-  }
-  
+    });  
 }

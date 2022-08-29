@@ -10,26 +10,26 @@ import { Writable } from "stream";
 class HtmlWritable extends Writable {
   private resp: Response;
   private chunks: any = [];
-  private html = '';
+  private html = "";
   constructor(resp: Response) {
     super();
     this.resp = resp;
   }
 
   getHtml() {
-      return this.html;
+    return this.html;
   }
 
-  _write(chunk: any, encoding: BufferEncoding, callback: Function) {
-      this.chunks.push(chunk);
-      // console.log("chunk!!", Buffer.from(chunk).toString());
-      this.resp.write(chunk);
-      callback();
+  _write(chunk: any, encoding: BufferEncoding, callback: () => void) {
+    this.chunks.push(chunk);
+    // console.log("chunk!!", Buffer.from(chunk).toString());
+    this.resp.write(chunk);
+    callback();
   }
 
   _final(callback: any) {
-      this.html = Buffer.concat(this.chunks).toString();
-      callback();
+    this.html = Buffer.concat(this.chunks).toString();
+    callback();
   }
 }
 /**
@@ -40,7 +40,14 @@ class HtmlWritable extends Writable {
  * @param isError isError page
  * @returns rendered HTML
  */
-export function pipeHtml(resp: Response, Component: any, props: PageData, url: string, isError: boolean, doCache: boolean) {
+export function pipeHtml(
+  resp: Response,
+  Component: any,
+  props: PageData,
+  url: string,
+  isError: boolean,
+  doCache: boolean,
+) {
   const htmlMidPart = getHtmlMidPart(props);
   resp.write(htmlMidPart);
   const htmlEndPart = getHtmlEndPart(props, isError, url);
@@ -66,9 +73,9 @@ export function pipeHtml(resp: Response, Component: any, props: PageData, url: s
         console.log("error!!", err);
         didError = true;
       },
-    }
+    },
   );
-  writeable.on('finish', () => {
+  writeable.on("finish", () => {
     // const html = writeable.getHtml();
     // console.log("html!!", html);
     // resp.write(html);
@@ -77,5 +84,5 @@ export function pipeHtml(resp: Response, Component: any, props: PageData, url: s
     if (!isError && doCache) {
       staticPageCache.set(url, getHtmlStartPart() + htmlMidPart + writeable.getHtml() + htmlEndPart);
     }
-});
+  });
 }

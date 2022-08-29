@@ -5,7 +5,6 @@ import Lazy from "./core/components/lazy/lazy.component.js";
 import { matchPath, useLocation } from "react-router";
 import { Routes as PageRoutes } from "./routes.js";
 import { NO_HEADER_PATHS } from "./const.js";
-import { Notification } from "./core/components/notification/notification.component.js";
 
 /**
  * Check for rendering is first time.
@@ -56,7 +55,6 @@ export function App(props: AppProps) {
           })}
         </Routes>
       )}
-      <Notification />
     </>
   );
 }

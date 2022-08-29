@@ -1,4 +1,4 @@
-import { AjaxError, AjaxResponse } from "rxjs/ajax";
+import { AxiosResponse, AxiosError } from "axios";
 
 /**
  * Custom Response converted by HttpClient
@@ -35,5 +35,5 @@ export interface ApiResponse<T> {
    * ajaxResponse will available only in case of jest test
    * Don't use in service/component. It will always be undefined
    */
-  ajaxResponse?: AjaxResponse<T> | AjaxError;
+  response?: AxiosResponse<T>|AxiosError<T>;
 }

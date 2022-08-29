@@ -1,13 +1,10 @@
-import { lastValueFrom, of } from "rxjs";
 import { HttpClient } from "src/core/services/http-client.js";
-import { navigatorOnline } from "../../../__tests__/utils/spy-on/navigator.spy.js";
-import {
-  getAjaxResponse,
-  getAjaxErrorResponse,
-} from "../../../__tests__/utils/mock-data/core/services/http-client.mock.js";
-import { AjaxConfig } from "rxjs/ajax";
-import { COOKIE_TOKEN } from "src/const";
+import { navigatorOnline } from "../../utils/spy-on/navigator.spy.js";
+import { COOKIE_TOKEN } from "src/const.js";
+import axios from "axios";
+import MockAdapter from "axios-mock-adapter";
 
+const mock = new MockAdapter(axios);
 const request = {
   success: {
     url: "/api/test-api",
@@ -28,44 +25,6 @@ const request = {
     responseBody: null,
   },
 };
-jest.mock("rxjs/ajax", () => ({
-  __esModule: true,
-  ajax: (options: AjaxConfig) => {
-    if (options.url === request.success.url) {
-      return of(
-        getAjaxResponse(
-          options.url,
-          200,
-          request.success.responseBody,
-          undefined,
-          undefined,
-          options.headers,
-        ),
-      );
-    } else if (options.url === request.badRequest.url) {
-      return of(
-        getAjaxErrorResponse(
-          options.url,
-          400,
-          request.badRequest.responseBody,
-          undefined,
-          undefined,
-          options.headers,
-        ),
-      );
-    } else if (options.url === request.badRequestWithResponse.url) {
-      return of(
-        getAjaxErrorResponse(
-          options.url,
-          400,
-          request.badRequestWithResponse.responseBody,
-          undefined,
-          options.headers,
-        ),
-      );
-    }
-  },
-}));
 
 describe("HttpClient", () => {
   beforeEach(() => {
@@ -74,36 +33,37 @@ describe("HttpClient", () => {
   });
 
   it("Should return ApiResponse.status 200", async () => {
-    const apiResponse = await lastValueFrom(
-      HttpClient.get<Record<string, any>>(request.success.url),
-    );
+    mock.onGet(request.success.url).replyOnce(200, request.success.responseBody);
+    const apiResponse = await HttpClient.get<Record<string, any>>(request.success.url);
     expect(apiResponse.status).toEqual(200);
   });
 
   it("Should return ApiResponse.status 0 when internet not available", async () => {
     navigatorOnline(false);
-    const apiResponse = await lastValueFrom(HttpClient.get(request.success.url));
+    mock.onGet(request.success.url).replyOnce(200, request.success.responseBody);
+    const apiResponse = await HttpClient.get(request.success.url);
     expect(apiResponse.status).toEqual(0);
   });
 
   it("Should return ApiResponse.status 400 when api will return 400 status and data should be null", async () => {
-    const apiResponse = await lastValueFrom(HttpClient.get(request.badRequest.url));
+    mock.onGet(request.badRequest.url).replyOnce(400, request.badRequest.responseBody);
+    const apiResponse = await HttpClient.get(request.badRequest.url);
     expect(apiResponse.status).toEqual(400);
     expect(apiResponse.data).toStrictEqual(null);
   });
 
   it("Should return response body in ApiResponse.data when HttpClientOptions.sendResponseWhenError true", async () => {
-    const apiResponse = await lastValueFrom(
-      HttpClient.get(request.badRequestWithResponse.url, { sendResponseWhenError: true }),
-    );
+    mock.onGet(request.badRequestWithResponse.url).replyOnce(400, request.badRequestWithResponse.responseBody);
+    const apiResponse = await HttpClient.get(request.badRequestWithResponse.url, { sendResponseWhenError: true });
     expect(apiResponse.status).toEqual(400);
     expect(apiResponse.data).toStrictEqual(request.badRequestWithResponse.responseBody);
   });
 
   it("Should set Authentication Header when HttpClientOptions.isAuth true", async () => {
+    mock.onGet(request.badRequestWithResponse.url).replyOnce(400, request.badRequestWithResponse.responseBody);
     const token = "my-test-token";
     window.document.cookie = `${COOKIE_TOKEN}=${token}`;
-    const apiResponse = await lastValueFrom(HttpClient.get(request.success.url, { isAuth: true }));
-    expect(apiResponse.ajaxResponse?.request.headers["Authorization"]).toEqual(`Bearer ${token}`);
+    const apiResponse = await HttpClient.get(request.success.url, { isAuth: true });
+    expect(apiResponse.response?.config.headers?.Authorization).toEqual(`Bearer ${token}`);
   });
 });

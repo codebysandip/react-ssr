@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router";
 import { useSearchParams } from "react-router-dom";
-import { Observable } from "rxjs";
 import { createContextClient } from "src/core/functions/create-context.js";
 import { IRedirect, PageData } from "src/core/models/page-data.js";
 import { ApiResponse } from "src/core/models/api-response.js";
-import { Notification$ } from "src/app-subject.js";
 
 /**
  * Lazy Load Route Component
@@ -40,22 +38,12 @@ export default function Lazy(props: LazyProps) {
               if ((apiResponse as ApiResponse<any>).status === 401) {
                 navigate("/login");
               } else {
-                Notification$.next({
-                  message: (apiResponse as ApiResponse<any>).message[0],
-                  notificationType: "error",
-                });
+                // show notification for 403 status
               }
             } else if ((apiResponse as ApiResponse<any>).status === 500) {
-              Notification$.next({
-                message: (apiResponse as ApiResponse<any>).message[0],
-                notificationType: "error",
-              });
+              navigate("/500");
             } else if ((apiResponse as ApiResponse<any>).status === 0) {
               // show toast or page for internet not available
-              Notification$.next({
-                message: "Internet Not Available",
-                notificationType: "error",
-              });
             }
             // set apiResponse only in case of 200
             setPageData((apiResponse as ApiResponse<PageData>).data as PageData);
@@ -63,18 +51,17 @@ export default function Lazy(props: LazyProps) {
           };
 
           const initialProps = (moduleObj.default as SsrComponent).getInitialProps(ctx);
-          if (initialProps instanceof Observable) {
-            initialProps.subscribe({
-              next: (apiResponse) => {
+          if (initialProps instanceof Promise) {
+            initialProps
+              .then((apiResponse) => {
                 processInitialProps(apiResponse);
-              },
-              error: (err: ApiResponse<any>) => {
+              })
+              .catch((err: ApiResponse<any>) => {
                 console.error(`Error in getInitialProps of ${moduleObj.default.constructor.name}. Error: ${err}`);
                 navigate("/500");
-              },
-            });
+              });
           } else {
-            throw new Error("getInitialProps must return observable");
+            throw new Error("getInitialProps must return Promise");
           }
         } else {
           setComp(moduleObj);
