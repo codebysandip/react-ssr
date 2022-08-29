@@ -30,8 +30,8 @@ export function getHtmlStartPart() {
  */
 export function getHtmlMidPart(props: PageData) {
   return `
-  // <meta name="description" content="${props.seo?.metaData?.description || ""}" />
-  // <meta name="keywords" content="${props.seo?.metaData?.keywords || ""}" />
+  <meta name="description" content="${props.seo?.metaData?.description || ""}" />
+  <meta name="keywords" content="${props.seo?.metaData?.keywords || ""}" />
   <title>${props.seo?.title || "React SSR"}</title>
 </head>
 <body>
