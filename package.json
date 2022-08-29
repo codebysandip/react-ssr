@@ -20,7 +20,10 @@
     "sass:compile:win": "node-sass src/assets/css/main-style.scss -o src/assets/css -w src/assets",
     "start:html": "nodemon --watch html html/index.js",
     "run:html": "npm run sass:compile & npm run start:html",
-    "test": "jest"
+    "test": "jest",
+    "prepare": "husky install",
+    "lint": "eslint \"src/**/*.{js,ts,tsx}\"",
+    "lint:fix": "eslint \"src/**/*.{js,ts,tsx}\" --fix"
   },
   "author": "Sandip",
   "license": "ISC",
@@ -34,8 +37,8 @@
     "http": "0.0.1-security",
     "https": "^1.0.0",
     "node-cache": "^5.1.2",
-    "react": "^18.1.0",
-    "react-dom": "^18.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-router": "^6.3.0",
     "react-router-dom": "^6.3.0"
   },
@@ -51,8 +54,8 @@
     "@types/react-router-dom": "^5.3.3",
     "@types/webpack": "^5.28.0",
     "@types/webpack-hot-middleware": "^2.25.6",
-    "@typescript-eslint/eslint-plugin": "^5.28.0",
-    "@typescript-eslint/parser": "^5.28.0",
+    "@typescript-eslint/eslint-plugin": "^5.35.1",
+    "@typescript-eslint/parser": "^5.35.1",
     "axios-mock-adapter": "^1.21.2",
     "browserslist": "^4.21.3",
     "clean-webpack-plugin": "^4.0.0",
@@ -98,7 +101,8 @@
     "webpack-dev-middleware": "^5.3.3",
     "webpack-hot-middleware": "^2.25.2",
     "webpack-merge": "^5.8.0",
-    "webpack-node-externals": "^3.0.0"
+    "webpack-node-externals": "^3.0.0",
+    "husky": "^8.0.0"
   },
   "browserslist": [
     ">0.2%",

@@ -124,7 +124,6 @@ export default function (env, args, isProd = false) {
         ],
       }),
     );
-    // plugins.push(new LoadablePlugin());
   }
 
   if (isLocal) {
@@ -193,7 +192,7 @@ export default function (env, args, isProd = false) {
                     syntax: "typescript",
                     dynamicImports: true,
                   },
-                  target: "es2020",
+                  // target: "es2020",
                   transform: {
                     react: {
                       runtime: "automatic",
@@ -201,13 +200,13 @@ export default function (env, args, isProd = false) {
                     },
                   },
                 },
-                isModule: true,
-                sourceMaps: isLocal,
-                inlineSourcesContent: isLocal,
-                module: {
-                  type: "es6",
-                  lazy: true,
-                },
+                // isModule: true,
+                // sourceMaps: isLocal,
+                // inlineSourcesContent: isLocal,
+                // module: {
+                //   type: "es6",
+                //   lazy: true,
+                // },
               },
             },
           ],

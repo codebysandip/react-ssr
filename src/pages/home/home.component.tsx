@@ -14,7 +14,7 @@ export default class Home extends React.Component<HomeProps> {
   }
 
   public render() {
-    return <h1>Home Page Count: {this.props.count}</h1>;
+    return <h1>Home Page Count:{this.props.count}</h1>;
   }
 }
 

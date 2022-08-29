@@ -12,15 +12,13 @@ import WebpackHotMiddleware from "webpack-hot-middleware";
 import webpack from "webpack";
 import webpackDevConfig from "../../config/webpack.dev.js";
 import webpackProdConfig from "../../config/webpack.prod.js";
-import { createRequire } from 'node:module';
-
+import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 
 // support for XMLHttpRequest on node
 (global as any).XMLHttpRequest = XMLHttpRequest;
 (global as any).staticPageCache = new NodeCache();
-
 
 // const staticPageCache = new NodeCache();
 const app = express();
@@ -31,7 +29,7 @@ require("dotenv").config();
 if (isLocal) {
   const env = process.env.ENV;
   let webpackClientConfig: any;
-  const baseEnv = {IS_LOCAL: process.env.IS_LOCAL, IS_SERVER: "false", ENV: env};
+  const baseEnv = { IS_LOCAL: process.env.IS_LOCAL, IS_SERVER: "false", ENV: env };
   if (env === "development") {
     webpackClientConfig = webpackDevConfig(baseEnv, {});
   } else {
@@ -46,17 +44,18 @@ if (isLocal) {
       publicPath: webpackClientConfig.output.publicPath,
       serverSideRender: true,
       writeToDisk: true,
-    })
+    }),
   );
 
-  app.use(WebpackHotMiddleware(compiler, {
-    heartbeat: 10000,
-  }));
+  app.use(
+    WebpackHotMiddleware(compiler, {
+      heartbeat: 10000,
+    }),
+  );
 }
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-
 
 if (process.env.IS_LOCAL === "true") {
   // Following code is just for reference
@@ -66,7 +65,7 @@ if (process.env.IS_LOCAL === "true") {
   app.get("/api/home", proxyMiddleware(process.env.LOCAL_API_SERVER));
 }
 
-app.get("*.(css|js|svg|jpg|woff|woff2|ico|json)", StaticRoute);
+app.get("*.(css|js|svg|jpg|woff|woff2|json)", StaticRoute);
 
 // Tell express for public folder
 app.use(express.static(join(process.cwd(), "build/public")));
