@@ -1,6 +1,5 @@
 import { ApiResponse } from "src/core/models/api-response.js";
 import { getRoute } from "core/functions/get-route.js";
-import { forkJoin, Observable } from "rxjs";
 import { pipeHtml } from "src/template.js";
 import { createContextServer } from "core/functions/create-context.js";
 import { IRedirect, PageData } from "core/models/page-data.js";
@@ -79,11 +78,10 @@ export const processRequest = () => {
           // call page/route getInitialProps static method to get sync data to render page
           // this data will pass as props to page/route component
           const initialProps$ = (Component as SsrComponent).getInitialProps(ctx);
-          if (initialProps$ instanceof Observable) {
+          if (initialProps$ instanceof Promise) {
             // add common api calls in fork join
             // common api like header/footer api and put in PageData.header
-            forkJoin([initialProps$]).subscribe({
-              next: (result) => {
+            Promise.all([initialProps$]).then((result) => {
                 let errorPath = "";
                 if ((result[0] as IRedirect).redirect) {
                   errorPath = (result[0] as IRedirect).redirect?.path || "/";
@@ -108,14 +106,12 @@ export const processRequest = () => {
                   let pageData: PageData = (result[0] as ApiResponse<PageData>).data;
                   sendHtml(errorPath || req.url, pageData);
                 }
-              },
-              error: (err) => {
-                console.error(`Error in getInitialProps of ${req.url}. Error: ${err}`);
-                sendHtml("/500", undefined, true);
-              },
+            }).catch((err) => {
+              console.error(`Error in getInitialProps of ${req.url}. Error: ${err}`);
+              sendHtml("/500", undefined, true);
             });
           } else {
-            throw new Error("getInitialProps must return observable");
+            throw new Error("getInitialProps must return Promise");
           }
         } else {
           sendHtml(req.url);

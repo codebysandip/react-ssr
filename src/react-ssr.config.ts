@@ -1,4 +1,4 @@
-import { AjaxResponse, AjaxError } from "rxjs/ajax";
+import { AxiosResponse, AxiosError } from "axios";
 import { SSRConfig } from "./core/models/ssr-config.model.js";
 import { HttpClient } from "./core/services/http-client.js";
 
@@ -48,7 +48,7 @@ function mergeConfig(configDb: SSRConfig, localConfig: SSRConfig) {
  * ```
  */
 export function getConfigFromDb() {
-  HttpClient.get<SSRConfig>("/api/url-of-config").subscribe((dbConfig) => {
+  HttpClient.get<SSRConfig>("/api/url-of-config").then((dbConfig) => {
     if (dbConfig.data && typeof dbConfig.data === "object") {
       // merge config with local config
       mergeConfig(config(), dbConfig.data);
@@ -73,16 +73,24 @@ const config = () => {
        * To process message by your own replace this function code
        * with your own code
        */
-      processMessage: (response: AjaxResponse<any> | AjaxError) => {
+      processMessage: (response: AxiosResponse<any>|AxiosError<any>) => {
+        let resp: AxiosResponse|undefined;
+        if (!(response as AxiosError).isAxiosError) {
+          resp = (response as AxiosResponse<any>);
+        } else {
+          resp = (response as AxiosError<any>).response;
+        }
+    
+        let data: any = resp?.data;
         let message: string[] = [];
         const status: number =
-          (response.response && response.response[config().httpClient.apiResponse.statusKey]) ||
-          response.status;
+          (data && data[config().httpClient.apiResponse.statusKey]) ||
+          resp?.status;
 
         if (status.toString().startsWith("2")) {
           const successMessage =
-            response.response &&
-            response.response[config().httpClient.apiResponse.successMessageKey];
+            data &&
+            data[config().httpClient.apiResponse.successMessageKey];
           if (typeof successMessage === "string") {
             message.push(successMessage);
           } else if (Array.isArray(successMessage) && typeof successMessage[0] === "string") {
@@ -90,7 +98,7 @@ const config = () => {
           }
         } else {
           const errorMessage =
-            response.response && response.response[config().httpClient.apiResponse.errorMessageKey];
+            data && data[config().httpClient.apiResponse.errorMessageKey];
           if (typeof errorMessage === "string") {
             message.push(errorMessage);
           } else if (Array.isArray(errorMessage) && typeof errorMessage[0] === "string") {
@@ -105,10 +113,18 @@ const config = () => {
        * @param response AjaxResponse<any> | AjaxError
        * @returns Api Response
        */
-      processData: (response: AjaxResponse<any> | AjaxError) => {
+      processData: (response: AxiosResponse<any>|AxiosError<any>) => {
+        let resp: AxiosResponse|undefined;
+        if (!(response as AxiosError).isAxiosError) {
+          resp = (response as AxiosResponse<any>);
+        } else {
+          resp = (response as AxiosError<any>).response;
+        }
+    
+        let data: any = resp?.data;
         // can check instanceOf to know response type
         // some api send data in response and data field contain actual data
-        return response.response?.data || response.response;
+        return data?.data || data;
       },
     },
   };

@@ -1,4 +1,4 @@
-import { AjaxResponse, AjaxError } from "rxjs/ajax";
+import { AxiosResponse, AxiosError } from "axios";
 
 export interface ApiResponseKeys {
   statusKey: string;
@@ -11,8 +11,8 @@ export interface HttpClient {
   maxRetryCount: number;
   isAuthDefault: boolean;
   apiResponse: ApiResponseKeys;
-  processMessage: (response: AjaxResponse<any> | AjaxError) => string[];
-  processData: (response: AjaxResponse<any> | AjaxError) => any;
+  processMessage: (response: AxiosResponse<any>|AxiosError<any>) => string[];
+  processData: (response: AxiosResponse<any>|AxiosError<any>) => any;
 }
 
 export interface SSRConfig {
