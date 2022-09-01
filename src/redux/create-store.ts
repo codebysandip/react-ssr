@@ -7,34 +7,6 @@ import AuthReducer from "pages/auth/auth.redux";
 import { RootState as RootStateType } from "./root-state.js";
 const { configureStore, combineReducers } = ((toolkitRaw as any).default ?? toolkitRaw) as typeof toolkitRaw;
 
-// const storeConfig: toolkitRaw.ConfigureStoreOptions = {
-//   reducer: {
-//     // home: HomeReducer,
-//     auth: AuthReducer,
-//   },
-//   middleware: (getDefaultMiddleware) => {
-//     return getDefaultMiddleware({
-//       thunk: {
-//         extraArgument: HttpClient,
-//       },
-//     });
-//   },
-//   preloadedState: process.env.IS_SERVER !== "true" ? window.__PreloadedState__ : {},
-//   devTools: process.env.IS_LOCAL === "true",
-// };
-
-// const store = configureStore({
-//   reducer: storeConfig.reducer,
-//   middleware: (gdm) => {
-//     return gdm({
-//       thunk: {
-//         extraArgument: HttpClient,
-//       },
-//     });
-//   },
-//   preloadedState: storeConfig.preloadedState,
-//   devTools: storeConfig.devTools,
-// });
 const reducer = {
   auth: AuthReducer,
 };
@@ -75,13 +47,7 @@ export function createStore(lazyReducers?: ReducersMapObject) {
     preloadedState: process.env.IS_SERVER !== "true" ? window.__PreloadedState__ : {},
     devTools: process.env.IS_LOCAL === "true",
   });
-  // // return new store in case of SSR
-  // // otheriwse store state will return last store data not new default store data
-  // if (process.env.IS_SERVER === "true") {
-  //   const ssrStore = configureStore(storeConfig);
-  //   ssrStore.replaceReducer(combineReducers(allReducers));
-  //   return ssrStore;
-  // }
+
   return store;
 }
 
