@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { AppStore } from "src/redux/create-store.js";
 
 export interface ContextData {
   location: {
@@ -13,7 +14,11 @@ export interface ContextData {
    * Path params
    * @example /path/:id :id will available as params.id
    */
-  params: Record<string, string>;
+  params: Record<string, string | number | boolean>;
+  /**
+   * Redux store
+   */
+  store: AppStore;
   /**
    * Request Object of express will available
    * only for server side

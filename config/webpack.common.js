@@ -22,6 +22,7 @@ import { readFileSync } from "fs";
 export default function (env, args, isProd = false) {
   const isWatch = JSON.parse(env.WATCH || env.IS_LOCAL);
   const packageJson = JSON.parse(readFileSync(join(process.cwd(), "package.json"), { encoding: "utf-8" }));
+  const tsconfigJson = JSON.parse(readFileSync(join(process.cwd(), "tsconfig.json"), { encoding: "utf-8" }));
 
   /**
    * Is Build running for Server or Client
@@ -131,6 +132,13 @@ export default function (env, args, isProd = false) {
       plugins.push(new ReactRefreshPlugin());
     }
   }
+
+  const alias = {};
+  const aliasPaths = tsconfigJson.compilerOptions.paths;
+  Object.keys(aliasPaths).forEach((key) => {
+    const aliasKey = key.replace("/*", "");
+    alias[aliasKey] = getPath(aliasPaths[key][0].replace("/*", ""));
+  });
   return {
     entry,
     output: {
@@ -148,12 +156,7 @@ export default function (env, args, isProd = false) {
       ignored: ["**/node_modules", "**/config"],
     },
     resolve: {
-      alias: {
-        src: getPath("src"),
-        core: getPath("src/core"),
-        pages: getPath("src/pages"),
-        assets: getPath("src/assets"),
-      },
+      alias,
       extensions: [".ts", ".tsx", ".js", ".scss", ".css"],
       fallback: {
         // url: false,

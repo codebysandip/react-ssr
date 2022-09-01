@@ -63,6 +63,7 @@ if (process.env.IS_LOCAL === "true") {
   // create a test api in test-api.ts and add here
   // Don't forget to remove proxy otherwise response will alaways come from test api
   app.get("/api/home", proxyMiddleware(process.env.LOCAL_API_SERVER));
+  app.get("/api/products", proxyMiddleware(process.env.LOCAL_API_SERVER));
 }
 
 app.get("*.(css|js|svg|jpg|woff|woff2|json)", StaticRoute);

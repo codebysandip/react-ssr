@@ -5,6 +5,11 @@ import { App } from "./app.js";
 import { Routes } from "./routes.js";
 import "./style.scss";
 import { getRoute } from "./core/functions/get-route.js";
+import { Provider } from "react-redux";
+import { createStore } from "src/redux/create-store.js";
+import { getAccessTokenData } from "./core/functions/get-token.js";
+import { loginSuccess } from "./pages/auth/auth.redux.js";
+import { CompModule } from "./core/models/route.model.js";
 
 const container = document.getElementById("root");
 if (!container) {
@@ -21,13 +26,28 @@ if (!route) {
   route = Routes.find((r) => r.path === "/404");
 }
 
-const hydrateApp = (module?: { default: any }) => {
-  return hydrateRoot(
-    container,
+const createBrowserRouter = (module?: CompModule) => {
+  const store = createStore(module?.reducer);
+  const accessTokenData = getAccessTokenData();
+  if (accessTokenData) {
+    store.dispatch(
+      loginSuccess({
+        isLoggedIn: true,
+        user: accessTokenData,
+      }),
+    );
+  }
+
+  return (
     <BrowserRouter>
-      <App comp={module?.default} />
-    </BrowserRouter>,
+      <Provider store={store}>
+        <App module={module} />
+      </Provider>
+    </BrowserRouter>
   );
+};
+const hydrateApp = (module?: CompModule) => {
+  return hydrateRoot(container, createBrowserRouter(module));
 };
 
 // Hot module reload
@@ -37,20 +57,18 @@ const hydrateApp = (module?: { default: any }) => {
 if (process.env.IS_LOCAL === "true" && (module as any).hot) {
   const root = createRoot(container);
   route?.component().then((module) => {
-    root.render(<BrowserRouter>
-      <App comp={module?.default} />
-    </BrowserRouter>) 
+    root.render(createBrowserRouter(module));
   });
 } else {
-    /**
-     * During hydration Client side HTML should match with virtual DOM.
-     * Rendering is synchronousn but lazy loading of component is asynchronus.
-     * So while getting route component(asynchronous lazy loading), Hydration will complete
-     * creation of virtual DOM synchronousally. When React will compare vitual DOM with actual DOM
-     * then route component HTML will not be there. In this case hydration will fail and React will re render
-     * again on client side. Re rendering of full page will decrease the performance
-     */
-    route?.component().then((module) => {
-      hydrateApp(module);
-    });  
+  /**
+   * During hydration Client side HTML should match with virtual DOM.
+   * Rendering is synchronousn but lazy loading of component is asynchronus.
+   * So while getting route component(asynchronous lazy loading), Hydration will complete
+   * creation of virtual DOM synchronousally. When React will compare vitual DOM with actual DOM
+   * then route component HTML will not be there. In this case hydration will fail and React will re render
+   * again on client side. Re rendering of full page will decrease the performance
+   */
+  route?.component().then((module) => {
+    hydrateApp(module);
+  });
 }

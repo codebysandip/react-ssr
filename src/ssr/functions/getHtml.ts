@@ -1,4 +1,5 @@
 import { PageData } from "src/core/models/page-data.js";
+import { AppStore } from "src/redux/create-store.js";
 import { getWebpackBuildHash } from "./get-webpack-build-hash.js";
 
 const hashObj = getWebpackBuildHash();
@@ -46,12 +47,12 @@ export function getHtmlMidPart(props: PageData) {
  * @param url url of error page
  * @returns string
  */
-export function getHtmlEndPart(props: PageData, isError: boolean, url: string) {
+export function getHtmlEndPart(props: PageData, isError: boolean, url: string, store: AppStore) {
   return `
   </div>
   <script async src="/client${process.env.IS_LOCAL === "false" ? "." + hashObj?.clientJsHash : ""}.js"></script>
   <script>
-  window.pageProps = ${JSON.stringify(props)};
+  window.__PreloadedState__ = ${JSON.stringify(store.getState(), null, 2)}
   if(${isError}) {
     window.location.replace("${url}");
   }

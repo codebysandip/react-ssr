@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Request, Response } from "express";
-import { COOKIE_REFRESH_TOKEN, COOKIE_TOKEN, URL_REFERESH_TOKEN } from "src/const.js";
+import { COOKIE_REFRESH_TOKEN, COOKIE_ACCESS_TOKEN, URL_REFERESH_TOKEN } from "src/const.js";
 import { ApiResponse } from "../models/api-response.js";
 import { CookieService } from "./cookie.service.js";
 import ReactSsrConfig from "src/react-ssr.config.js";
 import axios, { AxiosRequestConfig, ResponseType, AxiosResponse, AxiosError } from "axios";
+import { setAccessAndRefreshToken } from "../functions/get-token.js";
 
 const HttClientConfig = ReactSsrConfig().httpClient;
 export class HttpClient {
@@ -42,33 +43,6 @@ export class HttpClient {
       errorCode: -1,
     };
     return response;
-  }
-
-  private static getDefaultHttpClientOptions(options?: HttpClientOptions) {
-    if (!options) {
-      options = {};
-    }
-    if (!options.responseType) {
-      options.responseType = "json";
-    }
-    if (!options.headers) {
-      options.headers = {};
-    }
-    if (options.isAuth === undefined) {
-      // change based on requirement
-      options.isAuth = HttClientConfig.isAuthDefault;
-    }
-    if (options.isAuth) {
-      // add code here to send Authorization header
-      const token = CookieService.get(COOKIE_TOKEN, options.nodeReqObj);
-      if (token) {
-        options.headers["Authorization"] = `Bearer ${token}`;
-      } else {
-        // logout && redirect to login page
-        // can add redirectToLogin in HttpClientOptions. if false don't redirect to login
-      }
-    }
-    return options;
   }
 
   private static retryPromise = (
@@ -114,7 +88,31 @@ export class HttpClient {
     method: "GET" | "POST" | "PUT" | "DELETE",
     options: HttpClientOptions = {},
   ): Promise<ApiResponse<T | null>> {
-    options = this.getDefaultHttpClientOptions(options);
+    if (!options) {
+      options = {};
+    }
+    if (!options.responseType) {
+      options.responseType = "json";
+    }
+    if (!options.headers) {
+      options.headers = {};
+    }
+    if (options.isAuth === undefined) {
+      // change based on requirement
+      options.isAuth = HttClientConfig.isAuthDefault;
+    }
+    if (options.isAuth) {
+      // add code here to send Authorization header
+      const token = CookieService.get(COOKIE_ACCESS_TOKEN, options.nodeReqObj);
+      if (token) {
+        options.headers["Authorization"] = `Bearer ${token}`;
+      } else {
+        const apiResponse = this.getDefaultApiResponseObj();
+        apiResponse.status = 401;
+        return Promise.resolve(apiResponse);
+      }
+    }
+
     url = this.getUrl(url);
     // let retryCount = 0;
     const maxRetryCount = HttClientConfig.maxRetryCount || 3;
@@ -162,26 +160,23 @@ export class HttpClient {
               .then((response) => {
                 // response of refresh token request
                 if (
-                  (response as AxiosResponse<AuthResponse>).request &&
-                  (response as AxiosResponse<AuthResponse>).request.url &&
-                  new URL((response as AxiosResponse<AuthResponse>).request.url).pathname === URL_REFERESH_TOKEN
+                  (response as AxiosResponse<AuthResponse>).config &&
+                  (response as AxiosResponse<AuthResponse>).config.url === URL_REFERESH_TOKEN
                 ) {
                   const apiResponse = this.getApiResponseObject<AuthResponse>(response as AxiosResponse<AuthResponse>);
                   // if status 200 then token generated
                   if (apiResponse.status === 200) {
                     // save new token in cookie storage
-                    CookieService.set(COOKIE_TOKEN, apiResponse.data?.token || "", 10, options?.nodeRespObj);
-                    CookieService.set(
-                      COOKIE_REFRESH_TOKEN,
-                      apiResponse.data?.refreshToken || "",
-                      10,
-                      options?.nodeRespObj,
+                    setAccessAndRefreshToken(
+                      apiResponse.data.accessToken,
+                      apiResponse.data.refreshToken,
+                      options.nodeRespObj,
                     );
                     // add new token in Authorization header
                     if (!requestConfig.headers) {
                       requestConfig.headers = {};
                     }
-                    requestConfig.headers["Authorization"] = `Bearer ${apiResponse.data?.token}`;
+                    requestConfig.headers["Authorization"] = `Bearer ${apiResponse.data?.accessToken}`;
                     // send original request again
                     return axios(requestConfig);
                   } else {
@@ -400,6 +395,6 @@ export interface HttpClientOptions {
 }
 
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
   refreshToken: string;
 }

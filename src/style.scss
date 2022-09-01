@@ -1,1 +1,10 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
+
+.nav-link {
+  cursor: pointer;
+  margin: 0;
+}
+
+.invalid-feedback {
+  display: block;
+}

@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "core/components/header/header.js";
 import { Route, Routes } from "react-router-dom";
 import Lazy from "./core/components/lazy/lazy.component.js";
 import { matchPath, useLocation } from "react-router";
 import { Routes as PageRoutes } from "./routes.js";
 import { NO_HEADER_PATHS } from "./const.js";
+import { CompModule } from "./core/models/route.model.js";
 
 /**
  * Check for rendering is first time.
@@ -39,27 +40,27 @@ export function App(props: AppProps) {
   return (
     <>
       {showHeader && <Header />}
-      {/* for SSR component will available so we can directly render component */}
-      {process.env.IS_SERVER === "true" && props.comp ? (
-        <props.comp {...(props.pageProps || {})} />
-      ) : (
+      <div className="container">
         <Routes>
           {PageRoutes.map((r, idx) => {
+            const match = matchPath(r.path, location.pathname);
             return (
               <Route
                 path={r.path}
-                element={<Lazy moduleProvider={r.component} Component={isFirst ? props.comp : undefined} {...props} />}
+                element={
+                  <Lazy moduleProvider={r.component} module={isFirst && match ? props.module : undefined} {...props} />
+                }
                 key={idx}
               />
             );
           })}
         </Routes>
-      )}
+      </div>
     </>
   );
 }
 
 export interface AppProps {
-  comp?: React.ComponentClass;
+  module?: CompModule;
   pageProps?: any;
 }

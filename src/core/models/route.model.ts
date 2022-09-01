@@ -1,3 +1,8 @@
+import { Reducer } from "@reduxjs/toolkit";
+import { ApiResponse } from "./api-response.js";
+import { ContextData } from "./context.model.js";
+import { PageData } from "./page-data.js";
+
 export interface IRoute {
   /**
    * React route path
@@ -6,7 +11,7 @@ export interface IRoute {
   /**
    * Lazy loaded component
    */
-  component: () => Promise<{ default: any }>;
+  component: CompModuleImport;
   /**
    * Is Static Page. If true it will cached for performance
    * @default false
@@ -19,3 +24,10 @@ export interface IRoute {
    */
   isSSR: boolean;
 }
+
+export type CompModule = {
+  default: any;
+  getInitialProps?: (ctx: ContextData) => Promise<ApiResponse<PageData | null>>;
+  reducer?: { [key: string]: Reducer<any> };
+};
+export type CompModuleImport = () => Promise<CompModule>;
