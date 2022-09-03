@@ -8,7 +8,7 @@ import { RootState } from "src/redux/create-store.js";
 declare global {
     interface Window {
         pageProps?: ApiResponse<PageData>;
-        __PreloadedState__: any;
+        __SSRDATA__: any;
     }
     class SsrComponent<P={}, S={}> extends React.Component<P, S> {
         getInitialProps: (context: ContextData) => Promise<ApiResponse<PageData>|IRedirect>;

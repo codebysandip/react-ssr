@@ -1,19 +1,25 @@
 import { Response } from "express";
 import { renderToPipeableStream } from "react-dom/server";
 import { StaticRouter } from "react-router-dom/server.js";
-import { App } from "./app.js";
-import { PageData } from "./core/models/page-data.js";
+import { PageData } from "../core/models/page-data.js";
 import ServerError from "pages/error/500/500.component.js";
-import { getHtmlEndPart, getHtmlMidPart, getHtmlStartPart } from "./ssr/functions/getHtml.js";
+import { getHtmlEndPart, getHtmlMidPart, getHtmlStartPart } from "./functions/getHtml.js";
 import { Writable } from "stream";
-import { Provider } from "react-redux";
-import { EnhancedStore } from "@reduxjs/toolkit";
-import { CompModule } from "./core/models/route.model.js";
+import { CompModule } from "../core/models/route.model.js";
+import { Helmet, HelmetData } from "react-helmet";
+import { ROUTE_500 } from "src/const.js";
+import { ContextData } from "src/core/models/context.model.js";
+import ReactSsrApp from "src/index.js";
+import SsrConfig from "src/react-ssr.config.js";
+
+const ssrConfig = SsrConfig();
 
 class HtmlWritable extends Writable {
   private resp: Response;
-  private chunks: any = [];
+  private chunks: any[] = [];
   private html = "";
+  public helmet!: HelmetData;
+
   constructor(resp: Response) {
     super();
     this.resp = resp;
@@ -24,6 +30,10 @@ class HtmlWritable extends Writable {
   }
 
   _write(chunk: any, encoding: BufferEncoding, callback: () => void) {
+    if (!this.chunks.length) {
+      this.helmet = Helmet.renderStatic();
+      this.resp.write(getHtmlMidPart(this.helmet));
+    }
     this.chunks.push(chunk);
     // console.log("chunk!!", Buffer.from(chunk).toString());
     this.resp.write(chunk);
@@ -44,52 +54,52 @@ class HtmlWritable extends Writable {
  * @returns rendered HTML
  */
 export function pipeHtml(
-  resp: Response,
+  ctx: ContextData,
   module: CompModule,
   props: PageData,
   url: string,
   isError: boolean,
   doCache: boolean,
-  store: EnhancedStore,
 ) {
-  const htmlMidPart = getHtmlMidPart(props);
-  resp.write(htmlMidPart);
   let didError = isError;
-  const writeable = new HtmlWritable(resp);
+  const writeable = new HtmlWritable(ctx.res as Response);
   const stream = renderToPipeableStream(
     <StaticRouter location={url}>
-      <Provider store={store}>
-        <App module={module} pageProps={props} />
-      </Provider>
+      <ReactSsrApp module={module} ctx={ctx} />
     </StaticRouter>,
     {
       onShellReady() {
-        resp.statusCode = didError ? 500 : 200;
-
         stream.pipe(writeable);
       },
       onShellError() {
         console.log("onShellError!!");
-        resp.statusCode = 500;
         const errorHtmlStream = renderToPipeableStream(<ServerError />);
         errorHtmlStream.pipe(writeable);
       },
       onError(err) {
         console.log("error!!", err);
         didError = true;
-        url = "/500";
+        url = ROUTE_500;
       },
     },
   );
   writeable.on("finish", () => {
-    // const html = writeable.getHtml();
-    // console.log("html!!", html);
-    // resp.write(html);
-    const htmlEndPart = getHtmlEndPart(props, didError, url, store);
-    resp.write(htmlEndPart);
-    resp.end();
+    if (ssrConfig.getSsrData) {
+      ctx.ssrData = ssrConfig.getSsrData(ctx);
+    }
+    const htmlEndPart = getHtmlEndPart(
+      ctx.ssrData || ctx.pageData || {},
+      didError,
+      url,
+      writeable.helmet.script.toString(),
+    );
+    (ctx.res as Response).write(htmlEndPart);
+    (ctx.res as Response).end();
     if (!didError && doCache) {
-      staticPageCache.set(url, getHtmlStartPart() + htmlMidPart + writeable.getHtml() + htmlEndPart);
+      staticPageCache.set(
+        url,
+        getHtmlStartPart() + getHtmlMidPart(writeable.helmet) + writeable.getHtml() + htmlEndPart,
+      );
     }
   });
 }

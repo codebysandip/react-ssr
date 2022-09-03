@@ -178,6 +178,7 @@ export default function (env, args, isProd = false) {
               return moduleName;
             },
           }),
+          "react-helmet",
         ]
       : [],
     externalsPresets: { node: isServer },

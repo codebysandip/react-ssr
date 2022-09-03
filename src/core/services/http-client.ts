@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Request, Response } from "express";
 import { COOKIE_REFRESH_TOKEN, COOKIE_ACCESS_TOKEN, URL_REFERESH_TOKEN } from "src/const.js";
 import { ApiResponse } from "../models/api-response.js";
 import { CookieService } from "./cookie.service.js";
 import ReactSsrConfig from "src/react-ssr.config.js";
 import axios, { AxiosRequestConfig, ResponseType, AxiosResponse, AxiosError } from "axios";
 import { setAccessAndRefreshToken } from "../functions/get-token.js";
+import { ContextData } from "../models/context.model.js";
 
 const HttClientConfig = ReactSsrConfig().httpClient;
 export class HttpClient {
@@ -103,7 +103,7 @@ export class HttpClient {
     }
     if (options.isAuth) {
       // add code here to send Authorization header
-      const token = CookieService.get(COOKIE_ACCESS_TOKEN, options.nodeReqObj);
+      const token = CookieService.get(COOKIE_ACCESS_TOKEN, options.ctx?.req);
       if (token) {
         options.headers["Authorization"] = `Bearer ${token}`;
       } else {
@@ -170,7 +170,7 @@ export class HttpClient {
                     setAccessAndRefreshToken(
                       apiResponse.data.accessToken,
                       apiResponse.data.refreshToken,
-                      options.nodeRespObj,
+                      options.ctx?.res,
                     );
                     // add new token in Authorization header
                     if (!requestConfig.headers) {
@@ -264,21 +264,12 @@ export class HttpClient {
    * @returns {@link ApiResponse}
    */
   private static getApiResponseObject<T>(response: AxiosResponse<T> | AxiosError<T>) {
-    let resp: AxiosResponse | undefined;
-    if (!(response as AxiosError).isAxiosError) {
-      resp = response as AxiosResponse<any>;
-    } else {
-      resp = (response as AxiosError<any>).response;
-    }
-
-    const data: any = resp?.data;
-
     const message = HttClientConfig.processMessage(response);
     const apiResponse: ApiResponse<T> = {
-      status: resp?.status || 0,
+      status: HttClientConfig.getStatusCode(response),
       data: HttClientConfig.processData(response),
       message,
-      errorCode: (data && data[HttClientConfig.apiResponse.errorCodeKey]) || -1,
+      errorCode: HttClientConfig.getErrorCode(response),
     };
     if (process.env.NODE_ENV === "test") {
       apiResponse.response = response;
@@ -287,12 +278,12 @@ export class HttpClient {
   }
 
   private static handleResponse<T>(response: AxiosResponse<T>, isFirst: boolean, options: HttpClientOptions) {
-    if (process.env.IS_SERVER === "true" && options.nodeRespObj && !options.nodeRespObj.headersSent) {
+    if (process.env.IS_SERVER === "true" && options.ctx?.res && !options.ctx.res.headersSent) {
       // check if api sending cookie to set
       const setCookie = response.headers["Set-Cookie"] || response.headers["Set-Cookie".toLocaleLowerCase()];
       if (setCookie) {
-        if (options.nodeRespObj) {
-          options.nodeRespObj.setHeader("Set-Cookie", setCookie.replace(/\r?\n|\r/g, ""));
+        if (options.ctx.res) {
+          options.ctx.res.setHeader("Set-Cookie", setCookie.replace(/\r?\n|\r/g, ""));
         }
       }
     }
@@ -326,7 +317,7 @@ export class HttpClient {
       }
       // This code will execute when token is invalid
       // get refresh token from cookie storage
-      const refreshToken = CookieService.get(COOKIE_REFRESH_TOKEN, options.nodeReqObj);
+      const refreshToken = CookieService.get(COOKIE_REFRESH_TOKEN, options.ctx?.req);
       // regenerate token from refresh token
       return axios({
         url: this.getUrl(URL_REFERESH_TOKEN),
@@ -373,15 +364,9 @@ export interface HttpClientOptions {
    */
   maxRetryCount?: number;
   /**
-   * Request object of node. This will use only in case of getting
-   * cookie on server
+   * Context Data will be necessary to pass when HttpClient will run on server and needs data from cookie
    */
-  nodeReqObj?: Request;
-  /**
-   * Response object of node. This will use only in case of setting
-   * cookie on server
-   */
-  nodeRespObj?: Response;
+  ctx?: ContextData;
   /**
    * Show loader
    * @default true

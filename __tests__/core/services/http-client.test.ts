@@ -8,11 +8,11 @@ const mock = new MockAdapter(axios);
 const request = {
   success: {
     url: "/api/test-api",
-    responseBody: null,
+    responseBody: {},
   },
   badRequest: {
     url: "/api/400-response",
-    responseBody: null,
+    responseBody: {},
   },
   badRequestWithResponse: {
     url: "/api/400-response-with-body",
@@ -22,7 +22,7 @@ const request = {
   },
   withAuth: {
     url: "/api/with-auth",
-    responseBody: null,
+    responseBody: {},
   },
 };
 

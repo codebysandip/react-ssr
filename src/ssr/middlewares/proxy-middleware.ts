@@ -25,10 +25,11 @@ export const proxyMiddleware = function (proxyUrl: string) {
         return proxyReqOpts;
       },
       // eslint-disable-next-line n/handle-callback-err
-      proxyErrorHandler: function (err, res) {
+      proxyErrorHandler: (err, res) => {
         // change response as per need
         // this should match the error response of API
-        res.send({
+        console.error(`Error in proxy request. Url:${req.url}!!`, err);
+        res.status(500).send({
           error_message: "Something went wrong!!",
         });
       },

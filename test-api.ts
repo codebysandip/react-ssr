@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 const secretKey = "react-ssr";
-const accessTokenExpTime = 60 * 5;
+const accessTokenExpTime = "5m";
 const refreshTokenExpTime = 60 * 60;
 // mimic api to sent data after 50 sec
 app.use((req, res, next) => {
@@ -86,7 +86,6 @@ const validateTokenMiddleware = (req: Request, res: Response, next: NextFunction
   token = token.split("Bearer ")[1];
   try {
     const decoded = jwt.verify(token, secretKey);
-    console.log("decoded!!", decoded);
     res.locals.user = decoded;
     next();
   } catch (error) {
@@ -97,11 +96,12 @@ const validateTokenMiddleware = (req: Request, res: Response, next: NextFunction
 };
 
 app.get("/api/product", (req, res) => {
-  res.json({ products: Products });
+  res.json({ products: Products, seo: { title: "Products Listing" } });
 });
 
 app.get("/api/product/:id", validateTokenMiddleware, (req, res) => {
   const product = Products.find((p) => p.id === parseInt(req.params.id));
+  console.log("product!!", product, req.params.id);
   res.status(product ? 200 : 204).json(product || {});
 });
 

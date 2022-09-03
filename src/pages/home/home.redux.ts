@@ -3,14 +3,15 @@ import { PayloadAction } from "@reduxjs/toolkit";
 import { GetState, ThunkApi } from "src/core/models/common.model.js";
 import { AppDispatch } from "src/redux/create-store.js";
 import * as toolkitRaw from "@reduxjs/toolkit";
+import { ContextData } from "src/core/models/context.model.js";
 const { createSlice } = ((toolkitRaw as any).default ?? toolkitRaw) as typeof toolkitRaw;
 
 export interface HomeState {
-  products: Product[];
+  pageData: HomeData;
   productById?: Product;
 }
 const initialState: HomeState = {
-  products: [],
+  pageData: { products: [] },
   productById: undefined,
 };
 
@@ -22,14 +23,15 @@ const initialState: HomeState = {
 export const fetchProducts = () => {
   return async (dispatch: AppDispatch, _getState: GetState, api: ThunkApi) => {
     const apiResponse = await api.get<HomeData>("/api/product");
-    dispatch(productsLoaded(apiResponse.data?.products || []));
+    dispatch(productsPageDataLoaded(apiResponse.data || { products: [] }));
     return apiResponse;
   };
 };
 
-export const fetchProductById = (id: number) => {
+export const fetchProductById = (id: number, ctx: ContextData) => {
   return async (dispatch: AppDispatch, _getState: GetState, api: ThunkApi) => {
-    const apiResponse = await api.get<Product>(`/api/product/${id}`, { isAuth: true });
+    const apiResponse = await api.get<Product>(`/api/product/${id}`, { isAuth: true, ctx });
+    console.log("fetchProductById!!", apiResponse.data);
     dispatch(productByIdLoaded(apiResponse.data || undefined));
     return apiResponse;
   };
@@ -39,8 +41,8 @@ const homeSlice = createSlice({
   name: "home",
   initialState,
   reducers: {
-    productsLoaded: (state, action: PayloadAction<Product[]>) => {
-      state.products = action.payload;
+    productsPageDataLoaded: (state, action: PayloadAction<HomeData>) => {
+      state.pageData = action.payload;
     },
     productByIdLoaded: (state, action: PayloadAction<Product | undefined>) => {
       state.productById = action.payload;
@@ -53,5 +55,5 @@ const homeSlice = createSlice({
   // },
 });
 
-export const { productsLoaded, productByIdLoaded } = homeSlice.actions;
+export const { productsPageDataLoaded, productByIdLoaded } = homeSlice.actions;
 export default homeSlice.reducer;

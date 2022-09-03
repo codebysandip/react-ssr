@@ -1,6 +1,6 @@
 import { Reducer } from "@reduxjs/toolkit";
 import { ApiResponse } from "./api-response.js";
-import { ContextData } from "./context.model.js";
+import { ContextDataWithStore } from "./context-with-store.model.js";
 import { PageData } from "./page-data.js";
 
 export interface IRoute {
@@ -23,11 +23,12 @@ export interface IRoute {
    * There is case when page is not for SEO or page access required login
    */
   isSSR: boolean;
+  params?: Record<string, string>;
 }
 
 export type CompModule = {
   default: any;
-  getInitialProps?: (ctx: ContextData) => Promise<ApiResponse<PageData | null>>;
+  getInitialProps?: (ctx: ContextDataWithStore) => Promise<ApiResponse<PageData | null>>;
   reducer?: { [key: string]: Reducer<any> };
 };
 export type CompModuleImport = () => Promise<CompModule>;

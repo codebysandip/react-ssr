@@ -6,6 +6,8 @@ import { matchPath, useLocation } from "react-router";
 import { Routes as PageRoutes } from "./routes.js";
 import { NO_HEADER_PATHS } from "./const.js";
 import { CompModule } from "./core/models/route.model.js";
+import { SsrHead } from "core/components/ssr-head/ssr-head.comp.js";
+import "./style.scss";
 
 /**
  * Check for rendering is first time.
@@ -37,8 +39,11 @@ export function App(props: AppProps) {
       setShowHeader(isHeaderVisible);
     }
   }, [location.pathname]);
+
   return (
     <>
+      {/* Use SsrHead component to set common Head */}
+      <SsrHead />
       {showHeader && <Header />}
       <div className="container">
         <Routes>
@@ -63,4 +68,5 @@ export function App(props: AppProps) {
 export interface AppProps {
   module?: CompModule;
   pageProps?: any;
+  store?: any;
 }

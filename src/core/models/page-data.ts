@@ -33,13 +33,13 @@ export interface IRedirect {
    * redirect will use to redirect to another page when getInitialProps will return redirect key
    * from getInitialProps
    */
-  redirect?: PageRedirect;
+  redirect: PageRedirect;
 }
 /**
  * Common interface for page data.
  * Don't remove IRedirect extend
  */
-export interface PageData extends IRedirect {
+export interface PageData {
   /**
    * Some API sends page meta information as seo key in API response
    * change this key as per response of API

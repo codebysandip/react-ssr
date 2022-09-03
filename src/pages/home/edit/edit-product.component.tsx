@@ -1,11 +1,11 @@
 import { Component, ReactNode } from "react";
 import { connect } from "react-redux";
-import { ContextData } from "src/core/models/context.model.js";
 import { RootState } from "src/redux/create-store.js";
 import { fetchProductById } from "../home.redux.js";
 import HomeReducer from "pages/home/home.redux";
 import * as Yup from "yup";
 import { Formik, Form, Field } from "formik";
+import { ContextDataWithStore } from "src/core/models/context-with-store.model.js";
 
 class EditProduct extends Component<EditComponentProps> {
   private editProductSchema = Yup.object().shape({
@@ -15,8 +15,8 @@ class EditProduct extends Component<EditComponentProps> {
     category: Yup.string().required(),
   });
 
-  public static async getInitialProps(ctx: ContextData) {
-    return ctx.store.dispatch(fetchProductById(ctx.params.id as number));
+  public static async getInitialProps(ctx: ContextDataWithStore) {
+    return ctx.store.dispatch(fetchProductById(ctx.params.id as number, ctx));
   }
 
   render(): ReactNode {

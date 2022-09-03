@@ -8,7 +8,6 @@ import { Location, useParams, useLocation } from "react-router";
 // @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useSearchParams } from "react-router-dom";
-import { AppStore } from "src/redux/create-store.js";
 
 /**
  * Create context data for server side rendering.
@@ -17,7 +16,7 @@ import { AppStore } from "src/redux/create-store.js";
  * @param resp {@link Response}
  * @returns ContextData {@link ContextData}
  */
-export function createContextServer(req: Request, resp: Response, store: AppStore) {
+export function createContextServer(req: Request, resp: Response) {
   if (!JSON.parse(process.env.IS_SERVER)) {
     throw new Error("createContextServer function can execute only on server!!");
   }
@@ -26,7 +25,6 @@ export function createContextServer(req: Request, resp: Response, store: AppStor
       pathname: req.path,
       hostname: req.hostname,
     },
-    store,
     query: req.query,
     params: req.params,
     req,
@@ -43,12 +41,7 @@ export function createContextServer(req: Request, resp: Response, store: AppStor
  * @param params Path params get from {@link useParams}
  * @returns ContextData {@link ContextData}
  */
-export function createContextClient(
-  location: Location,
-  searchParams: URLSearchParams,
-  params: Record<string, string>,
-  store: AppStore,
-) {
+export function createContextClient(location: Location, searchParams: URLSearchParams, params: Record<string, string>) {
   if (JSON.parse(process.env.IS_SERVER)) {
     throw new Error("createContextClient function can execute only on client!!");
   }
@@ -63,7 +56,6 @@ export function createContextClient(
     },
     query,
     params,
-    store,
   };
   return context;
 }

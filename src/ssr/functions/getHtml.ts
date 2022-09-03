@@ -1,6 +1,5 @@
-import { PageData } from "src/core/models/page-data.js";
-import { AppStore } from "src/redux/create-store.js";
 import { getWebpackBuildHash } from "./get-webpack-build-hash.js";
+import { HelmetData } from "react-helmet";
 
 const hashObj = getWebpackBuildHash();
 
@@ -29,13 +28,14 @@ export function getHtmlStartPart() {
  * @param props PageData
  * @returns string
  */
-export function getHtmlMidPart(props: PageData) {
+export function getHtmlMidPart(helmet: HelmetData) {
   return `
-  <meta name="description" content="${props.seo?.metaData?.description || ""}" />
-  <meta name="keywords" content="${props.seo?.metaData?.keywords || ""}" />
-  <title>${props.seo?.title || "React SSR"}</title>
+  ${helmet.title.toString()}
+  ${helmet.meta.toString()}
+  ${helmet.link.toString()}
 </head>
-<body>
+<body ${helmet.bodyAttributes.toString()}>
+  ${helmet.noscript.toString()}
   <div id="root">
   `;
 }
@@ -47,16 +47,17 @@ export function getHtmlMidPart(props: PageData) {
  * @param url url of error page
  * @returns string
  */
-export function getHtmlEndPart(props: PageData, isError: boolean, url: string, store: AppStore) {
+export function getHtmlEndPart(ssrData: any, isError: boolean, url: string, scripts = "") {
   return `
   </div>
   <script async src="/client${process.env.IS_LOCAL === "false" ? "." + hashObj?.clientJsHash : ""}.js"></script>
   <script>
-  window.__PreloadedState__ = ${JSON.stringify(store.getState(), null, 2)}
+  window.__SSRDATA__ = ${JSON.stringify(ssrData, null, 2)}
   if(${isError}) {
     window.location.replace("${url}");
   }
   </script>
+  ${scripts}
   </body>
   </html>
 `;

@@ -1,15 +1,9 @@
 import { hydrateRoot, createRoot } from "react-dom/client";
 // import { matchPath } from "react-router";
 import { BrowserRouter } from "react-router-dom";
-import { App } from "./app.js";
-import { Routes } from "./routes.js";
-import "./style.scss";
 import { getRoute } from "./core/functions/get-route.js";
-import { Provider } from "react-redux";
-import { createStore } from "src/redux/create-store.js";
-import { getAccessTokenData } from "./core/functions/get-token.js";
-import { loginSuccess } from "./pages/auth/auth.redux.js";
 import { CompModule } from "./core/models/route.model.js";
+import ReactSsrApp from "./index.js";
 
 const container = document.getElementById("root");
 if (!container) {
@@ -18,35 +12,18 @@ if (!container) {
 /**
  * Find route for Routes by matching current current location of browser
  */
-let route = getRoute(window.location.pathname);
-/**
- * If route will not match redirect to 404 not found page
- */
-if (!route) {
-  route = Routes.find((r) => r.path === "/404");
-}
+const route = getRoute(window.location.pathname);
 
-const createBrowserRouter = (module?: CompModule) => {
-  const store = createStore(module?.reducer);
-  const accessTokenData = getAccessTokenData();
-  if (accessTokenData) {
-    store.dispatch(
-      loginSuccess({
-        isLoggedIn: true,
-        user: accessTokenData,
-      }),
-    );
-  }
-
+const createBrowserRouter = (module: CompModule) => {
+  // Don't change anything here
+  // Add your code in src/index.tsx
   return (
     <BrowserRouter>
-      <Provider store={store}>
-        <App module={module} />
-      </Provider>
+      <ReactSsrApp module={module} />
     </BrowserRouter>
   );
 };
-const hydrateApp = (module?: CompModule) => {
+const hydrateApp = (module: CompModule) => {
   return hydrateRoot(container, createBrowserRouter(module));
 };
 

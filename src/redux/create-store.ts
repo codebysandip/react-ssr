@@ -32,6 +32,7 @@ export function createStore(lazyReducers?: ReducersMapObject) {
   if (!lazyReducers) {
     lazyReducers = {};
   }
+  const preloadedState = process.env.IS_SERVER !== "true" ? window.__SSRDATA__ : {};
   const store = configureStore({
     reducer: {
       ...allReducers,
@@ -44,7 +45,7 @@ export function createStore(lazyReducers?: ReducersMapObject) {
         },
       });
     },
-    preloadedState: process.env.IS_SERVER !== "true" ? window.__PreloadedState__ : {},
+    preloadedState,
     devTools: process.env.IS_LOCAL === "true",
   });
 

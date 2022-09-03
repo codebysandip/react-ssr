@@ -47,7 +47,7 @@ class HeaderComp extends Component<HeaderProps> {
               </li>
               <li className="nav-item">
                 {!this.props.isLoggedIn && (
-                  <Link className="nav-link" to="/login">
+                  <Link className="nav-link" to={ROUTE_LOGIN}>
                     Login
                   </Link>
                 )}
