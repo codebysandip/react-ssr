@@ -7,7 +7,7 @@ import { join } from "path";
  * @returns Hash of main css and js
  */
 export function getWebpackBuildHash(): null | { clientJsHash: string; styleHash: string } {
-  if (process.env.IS_LOCAL === "false") {
+  if (!process.env.IS_LOCAL) {
     let hashStr = "";
     const path = join(process.cwd(), "build/meta.json");
     if (existsSync(path)) {

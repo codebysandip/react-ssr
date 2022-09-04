@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Request, Response } from "express";
-import { COOKIE_REFRESH_TOKEN, COOKIE_TOKEN, URL_REFERESH_TOKEN } from "src/const.js";
+import { COOKIE_REFRESH_TOKEN, COOKIE_ACCESS_TOKEN, URL_REFERESH_TOKEN } from "src/const.js";
 import { ApiResponse } from "../models/api-response.js";
 import { CookieService } from "./cookie.service.js";
 import ReactSsrConfig from "src/react-ssr.config.js";
 import axios, { AxiosRequestConfig, ResponseType, AxiosResponse, AxiosError } from "axios";
+import { setAccessAndRefreshToken } from "../functions/get-token.js";
+import { ContextData } from "../models/context.model.js";
 
 const HttClientConfig = ReactSsrConfig().httpClient;
 export class HttpClient {
@@ -16,14 +17,14 @@ export class HttpClient {
     if (!options) {
       options = {};
     }
-    return this.sendRequest<T>(url, "POST", { body, ...options });
+    return this.sendRequest<T>(url, "POST", { data: body, ...options });
   }
 
   public static put<T>(url: string, body: any, options?: HttpClientOptions) {
     if (!options) {
       options = {};
     }
-    return this.sendRequest<T>(url, "PUT", { body, ...options });
+    return this.sendRequest<T>(url, "PUT", { data: body, ...options });
   }
 
   public static delete<T>(url: string, options?: HttpClientOptions) {
@@ -31,7 +32,7 @@ export class HttpClient {
   }
 
   private static getUrl(url: string) {
-    return `${process.env.IS_SERVER === "true" ? process.env.API_BASE_URL : ""}${url}`;
+    return `${process.env.IS_SERVER ? process.env.API_BASE_URL : ""}${url}`;
   }
 
   private static getDefaultApiResponseObj() {
@@ -42,33 +43,6 @@ export class HttpClient {
       errorCode: -1,
     };
     return response;
-  }
-
-  private static getDefaultHttpClientOptions(options?: HttpClientOptions) {
-    if (!options) {
-      options = {};
-    }
-    if (!options.responseType) {
-      options.responseType = "json";
-    }
-    if (!options.headers) {
-      options.headers = {};
-    }
-    if (options.isAuth === undefined) {
-      // change based on requirement
-      options.isAuth = HttClientConfig.isAuthDefault;
-    }
-    if (options.isAuth) {
-      // add code here to send Authorization header
-      const token = CookieService.get(COOKIE_TOKEN, options.nodeReqObj);
-      if (token) {
-        options.headers["Authorization"] = `Bearer ${token}`;
-      } else {
-        // logout && redirect to login page
-        // can add redirectToLogin in HttpClientOptions. if false don't redirect to login
-      }
-    }
-    return options;
   }
 
   private static retryPromise = (
@@ -100,7 +74,7 @@ export class HttpClient {
 
   private static isOnline() {
     return new Promise((resolve, reject) => {
-      const status = process.env.IS_SERVER === "true" ? true : navigator.onLine;
+      const status = process.env.IS_SERVER ? true : navigator.onLine;
       if (status) {
         resolve(status);
       } else {
@@ -109,22 +83,53 @@ export class HttpClient {
     });
   }
 
+  private static setDefaultHttpClientOptions(options?: HttpClientOptions) {
+    if (!options) {
+      options = {};
+    }
+    if (!options.headers) {
+      options.headers = {};
+    }
+    if (options.isAuth === undefined) {
+      // change based on requirement
+      options.isAuth = HttClientConfig.isAuthDefault;
+    }
+    if (!options.responseType) {
+      options.responseType = "json";
+    }
+
+    if (options.showLoader === undefined) {
+      options.showLoader = true;
+    }
+    if (options.isAuth) {
+      const token = CookieService.get(COOKIE_ACCESS_TOKEN, options.ctx?.req);
+      if (token) {
+        options.headers["Authorization"] = `Bearer ${token}`;
+      } else {
+        const apiResponse = this.getDefaultApiResponseObj();
+        apiResponse.status = 401;
+        return Promise.resolve(apiResponse);
+      }
+    }
+    return options;
+  }
+
   private static sendRequest<T>(
     url: string,
     method: "GET" | "POST" | "PUT" | "DELETE",
     options: HttpClientOptions = {},
   ): Promise<ApiResponse<T | null>> {
-    options = this.getDefaultHttpClientOptions(options);
-    url = this.getUrl(url);
-    // let retryCount = 0;
-    const maxRetryCount = HttClientConfig.maxRetryCount || 3;
-    const requestConfig: AxiosRequestConfig = {
-      url,
-      method,
-      data: options.body,
-      responseType: options.responseType,
-      headers: options.headers,
-    };
+    const newoptions = this.setDefaultHttpClientOptions(options);
+    if (newoptions instanceof Promise) {
+      return newoptions;
+    } else {
+      options = newoptions;
+    }
+
+    options.url = this.getUrl(url);
+    options.method = method;
+    const maxRetryCount = options.maxRetryCount || HttClientConfig.maxRetryCount;
+    const requestConfig: AxiosRequestConfig = options;
     // @ts-ignore
     return (
       this.retryPromise(this.isOnline, 1000, maxRetryCount)
@@ -162,26 +167,23 @@ export class HttpClient {
               .then((response) => {
                 // response of refresh token request
                 if (
-                  (response as AxiosResponse<AuthResponse>).request &&
-                  (response as AxiosResponse<AuthResponse>).request.url &&
-                  new URL((response as AxiosResponse<AuthResponse>).request.url).pathname === URL_REFERESH_TOKEN
+                  (response as AxiosResponse<AuthResponse>).config &&
+                  (response as AxiosResponse<AuthResponse>).config.url === URL_REFERESH_TOKEN
                 ) {
                   const apiResponse = this.getApiResponseObject<AuthResponse>(response as AxiosResponse<AuthResponse>);
                   // if status 200 then token generated
                   if (apiResponse.status === 200) {
                     // save new token in cookie storage
-                    CookieService.set(COOKIE_TOKEN, apiResponse.data?.token || "", 10, options?.nodeRespObj);
-                    CookieService.set(
-                      COOKIE_REFRESH_TOKEN,
-                      apiResponse.data?.refreshToken || "",
-                      10,
-                      options?.nodeRespObj,
+                    setAccessAndRefreshToken(
+                      apiResponse.data.accessToken,
+                      apiResponse.data.refreshToken,
+                      options.ctx?.res,
                     );
                     // add new token in Authorization header
                     if (!requestConfig.headers) {
                       requestConfig.headers = {};
                     }
-                    requestConfig.headers["Authorization"] = `Bearer ${apiResponse.data?.token}`;
+                    requestConfig.headers["Authorization"] = `Bearer ${apiResponse.data?.accessToken}`;
                     // send original request again
                     return axios(requestConfig);
                   } else {
@@ -269,21 +271,12 @@ export class HttpClient {
    * @returns {@link ApiResponse}
    */
   private static getApiResponseObject<T>(response: AxiosResponse<T> | AxiosError<T>) {
-    let resp: AxiosResponse | undefined;
-    if (!(response as AxiosError).isAxiosError) {
-      resp = response as AxiosResponse<any>;
-    } else {
-      resp = (response as AxiosError<any>).response;
-    }
-
-    const data: any = resp?.data;
-
     const message = HttClientConfig.processMessage(response);
     const apiResponse: ApiResponse<T> = {
-      status: resp?.status || 0,
+      status: HttClientConfig.getStatusCode(response),
       data: HttClientConfig.processData(response),
       message,
-      errorCode: (data && data[HttClientConfig.apiResponse.errorCodeKey]) || -1,
+      errorCode: HttClientConfig.getErrorCode(response),
     };
     if (process.env.NODE_ENV === "test") {
       apiResponse.response = response;
@@ -292,12 +285,12 @@ export class HttpClient {
   }
 
   private static handleResponse<T>(response: AxiosResponse<T>, isFirst: boolean, options: HttpClientOptions) {
-    if (process.env.IS_SERVER === "true" && options.nodeRespObj && !options.nodeRespObj.headersSent) {
+    if (process.env.IS_SERVER && options.ctx?.res && !options.ctx.res.headersSent) {
       // check if api sending cookie to set
       const setCookie = response.headers["Set-Cookie"] || response.headers["Set-Cookie".toLocaleLowerCase()];
       if (setCookie) {
-        if (options.nodeRespObj) {
-          options.nodeRespObj.setHeader("Set-Cookie", setCookie.replace(/\r?\n|\r/g, ""));
+        if (options.ctx.res) {
+          options.ctx.res.setHeader("Set-Cookie", setCookie.replace(/\r?\n|\r/g, ""));
         }
       }
     }
@@ -331,7 +324,7 @@ export class HttpClient {
       }
       // This code will execute when token is invalid
       // get refresh token from cookie storage
-      const refreshToken = CookieService.get(COOKIE_REFRESH_TOKEN, options.nodeReqObj);
+      const refreshToken = CookieService.get(COOKIE_REFRESH_TOKEN, options.ctx?.req);
       // regenerate token from refresh token
       return axios({
         url: this.getUrl(URL_REFERESH_TOKEN),
@@ -347,20 +340,18 @@ export class HttpClient {
   }
 }
 
-export interface HttpClientOptions {
+export interface HttpClientOptions extends AxiosRequestConfig {
   queryString?:
     | string
     | URLSearchParams
     | Record<string, string | number | boolean | string[] | number[] | boolean[]>
     | [string, string | number | boolean | string[] | number[] | boolean[]][];
-  body?: any;
   /**
    * Request is authenticated
    * If true Authorization header will send
    * @default true
    */
   isAuth?: boolean;
-  headers?: Record<string, string | number | boolean>;
   /**
    * Response type of response
    * @default json
@@ -378,15 +369,9 @@ export interface HttpClientOptions {
    */
   maxRetryCount?: number;
   /**
-   * Request object of node. This will use only in case of getting
-   * cookie on server
+   * Context Data will be necessary to pass when HttpClient will run on server and needs data from cookie
    */
-  nodeReqObj?: Request;
-  /**
-   * Response object of node. This will use only in case of setting
-   * cookie on server
-   */
-  nodeRespObj?: Response;
+  ctx?: ContextData;
   /**
    * Show loader
    * @default true
@@ -400,6 +385,6 @@ export interface HttpClientOptions {
 }
 
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
   refreshToken: string;
 }

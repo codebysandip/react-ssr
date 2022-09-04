@@ -23,10 +23,9 @@ const require = createRequire(import.meta.url);
 // const staticPageCache = new NodeCache();
 const app = express();
 
-const isLocal = JSON.parse(process.env.IS_LOCAL);
 require("dotenv").config();
 
-if (isLocal) {
+if (process.env.IS_LOCAL) {
   const env = process.env.ENV;
   let webpackClientConfig: any;
   const baseEnv = { IS_LOCAL: process.env.IS_LOCAL, IS_SERVER: "false", ENV: env };
@@ -56,13 +55,13 @@ if (isLocal) {
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-
-if (process.env.IS_LOCAL === "true") {
+if (process.env.IS_LOCAL) {
   // Following code is just for reference
   // If api is not available and you want to return dummy response
   // create a test api in test-api.ts and add here
   // Don't forget to remove proxy otherwise response will alaways come from test api
   app.get("/api/home", proxyMiddleware(process.env.LOCAL_API_SERVER));
+  app.get("/api/products", proxyMiddleware(process.env.LOCAL_API_SERVER));
 }
 
 app.get("*.(css|js|svg|jpg|woff|woff2|json)", StaticRoute);

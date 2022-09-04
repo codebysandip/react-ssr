@@ -1,4 +1,6 @@
 import { Request, Response } from "express";
+import { ApiResponse } from "./api-response.js";
+import { PageData } from "./page-data.js";
 
 export interface ContextData {
   location: {
@@ -13,7 +15,7 @@ export interface ContextData {
    * Path params
    * @example /path/:id :id will available as params.id
    */
-  params: Record<string, string>;
+  params: Record<string, string | number | boolean>;
   /**
    * Request Object of express will available
    * only for server side
@@ -26,4 +28,12 @@ export interface ContextData {
    * @see https://expressjs.com/en/api.html#res
    */
   res?: Response;
+  /**
+   * Dynamic page data returned from getInitialProps of Page component
+   */
+  pageData?: ApiResponse<PageData>;
+  /**
+   *
+   */
+  ssrData?: any;
 }

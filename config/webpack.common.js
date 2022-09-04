@@ -22,6 +22,7 @@ import { readFileSync } from "fs";
 export default function (env, args, isProd = false) {
   const isWatch = JSON.parse(env.WATCH || env.IS_LOCAL);
   const packageJson = JSON.parse(readFileSync(join(process.cwd(), "package.json"), { encoding: "utf-8" }));
+  const tsconfigJson = JSON.parse(readFileSync(join(process.cwd(), "tsconfig.json"), { encoding: "utf-8" }));
 
   /**
    * Is Build running for Server or Client
@@ -67,7 +68,11 @@ export default function (env, args, isProd = false) {
    */
   const definePluginObj = {};
   Object.keys(env).forEach((key) => {
-    definePluginObj[`process.env.${key}`] = JSON.stringify(env[key]);
+    try {
+      definePluginObj[`process.env.${key}`] = JSON.parse(env[key]);
+    } catch {
+      definePluginObj[`process.env.${key}`] = JSON.stringify(env[key]);
+    }
   });
   const miniCssFileName = !isLocal ? "assets/css/style.[contenthash].css" : "assets/css/style.css";
   const miniCssChunkName = !isLocal ? "assets/css/[name].[contenthash].chunk.css" : "assets/css/[name].chunk.css";
@@ -131,6 +136,13 @@ export default function (env, args, isProd = false) {
       plugins.push(new ReactRefreshPlugin());
     }
   }
+
+  const alias = {};
+  const aliasPaths = tsconfigJson.compilerOptions.paths;
+  Object.keys(aliasPaths).forEach((key) => {
+    const aliasKey = key.replace("/*", "");
+    alias[aliasKey] = getPath(aliasPaths[key][0].replace("/*", ""));
+  });
   return {
     entry,
     output: {
@@ -148,24 +160,9 @@ export default function (env, args, isProd = false) {
       ignored: ["**/node_modules", "**/config"],
     },
     resolve: {
-      alias: {
-        src: getPath("src"),
-        core: getPath("src/core"),
-        pages: getPath("src/pages"),
-        assets: getPath("src/assets"),
-      },
+      alias,
       extensions: [".ts", ".tsx", ".js", ".scss", ".css"],
-      fallback: {
-        // url: false,
-        // path: false,
-        // util: false,
-        // stream: require.resolve("stream-browserify"),
-        // fs: false,
-        // buffer: false,
-        // querystring: false,
-        // http: false,
-        // https: false,
-      },
+      fallback: {},
     },
     target: isServer ? "node" : "web",
     externals: isServer
@@ -175,6 +172,7 @@ export default function (env, args, isProd = false) {
               return moduleName;
             },
           }),
+          "react-helmet",
         ]
       : [],
     externalsPresets: { node: isServer },

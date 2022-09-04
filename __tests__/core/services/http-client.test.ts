@@ -1,6 +1,6 @@
 import { HttpClient } from "src/core/services/http-client.js";
 import { navigatorOnline } from "../../utils/spy-on/navigator.spy.js";
-import { COOKIE_TOKEN } from "src/const.js";
+import { COOKIE_ACCESS_TOKEN } from "src/const.js";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 
@@ -8,11 +8,11 @@ const mock = new MockAdapter(axios);
 const request = {
   success: {
     url: "/api/test-api",
-    responseBody: null,
+    responseBody: {},
   },
   badRequest: {
     url: "/api/400-response",
-    responseBody: null,
+    responseBody: {},
   },
   badRequestWithResponse: {
     url: "/api/400-response-with-body",
@@ -22,7 +22,7 @@ const request = {
   },
   withAuth: {
     url: "/api/with-auth",
-    responseBody: null,
+    responseBody: {},
   },
 };
 
@@ -62,7 +62,7 @@ describe("HttpClient", () => {
   it("Should set Authentication Header when HttpClientOptions.isAuth true", async () => {
     mock.onGet(request.badRequestWithResponse.url).replyOnce(400, request.badRequestWithResponse.responseBody);
     const token = "my-test-token";
-    window.document.cookie = `${COOKIE_TOKEN}=${token}`;
+    window.document.cookie = `${COOKIE_ACCESS_TOKEN}=${token}`;
     const apiResponse = await HttpClient.get(request.success.url, { isAuth: true });
     expect(apiResponse.response?.config.headers?.Authorization).toEqual(`Bearer ${token}`);
   });

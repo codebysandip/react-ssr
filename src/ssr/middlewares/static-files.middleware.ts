@@ -38,7 +38,7 @@ export function StaticRoute(req: Request, res: Response, next: NextFunction) {
     res.status(404).send();
     return;
   }
-  if (process.env.IS_LOCAL !== "true") {
+  if (!process.env.IS_LOCAL) {
     changeUrlBasedOnEncoding(req, res);
   }
   next();

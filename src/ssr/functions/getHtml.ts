@@ -1,5 +1,5 @@
-import { PageData } from "src/core/models/page-data.js";
 import { getWebpackBuildHash } from "./get-webpack-build-hash.js";
+import { HelmetData } from "react-helmet";
 
 const hashObj = getWebpackBuildHash();
 
@@ -17,9 +17,7 @@ export function getHtmlStartPart() {
     content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1.0, user-scalable=0"
   />
   <link rel="shortcut icon" href="/favicon.ico" />
-  <link href="/assets/css/style${
-    process.env.IS_LOCAL === "false" ? "." + hashObj?.styleHash : ""
-  }.css" rel="stylesheet" />
+  <link href="/assets/css/style${!process.env.IS_LOCAL ? "." + hashObj?.styleHash : ""}.css" rel="stylesheet" />
 `;
 }
 
@@ -28,13 +26,14 @@ export function getHtmlStartPart() {
  * @param props PageData
  * @returns string
  */
-export function getHtmlMidPart(props: PageData) {
+export function getHtmlMidPart(helmet: HelmetData) {
   return `
-  <meta name="description" content="${props.seo?.metaData?.description || ""}" />
-  <meta name="keywords" content="${props.seo?.metaData?.keywords || ""}" />
-  <title>${props.seo?.title || "React SSR"}</title>
+  ${helmet.title.toString()}
+  ${helmet.meta.toString()}
+  ${helmet.link.toString()}
 </head>
-<body>
+<body ${helmet.bodyAttributes.toString()}>
+  ${helmet.noscript.toString()}
   <div id="root">
   `;
 }
@@ -46,16 +45,17 @@ export function getHtmlMidPart(props: PageData) {
  * @param url url of error page
  * @returns string
  */
-export function getHtmlEndPart(props: PageData, isError: boolean, url: string) {
+export function getHtmlEndPart(ssrData: any, isError: boolean, url: string, scripts = "") {
   return `
   </div>
-  <script async src="/client${process.env.IS_LOCAL === "false" ? "." + hashObj?.clientJsHash : ""}.js"></script>
+  <script async src="/client${!process.env.IS_LOCAL ? "." + hashObj?.clientJsHash : ""}.js"></script>
   <script>
-  window.pageProps = ${JSON.stringify(props)};
+  window.__SSRDATA__ = ${JSON.stringify(ssrData, null, 2)}
   if(${isError}) {
     window.location.replace("${url}");
   }
   </script>
+  ${scripts}
   </body>
   </html>
 `;
