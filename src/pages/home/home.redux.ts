@@ -15,11 +15,6 @@ const initialState: HomeState = {
   productById: undefined,
 };
 
-// export const fetchProducts = createAsyncThunk("home/fetchProducts", async (thunkApi: typeof HttpClient) => {
-//   const homeData = await thunkApi.get<HomeData>("/api/products");
-//   return homeData.data?.products || [];
-// });
-
 export const fetchProducts = () => {
   return async (dispatch: AppDispatch, _getState: GetState, api: ThunkApi) => {
     const apiResponse = await api.get<HomeData>("/api/product");

@@ -2,10 +2,12 @@ import { AxiosResponse, AxiosError } from "axios";
 import { getAccessTokenData } from "./core/functions/get-token.js";
 import { CompModule } from "./core/models/route.model.js";
 import { SSRConfig } from "./core/models/ssr-config.model.js";
-import { loginSuccess } from "./pages/auth/auth.redux.js";
+import { loginSuccess, logout } from "./pages/auth/auth.redux.js";
 import { AppStore, createStore } from "src/redux/create-store";
 import { ContextData } from "./core/models/context.model.js";
 import { ContextDataWithStore } from "./core/models/context-with-store.model.js";
+import { PAGE_INVALID_RETURN_DATA, ROUTE_LOGIN, ROUTE_500, ROUTE_403 } from "./const.js";
+import { ApiResponse } from "./core/models/api-response.js";
 
 const config = () => {
   const ssrConfig: SSRConfig = {
@@ -101,6 +103,27 @@ const config = () => {
     },
     getSsrData: (ctx: ContextData) => {
       return (ctx as ContextDataWithStore).store.getState();
+    },
+    validateApiResponse: (response: ApiResponse<any>, ctx: ContextData) => {
+      if (response.status === undefined) {
+        throw new Error(PAGE_INVALID_RETURN_DATA);
+      }
+      if (response.status === 401 || response.status === 403) {
+        if (response.status === 401) {
+          (ctx as ContextDataWithStore).store.dispatch(logout({ ctx: ctx as ContextDataWithStore }));
+          return { path: ROUTE_LOGIN };
+        } else {
+          return { path: ROUTE_403 };
+        }
+      } else if (response.status.toString().startsWith("5") || response.status === 0) {
+        return { path: ROUTE_500 };
+      } else if (response.status.toString().startsWith("4")) {
+        return { path: ROUTE_500 };
+      } else if (response.status === 600) {
+        return { path: ROUTE_500 };
+      } else {
+        return { path: "" };
+      }
     },
   };
   return ssrConfig;

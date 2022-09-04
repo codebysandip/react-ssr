@@ -6,18 +6,18 @@ declare global {
             /**
              * IS_SERVER used in code to check code running on server/client
              * @example
-             * if (process.env.IS_SERVER === "true") {
+             * if (process.env.IS_SERVER) {
              *  // code to execute on server
              * }
-             * if (process.env.IS_SERVER !== "true") {
+             * if (!process.env.IS_SERVER) {
              *  // coden to execute on client/browser
              * }
              */
-            IS_SERVER: string;
+            IS_SERVER: boolean;
             /**
              * IS_LOCAL enables webpack to run in development mode
              */
-            IS_LOCAL: string;
+            IS_LOCAL: boolean;
             /**
              * ENV to decide webpack to run in development or production mode
              * It can also use to load different environment variables based on env like staging etc.
@@ -27,7 +27,7 @@ declare global {
              * WATCH enables to run webpack in watch mode
              * Use WATCH only you want to disable watch with value WATCH=false
              */
-            WATCH: string;
+            WATCH: boolean;
             /**
              * Base url of api
              * API_BASE_URL will use to proxy api request from frontend server

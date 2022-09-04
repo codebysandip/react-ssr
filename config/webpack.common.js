@@ -68,7 +68,11 @@ export default function (env, args, isProd = false) {
    */
   const definePluginObj = {};
   Object.keys(env).forEach((key) => {
-    definePluginObj[`process.env.${key}`] = JSON.stringify(env[key]);
+    try {
+      definePluginObj[`process.env.${key}`] = JSON.parse(env[key]);
+    } catch {
+      definePluginObj[`process.env.${key}`] = JSON.stringify(env[key]);
+    }
   });
   const miniCssFileName = !isLocal ? "assets/css/style.[contenthash].css" : "assets/css/style.css";
   const miniCssChunkName = !isLocal ? "assets/css/[name].[contenthash].chunk.css" : "assets/css/[name].chunk.css";
@@ -158,17 +162,7 @@ export default function (env, args, isProd = false) {
     resolve: {
       alias,
       extensions: [".ts", ".tsx", ".js", ".scss", ".css"],
-      fallback: {
-        // url: false,
-        // path: false,
-        // util: false,
-        // stream: require.resolve("stream-browserify"),
-        // fs: false,
-        // buffer: false,
-        // querystring: false,
-        // http: false,
-        // https: false,
-      },
+      fallback: {},
     },
     target: isServer ? "node" : "web",
     externals: isServer

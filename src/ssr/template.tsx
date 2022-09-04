@@ -35,7 +35,6 @@ class HtmlWritable extends Writable {
       this.resp.write(getHtmlMidPart(this.helmet));
     }
     this.chunks.push(chunk);
-    // console.log("chunk!!", Buffer.from(chunk).toString());
     this.resp.write(chunk);
     callback();
   }

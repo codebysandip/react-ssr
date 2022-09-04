@@ -1,4 +1,3 @@
-// import HomeReducer from "pages/home/home.redux.js";
 import { HttpClient } from "src/core/services/http-client.js";
 import * as toolkitRaw from "@reduxjs/toolkit";
 import { AnyAction, EnhancedStore, MiddlewareArray, ReducersMapObject, Store } from "@reduxjs/toolkit";
@@ -32,7 +31,7 @@ export function createStore(lazyReducers?: ReducersMapObject) {
   if (!lazyReducers) {
     lazyReducers = {};
   }
-  const preloadedState = process.env.IS_SERVER !== "true" ? window.__SSRDATA__ : {};
+  const preloadedState = !process.env.IS_SERVER ? window.__SSRDATA__ : {};
   const store = configureStore({
     reducer: {
       ...allReducers,
@@ -46,7 +45,7 @@ export function createStore(lazyReducers?: ReducersMapObject) {
       });
     },
     preloadedState,
-    devTools: process.env.IS_LOCAL === "true",
+    devTools: process.env.IS_LOCAL,
   });
 
   return store;

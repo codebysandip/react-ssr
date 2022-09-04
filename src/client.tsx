@@ -31,7 +31,7 @@ const hydrateApp = (module: CompModule) => {
 // Don't delete below if condinition. If you need to reload server type rs in same command window
 // of npm start and hit enter. nodemon will restart server
 // Below line will automatically get removed in production build
-if (process.env.IS_LOCAL === "true" && (module as any).hot) {
+if (process.env.IS_LOCAL && (module as any).hot) {
   const root = createRoot(container);
   route?.component().then((module) => {
     root.render(createBrowserRouter(module));

@@ -24,7 +24,7 @@ export default function ReactSsrApp(props: ReactSsrAppProps) {
   const params = useParams();
 
   let ctx: ContextData;
-  if (process.env.IS_SERVER === "true") {
+  if (process.env.IS_SERVER) {
     ctx = props.ctx as ContextData;
   } else {
     ctx = createContextClient(location, searchParams[0], params as Record<string, string>);
@@ -33,7 +33,7 @@ export default function ReactSsrApp(props: ReactSsrAppProps) {
     isFirst = false;
     // ssrConfig.configureStore already called on server
     // if we will again call here then new store will get created and we will lost page data
-    if (process.env.IS_SERVER !== "true" && ssrConfig.configureStore) {
+    if (!process.env.IS_SERVER && ssrConfig.configureStore) {
       ssrConfig.configureStore(props.module, props.ctx || ctx);
     }
     store = (ctx as ContextDataWithStore).store;

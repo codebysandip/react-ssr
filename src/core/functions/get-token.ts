@@ -3,17 +3,20 @@ import { COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN } from "src/const.js";
 import { User } from "src/pages/auth/auth.model.js";
 import { CookieService } from "../services/cookie.service.js";
 
+function getToken(key: string, req?: Request) {
+  if (process.env.IS_SERVER && !req) {
+    throw new Error("req cann't be undefined in SSR");
+  }
+  const accessToken = CookieService.get(key, req);
+  return accessToken;
+}
 /**
  * get access token from cookie
  * @param req Node Request Object
  * @returns access token from cookie
  */
 export function getAccessToken(req?: Request) {
-  if (process.env.IS_SERVER === "true" && !req) {
-    throw new Error("req cann't be undefined in SSR");
-  }
-  const accessToken = CookieService.get(COOKIE_ACCESS_TOKEN, req);
-  return accessToken;
+  return getToken(COOKIE_ACCESS_TOKEN, req);
 }
 
 /**
@@ -23,7 +26,7 @@ export function getAccessToken(req?: Request) {
  */
 export function decodeToken<T>(token: string) {
   let tokenStr = "";
-  if (process.env.IS_SERVER === "true") {
+  if (process.env.IS_SERVER) {
     tokenStr = Buffer.from(token.split(".")[1], "base64").toString();
   } else {
     tokenStr = atob(token.split(".")[1]);
@@ -36,9 +39,6 @@ export function decodeToken<T>(token: string) {
  * @returns decoded token of type T
  */
 export function getAccessTokenData(req?: Request) {
-  if (process.env.IS_SERVER === "true" && !req) {
-    throw new Error("req cann't be undefined in SSR");
-  }
   const accessToken = getAccessToken(req);
   if (accessToken) {
     return decodeToken<User>(accessToken);
@@ -53,11 +53,7 @@ export function getAccessTokenData(req?: Request) {
  * @returns refresh token from cookie
  */
 export function getRefreshToken(req?: Request) {
-  if (process.env.IS_SERVER === "true" && !req) {
-    throw new Error("req cann't be undefined in SSR");
-  }
-  const accessToken = CookieService.get(COOKIE_ACCESS_TOKEN, req);
-  return accessToken;
+  return getToken(COOKIE_REFRESH_TOKEN, req);
 }
 
 /**
@@ -66,10 +62,7 @@ export function getRefreshToken(req?: Request) {
  * @returns decoded token of type T
  */
 export function getRefreshTokenData(req?: Request) {
-  if (process.env.IS_SERVER === "true" && !req) {
-    throw new Error("req cann't be undefined in SSR");
-  }
-  const accessToken = getAccessToken(req);
+  const accessToken = getRefreshToken(req);
   if (accessToken) {
     return decodeToken<User>(accessToken);
   } else {

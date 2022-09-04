@@ -3,6 +3,7 @@ import { PayloadAction } from "@reduxjs/toolkit";
 import { COOKIE_REFRESH_TOKEN, COOKIE_ACCESS_TOKEN } from "src/const.js";
 import { getAccessTokenData, setAccessAndRefreshToken } from "src/core/functions/get-token.js";
 import { GetState, ThunkApi } from "src/core/models/common.model.js";
+import { ContextDataWithStore } from "src/core/models/context-with-store.model.js";
 import { CookieService } from "src/core/services/cookie.service.js";
 import { AuthResponse } from "src/core/services/http-client.js";
 import { AppDispatch } from "src/redux/create-store.js";
@@ -52,11 +53,11 @@ const authSlice = createSlice({
     loginError: (state, action: PayloadAction<string>) => {
       state.login.errorMessage = action.payload;
     },
-    logout: (state) => {
+    logout: (state, action: PayloadAction<{ ctx?: ContextDataWithStore }>) => {
       state.isLoggedIn = false;
       state.user = undefined;
-      CookieService.delete(COOKIE_ACCESS_TOKEN);
-      CookieService.delete(COOKIE_REFRESH_TOKEN);
+      CookieService.delete(COOKIE_ACCESS_TOKEN, action.payload.ctx?.res);
+      CookieService.delete(COOKIE_REFRESH_TOKEN, action.payload.ctx?.res);
     },
   },
 });

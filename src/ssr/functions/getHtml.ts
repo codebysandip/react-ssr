@@ -17,9 +17,7 @@ export function getHtmlStartPart() {
     content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1.0, user-scalable=0"
   />
   <link rel="shortcut icon" href="/favicon.ico" />
-  <link href="/assets/css/style${
-    process.env.IS_LOCAL === "false" ? "." + hashObj?.styleHash : ""
-  }.css" rel="stylesheet" />
+  <link href="/assets/css/style${!process.env.IS_LOCAL ? "." + hashObj?.styleHash : ""}.css" rel="stylesheet" />
 `;
 }
 
@@ -50,7 +48,7 @@ export function getHtmlMidPart(helmet: HelmetData) {
 export function getHtmlEndPart(ssrData: any, isError: boolean, url: string, scripts = "") {
   return `
   </div>
-  <script async src="/client${process.env.IS_LOCAL === "false" ? "." + hashObj?.clientJsHash : ""}.js"></script>
+  <script async src="/client${!process.env.IS_LOCAL ? "." + hashObj?.clientJsHash : ""}.js"></script>
   <script>
   window.__SSRDATA__ = ${JSON.stringify(ssrData, null, 2)}
   if(${isError}) {

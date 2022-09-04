@@ -38,22 +38,14 @@ export default function Lazy(props: LazyProps) {
 
       processRequest(moduleObj, ctx).then((data) => {
         if (data.isError) {
-          if (data.apiResponse?.status === 403) {
-            // show toast message for UnAuthorized access
-          } else if (data.apiResponse?.status === 0) {
-            // show toast or page for Internet not available
-          } else {
-            if (data.apiResponse?.status === 401) {
-              // ctx.store.dispatch(logout());
-            }
-            navigate(data.redirect.path, {
-              replace: data.redirect.replace || false,
-              state: data.redirect.state || {},
-            });
-          }
+          navigate(data.redirect.path, {
+            replace: data.redirect.replace || false,
+            state: data.redirect.state || {},
+          });
+        } else {
+          setComp(moduleObj);
+          setPageData(props.store ? {} : data.apiResponse?.data);
         }
-        setComp(moduleObj);
-        setPageData(props.store ? {} : data.apiResponse?.data);
       });
     });
   }, [location.pathname]);

@@ -73,7 +73,7 @@ const mapStateToProps = (state: RootState) => {
 
 const mapDispatchToProps = (dispatch: AppDispatch) => {
   return {
-    logout: () => dispatch(logoutAction()),
+    logout: () => dispatch(logoutAction({})),
   };
 };
 

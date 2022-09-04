@@ -17,7 +17,7 @@ import { useSearchParams } from "react-router-dom";
  * @returns ContextData {@link ContextData}
  */
 export function createContextServer(req: Request, resp: Response) {
-  if (!JSON.parse(process.env.IS_SERVER)) {
+  if (!process.env.IS_SERVER) {
     throw new Error("createContextServer function can execute only on server!!");
   }
   const context: ContextData = {
@@ -42,7 +42,7 @@ export function createContextServer(req: Request, resp: Response) {
  * @returns ContextData {@link ContextData}
  */
 export function createContextClient(location: Location, searchParams: URLSearchParams, params: Record<string, string>) {
-  if (JSON.parse(process.env.IS_SERVER)) {
+  if (process.env.IS_SERVER) {
     throw new Error("createContextClient function can execute only on client!!");
   }
   const query: Record<string, string> = {};

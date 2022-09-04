@@ -17,14 +17,14 @@ export class HttpClient {
     if (!options) {
       options = {};
     }
-    return this.sendRequest<T>(url, "POST", { body, ...options });
+    return this.sendRequest<T>(url, "POST", { data: body, ...options });
   }
 
   public static put<T>(url: string, body: any, options?: HttpClientOptions) {
     if (!options) {
       options = {};
     }
-    return this.sendRequest<T>(url, "PUT", { body, ...options });
+    return this.sendRequest<T>(url, "PUT", { data: body, ...options });
   }
 
   public static delete<T>(url: string, options?: HttpClientOptions) {
@@ -32,7 +32,7 @@ export class HttpClient {
   }
 
   private static getUrl(url: string) {
-    return `${process.env.IS_SERVER === "true" ? process.env.API_BASE_URL : ""}${url}`;
+    return `${process.env.IS_SERVER ? process.env.API_BASE_URL : ""}${url}`;
   }
 
   private static getDefaultApiResponseObj() {
@@ -74,7 +74,7 @@ export class HttpClient {
 
   private static isOnline() {
     return new Promise((resolve, reject) => {
-      const status = process.env.IS_SERVER === "true" ? true : navigator.onLine;
+      const status = process.env.IS_SERVER ? true : navigator.onLine;
       if (status) {
         resolve(status);
       } else {
@@ -83,16 +83,9 @@ export class HttpClient {
     });
   }
 
-  private static sendRequest<T>(
-    url: string,
-    method: "GET" | "POST" | "PUT" | "DELETE",
-    options: HttpClientOptions = {},
-  ): Promise<ApiResponse<T | null>> {
+  private static setDefaultHttpClientOptions(options?: HttpClientOptions) {
     if (!options) {
       options = {};
-    }
-    if (!options.responseType) {
-      options.responseType = "json";
     }
     if (!options.headers) {
       options.headers = {};
@@ -101,8 +94,14 @@ export class HttpClient {
       // change based on requirement
       options.isAuth = HttClientConfig.isAuthDefault;
     }
+    if (!options.responseType) {
+      options.responseType = "json";
+    }
+
+    if (options.showLoader === undefined) {
+      options.showLoader = true;
+    }
     if (options.isAuth) {
-      // add code here to send Authorization header
       const token = CookieService.get(COOKIE_ACCESS_TOKEN, options.ctx?.req);
       if (token) {
         options.headers["Authorization"] = `Bearer ${token}`;
@@ -112,17 +111,25 @@ export class HttpClient {
         return Promise.resolve(apiResponse);
       }
     }
+    return options;
+  }
 
-    url = this.getUrl(url);
-    // let retryCount = 0;
-    const maxRetryCount = HttClientConfig.maxRetryCount || 3;
-    const requestConfig: AxiosRequestConfig = {
-      url,
-      method,
-      data: options.body,
-      responseType: options.responseType,
-      headers: options.headers,
-    };
+  private static sendRequest<T>(
+    url: string,
+    method: "GET" | "POST" | "PUT" | "DELETE",
+    options: HttpClientOptions = {},
+  ): Promise<ApiResponse<T | null>> {
+    const newoptions = this.setDefaultHttpClientOptions(options);
+    if (newoptions instanceof Promise) {
+      return newoptions;
+    } else {
+      options = newoptions;
+    }
+
+    options.url = this.getUrl(url);
+    options.method = method;
+    const maxRetryCount = options.maxRetryCount || HttClientConfig.maxRetryCount;
+    const requestConfig: AxiosRequestConfig = options;
     // @ts-ignore
     return (
       this.retryPromise(this.isOnline, 1000, maxRetryCount)
@@ -278,7 +285,7 @@ export class HttpClient {
   }
 
   private static handleResponse<T>(response: AxiosResponse<T>, isFirst: boolean, options: HttpClientOptions) {
-    if (process.env.IS_SERVER === "true" && options.ctx?.res && !options.ctx.res.headersSent) {
+    if (process.env.IS_SERVER && options.ctx?.res && !options.ctx.res.headersSent) {
       // check if api sending cookie to set
       const setCookie = response.headers["Set-Cookie"] || response.headers["Set-Cookie".toLocaleLowerCase()];
       if (setCookie) {
@@ -333,20 +340,18 @@ export class HttpClient {
   }
 }
 
-export interface HttpClientOptions {
+export interface HttpClientOptions extends AxiosRequestConfig {
   queryString?:
     | string
     | URLSearchParams
     | Record<string, string | number | boolean | string[] | number[] | boolean[]>
     | [string, string | number | boolean | string[] | number[] | boolean[]][];
-  body?: any;
   /**
    * Request is authenticated
    * If true Authorization header will send
    * @default true
    */
   isAuth?: boolean;
-  headers?: Record<string, string | number | boolean>;
   /**
    * Response type of response
    * @default json
