@@ -5,6 +5,7 @@ import { createContextClient } from "src/core/functions/create-context.js";
 import { CompModule, CompModuleImport } from "src/core/models/route.model.js";
 import { replaceReducer } from "src/redux/create-store.js";
 import { processRequest } from "core/functions/process-request.js";
+import { CommonService } from "src/core/services/common.service.js";
 
 /**
  * Lazy Load Route Component
@@ -26,7 +27,12 @@ export default function Lazy(props: LazyProps) {
     }
     module = undefined;
     window.__SSRDATA__ = null;
+    CommonService.toggleLoader(true);
     props.moduleProvider().then((moduleObj) => {
+      // added timeout because if api call will made then loader will not hide in between
+      setTimeout(() => {
+        CommonService.toggleLoader(false);
+      });
       // inject lazy loaded reducer into store
       const ctx = createContextClient(location, searchParams[0], params as Record<string, string>);
       if (props.store) {

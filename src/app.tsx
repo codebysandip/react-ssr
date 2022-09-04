@@ -8,6 +8,7 @@ import { NO_HEADER_PATHS } from "./const.js";
 import { CompModule } from "./core/models/route.model.js";
 import { SsrHead } from "core/components/ssr-head/ssr-head.comp.js";
 import "./style.scss";
+import { Loader } from "core/components/loader/loader.comp.js";
 
 /**
  * Check for rendering is first time.
@@ -61,6 +62,7 @@ export function App(props: AppProps) {
           })}
         </Routes>
       </div>
+      <Loader />
     </>
   );
 }

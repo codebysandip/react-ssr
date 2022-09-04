@@ -6,6 +6,7 @@ import ReactSsrConfig from "src/react-ssr.config.js";
 import axios, { AxiosRequestConfig, ResponseType, AxiosResponse, AxiosError } from "axios";
 import { setAccessAndRefreshToken } from "../functions/get-token.js";
 import { ContextData } from "../models/context.model.js";
+import { CommonService } from "./common.service.js";
 
 const HttClientConfig = ReactSsrConfig().httpClient;
 export class HttpClient {
@@ -126,6 +127,9 @@ export class HttpClient {
       options = newoptions;
     }
 
+    if (options.showLoader) {
+      CommonService.toggleLoader(true);
+    }
     options.url = this.getUrl(url);
     options.method = method;
     const maxRetryCount = options.maxRetryCount || HttClientConfig.maxRetryCount;
@@ -232,14 +236,23 @@ export class HttpClient {
                     () => {
                       // @ts-ignore
                       return axios(requestConfig).then((res: AxiosResponse<T>) => {
+                        if (options.showLoader) {
+                          CommonService.toggleLoader(false);
+                        }
                         return this.handleResponse<T>(res, false, options);
                       });
                     },
                     1000,
                     maxRetryCount,
                   ).catch(() => {
+                    if (options.showLoader) {
+                      CommonService.toggleLoader(false);
+                    }
                     return response;
                   });
+                }
+                if (options.showLoader) {
+                  CommonService.toggleLoader(false);
                 }
                 return response;
               })
@@ -247,6 +260,9 @@ export class HttpClient {
               // so in any case HttpClient will always send success
               // Error can detect from status of response/result of HttpClient
               .catch((error: ApiResponse<T | null>) => {
+                if (options.showLoader) {
+                  CommonService.toggleLoader(false);
+                }
                 return error;
               })
           );
@@ -260,6 +276,9 @@ export class HttpClient {
             message: ["Please check your network connection. Internet not available"],
             errorCode: -1,
           };
+          if (options.showLoader) {
+            CommonService.toggleLoader(false);
+          }
           return apiResponse;
         })
     );
