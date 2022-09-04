@@ -6,7 +6,7 @@ import { loginSuccess, logout } from "./pages/auth/auth.redux.js";
 import { AppStore, createStore } from "src/redux/create-store";
 import { ContextData } from "./core/models/context.model.js";
 import { ContextDataWithStore } from "./core/models/context-with-store.model.js";
-import { PAGE_INVALID_RETURN_DATA, ROUTE_LOGIN, ROUTE_500, ROUTE_403 } from "./const.js";
+import { PAGE_INVALID_RETURN_DATA, ROUTE_LOGIN, ROUTE_500, ROUTE_403, ROUTE_404 } from "./const.js";
 import { ApiResponse } from "./core/models/api-response.js";
 
 const config = () => {
@@ -117,6 +117,8 @@ const config = () => {
         }
       } else if (response.status.toString().startsWith("5") || response.status === 0) {
         return { path: ROUTE_500 };
+      } else if (response.status === 404) {
+        return { path: ROUTE_404 };
       } else if (response.status.toString().startsWith("4")) {
         return { path: ROUTE_500 };
       } else if (response.status === 600) {
