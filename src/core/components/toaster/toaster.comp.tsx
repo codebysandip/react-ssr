@@ -1,11 +1,11 @@
 import { FunctionComponent, useEffect, useState } from "react";
 import { ToastContainerProps, ToastContent, ToastOptions, Id } from "react-toastify";
-import { Toaster } from "src/core/models/toaster.model.js";
+import { Toaster as IToaster } from "src/core/models/toaster.model.js";
 
 export function Toaster(props: ToastContainerProps) {
   const [lazyToast, setLazyToast] = useState<{ default: FunctionComponent<ToastContainerProps> } | null>(null);
   let toast: (content: ToastContent, options?: ToastOptions) => Id;
-  const showToast = (toaster: Toaster) => {
+  const showToast = (toaster: IToaster) => {
     toast(toaster.message, {
       type: toaster.type,
     });
