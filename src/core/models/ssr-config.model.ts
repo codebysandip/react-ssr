@@ -1,4 +1,5 @@
 import { AxiosResponse, AxiosError } from "axios";
+import { HttpClientOptions } from "../services/http-client.js";
 import { ApiResponse } from "./api-response.js";
 import { ContextData } from "./context.model.js";
 import { PageRedirect } from "./page-data.js";
@@ -39,6 +40,11 @@ export interface HttpClient {
    * to create ApiResponse object
    */
   getStatusCode: (response: AxiosResponse<any> | AxiosError<any>) => number;
+  /**
+   * HttpClient will call this function after getting response in case of success
+   * as well as error
+   */
+  onResponse?: (apiResponse: ApiResponse<any>, options: HttpClientOptions) => void;
 }
 
 export interface SSRConfig {

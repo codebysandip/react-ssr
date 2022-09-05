@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { COOKIE_REFRESH_TOKEN, COOKIE_ACCESS_TOKEN, URL_REFERESH_TOKEN } from "src/const.js";
+import { COOKIE_REFRESH_TOKEN, COOKIE_ACCESS_TOKEN, URL_REFERESH_TOKEN, INTERNET_NOT_AVAILABLE } from "src/const.js";
 import { ApiResponse } from "../models/api-response.js";
 import { CookieService } from "./cookie.service.js";
-import ReactSsrConfig from "src/react-ssr.config.js";
+import { ssrConfig } from "src/react-ssr.config.js";
 import axios, { AxiosRequestConfig, ResponseType, AxiosResponse, AxiosError } from "axios";
 import { setAccessAndRefreshToken } from "../functions/get-token.js";
 import { ContextData } from "../models/context.model.js";
 import { CommonService } from "./common.service.js";
+import { retryPromise } from "../functions/retry-promise.js";
 
-const HttClientConfig = ReactSsrConfig().httpClient;
+const HttClientConfig = ssrConfig.httpClient;
 export class HttpClient {
   public static get<T>(url: string, options?: HttpClientOptions) {
     return this.sendRequest<T>(url, "GET", options);
@@ -44,44 +45,6 @@ export class HttpClient {
       errorCode: -1,
     };
     return response;
-  }
-
-  private static retryPromise = (
-    fn: () => Promise<any>,
-    ms = 1000,
-    maxRetries = 5,
-    retries = 0,
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    rejectFn: Function | undefined = undefined,
-  ) => {
-    return new Promise((resolve, reject) => {
-      if (!rejectFn) {
-        rejectFn = reject;
-      }
-      fn()
-        .then(resolve)
-        .catch(() => {
-          setTimeout(() => {
-            console.log("retrying failed promise...", retries);
-            ++retries;
-            if (retries === maxRetries) {
-              return rejectFn && rejectFn("maximum retries exceeded");
-            }
-            this.retryPromise(fn, ms, maxRetries, retries, rejectFn).then(resolve);
-          }, ms);
-        });
-    });
-  };
-
-  private static isOnline() {
-    return new Promise((resolve, reject) => {
-      const status = process.env.IS_SERVER ? true : navigator.onLine;
-      if (status) {
-        resolve(status);
-      } else {
-        reject(status);
-      }
-    });
   }
 
   private static setDefaultHttpClientOptions(options?: HttpClientOptions) {
@@ -136,7 +99,7 @@ export class HttpClient {
     const requestConfig: AxiosRequestConfig = options;
     // @ts-ignore
     return (
-      this.retryPromise(this.isOnline, 1000, maxRetryCount)
+      retryPromise(CommonService.isOnline, 1000, maxRetryCount)
         .then(() => {
           return (
             axios(requestConfig)
@@ -232,38 +195,30 @@ export class HttpClient {
                   // throw Error as strigify response because we will need response
                   // to return to component
                   // throwing error because retry will retry request
-                  return this.retryPromise(
+                  return retryPromise(
                     () => {
                       // @ts-ignore
                       return axios(requestConfig).then((res: AxiosResponse<T>) => {
-                        if (options.showLoader) {
-                          CommonService.toggleLoader(false);
-                        }
                         return this.handleResponse<T>(res, false, options);
                       });
                     },
                     1000,
                     maxRetryCount,
                   ).catch(() => {
-                    if (options.showLoader) {
-                      CommonService.toggleLoader(false);
-                    }
+                    // in case of error send same response generated
                     return response;
                   });
                 }
-                if (options.showLoader) {
-                  CommonService.toggleLoader(false);
-                }
                 return response;
               })
-              // This catch will execute after max retry reach
-              // so in any case HttpClient will always send success
-              // Error can detect from status of response/result of HttpClient
-              .catch((error: ApiResponse<T | null>) => {
+              .then((response) => {
                 if (options.showLoader) {
                   CommonService.toggleLoader(false);
                 }
-                return error;
+                if (HttClientConfig.onResponse) {
+                  HttClientConfig.onResponse(response as ApiResponse<any>, options);
+                }
+                return response;
               })
           );
         })
@@ -273,11 +228,11 @@ export class HttpClient {
           const apiResponse: ApiResponse<null> = {
             status: 0,
             data: null,
-            message: ["Please check your network connection. Internet not available"],
+            message: [INTERNET_NOT_AVAILABLE],
             errorCode: -1,
           };
-          if (options.showLoader) {
-            CommonService.toggleLoader(false);
+          if (HttClientConfig.onResponse) {
+            HttClientConfig.onResponse(apiResponse, options);
           }
           return apiResponse;
         })

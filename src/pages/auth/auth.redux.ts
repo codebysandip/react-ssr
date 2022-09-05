@@ -1,5 +1,5 @@
-import * as toolkitRaw from "@reduxjs/toolkit";
 import { PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "src/redux/redux.imports.js";
 import { COOKIE_REFRESH_TOKEN, COOKIE_ACCESS_TOKEN } from "src/const.js";
 import { getAccessTokenData, setAccessAndRefreshToken } from "src/core/functions/get-token.js";
 import { GetState, ThunkApi } from "src/core/models/common.model.js";
@@ -8,7 +8,6 @@ import { CookieService } from "src/core/services/cookie.service.js";
 import { AuthResponse } from "src/core/services/http-client.js";
 import { AppDispatch } from "src/redux/create-store.js";
 import { LoginPayload, User } from "./auth.model.js";
-const { createSlice } = ((toolkitRaw as any).default ?? toolkitRaw) as typeof toolkitRaw;
 
 export interface AuthState {
   isLoggedIn: boolean;

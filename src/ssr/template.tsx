@@ -10,9 +10,7 @@ import { Helmet, HelmetData } from "react-helmet";
 import { ROUTE_500 } from "src/const.js";
 import { ContextData } from "src/core/models/context.model.js";
 import ReactSsrApp from "src/index.js";
-import SsrConfig from "src/react-ssr.config.js";
-
-const ssrConfig = SsrConfig();
+import { ssrConfig } from "src/react-ssr.config.js";
 
 class HtmlWritable extends Writable {
   private resp: Response;

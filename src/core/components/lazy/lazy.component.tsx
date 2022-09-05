@@ -6,6 +6,10 @@ import { CompModule, CompModuleImport } from "src/core/models/route.model.js";
 import { replaceReducer } from "src/redux/create-store.js";
 import { processRequest } from "core/functions/process-request.js";
 import { CommonService } from "src/core/services/common.service.js";
+import { retryPromise } from "src/core/functions/retry-promise.js";
+import { ssrConfig } from "src/react-ssr.config.js";
+import { INTERNET_NOT_AVAILABLE, TOAST } from "src/const.js";
+import { Toaster } from "src/core/models/toaster.model.js";
 
 /**
  * Lazy Load Route Component
@@ -28,32 +32,46 @@ export default function Lazy(props: LazyProps) {
     module = undefined;
     window.__SSRDATA__ = null;
     CommonService.toggleLoader(true);
-    props.moduleProvider().then((moduleObj) => {
-      // added timeout because if api call will made then loader will not hide in between
-      setTimeout(() => {
-        CommonService.toggleLoader(false);
-      });
-      // inject lazy loaded reducer into store
-      const ctx = createContextClient(location, searchParams[0], params as Record<string, string>);
-      if (props.store) {
-        (ctx as any).store = props.store;
-      }
-      if (moduleObj?.reducer && props.store) {
-        replaceReducer(props.store, moduleObj.reducer);
-      }
-
-      processRequest(moduleObj, ctx).then((data) => {
-        if (data.isError) {
-          navigate(data.redirect.path, {
-            replace: data.redirect.replace || false,
-            state: data.redirect.state || {},
+    retryPromise(CommonService.isOnline, 1000, ssrConfig.httpClient.maxRetryCount)
+      .then(() => {
+        props.moduleProvider().then((moduleObj) => {
+          // added timeout because if api call will made then loader will not hide in between
+          setTimeout(() => {
+            CommonService.toggleLoader(false);
           });
-        } else {
-          setComp(moduleObj);
-          setPageData(props.store ? {} : data.apiResponse?.data);
-        }
+          // inject lazy loaded reducer into store
+          const ctx = createContextClient(location, searchParams[0], params as Record<string, string>);
+          if (props.store) {
+            (ctx as any).store = props.store;
+          }
+          if (moduleObj?.reducer && props.store) {
+            replaceReducer(props.store, moduleObj.reducer);
+          }
+
+          processRequest(moduleObj, ctx).then((data) => {
+            if (data.isError) {
+              navigate(data.redirect.path, {
+                replace: data.redirect.replace || false,
+                state: data.redirect.state || {},
+              });
+            } else {
+              setComp(moduleObj);
+              setPageData(props.store ? {} : data.apiResponse?.data);
+            }
+          });
+        });
+      })
+      .catch(() => {
+        CommonService.toggleLoader(false);
+        window.dispatchEvent(
+          new CustomEvent<Toaster>(TOAST, {
+            detail: {
+              type: "error",
+              message: INTERNET_NOT_AVAILABLE,
+            },
+          }),
+        );
       });
-    });
   }, [location.pathname]);
 
   if (Comp) {

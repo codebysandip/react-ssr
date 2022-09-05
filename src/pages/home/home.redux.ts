@@ -2,9 +2,8 @@ import { HomeData, Product } from "./home.model.js";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { GetState, ThunkApi } from "src/core/models/common.model.js";
 import { AppDispatch } from "src/redux/create-store.js";
-import * as toolkitRaw from "@reduxjs/toolkit";
 import { ContextData } from "src/core/models/context.model.js";
-const { createSlice } = ((toolkitRaw as any).default ?? toolkitRaw) as typeof toolkitRaw;
+import { createSlice } from "src/redux/redux.imports.js";
 
 export interface HomeState {
   pageData: HomeData;
