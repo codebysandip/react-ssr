@@ -4,12 +4,11 @@ import { CompModule } from "core/models/route.model.js";
 import { createContextClient } from "core/functions/create-context.js";
 import { useLocation, useParams } from "react-router";
 import { useSearchParams } from "react-router-dom";
-import SsrConfig from "src/react-ssr.config.js";
+import { ssrConfig } from "src/react-ssr.config.js";
+
 import { ContextDataWithStore } from "./core/models/context-with-store.model.js";
 import { ContextData } from "./core/models/context.model.js";
 import { AppStore } from "./redux/create-store.js";
-
-const ssrConfig = SsrConfig();
 
 // store should create only one time
 // we declared isFirst outside of react because we don;t want to re render again

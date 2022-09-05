@@ -30,7 +30,7 @@ export const proxyMiddleware = function (proxyUrl: string) {
         // this should match the error response of API
         console.error(`Error in proxy request. Url:${req.url}!!`, err);
         res.status(500).send({
-          error_message: "Something went wrong!!",
+          message: "Something went wrong!!",
         });
       },
     })(req, res, next);

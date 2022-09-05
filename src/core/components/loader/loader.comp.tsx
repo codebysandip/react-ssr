@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
+import { SHOW_LOADER } from "src/const.js";
 import "./loader.scss";
 
 export function Loader() {
   const [show, setShow] = useState(false);
   useEffect(() => {
-    window.addEventListener("showLoader", (e: any) => {
-      console.log("showloader!!", e.detail);
+    window.addEventListener(SHOW_LOADER, (e) => {
       setShow(e.detail);
     });
     return function () {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
-      window.removeEventListener("showLoader", () => {});
+      window.removeEventListener(SHOW_LOADER, () => {});
     };
   }, []);
 

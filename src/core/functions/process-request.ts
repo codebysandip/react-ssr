@@ -1,5 +1,6 @@
 import { ROUTE_500 } from "src/const.js";
-import SsrConfig from "src/react-ssr.config.js";
+import { ssrConfig } from "src/react-ssr.config.js";
+
 import { ApiResponse } from "../models/api-response.js";
 import { ContextData } from "../models/context.model.js";
 import { IRedirect, PageData, PageRedirect } from "../models/page-data.js";
@@ -11,7 +12,6 @@ export function processRequest(module: CompModule, ctx: ContextData) {
     isError: boolean;
     apiResponse?: ApiResponse<PageData>;
   }>((resolve) => {
-    const ssrConfig = SsrConfig();
     const Component = module.default;
     const getInitialProps = Component.getInitialProps || module.getInitialProps;
 

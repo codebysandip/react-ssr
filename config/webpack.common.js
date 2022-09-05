@@ -4,7 +4,6 @@ import webpack from "webpack";
 
 import nodeExternals from "webpack-node-externals";
 import { CleanWebpackPlugin } from "clean-webpack-plugin";
-import IgnoreEmitPlugin from "ignore-emit-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import Dotenv from "dotenv-webpack";
@@ -92,6 +91,7 @@ export default function (env, args, isProd = false) {
       if (resource.context.indexOf("node_modules") !== -1) {
         return;
       }
+
       const context = resource.context
         .replace(process.cwd(), "")
         .replace(`${slash}node_modules`, "")
@@ -111,7 +111,7 @@ export default function (env, args, isProd = false) {
   ];
 
   if (isServer) {
-    plugins.push(new CleanWebpackPlugin(), new IgnoreEmitPlugin(/\.(css)$/));
+    plugins.push(new CleanWebpackPlugin());
   } else {
     plugins.push(
       new webpack.ProvidePlugin({
@@ -143,6 +143,14 @@ export default function (env, args, isProd = false) {
     const aliasKey = key.replace("/*", "");
     alias[aliasKey] = getPath(aliasPaths[key][0].replace("/*", ""));
   });
+  const serverRules = !isServer
+    ? []
+    : [
+        {
+          test: /.*\.client\..*(ts|tsx)$/,
+          use: ["ignore-loader"],
+        },
+      ];
   return {
     entry,
     output: {
@@ -160,7 +168,9 @@ export default function (env, args, isProd = false) {
       ignored: ["**/node_modules", "**/config"],
     },
     resolve: {
-      alias,
+      alias: {
+        ...alias,
+      },
       extensions: [".ts", ".tsx", ".js", ".scss", ".css"],
       fallback: {},
     },
@@ -178,9 +188,10 @@ export default function (env, args, isProd = false) {
     externalsPresets: { node: isServer },
     module: {
       rules: [
+        ...serverRules,
         {
           test: /.(ts|tsx)$/,
-          exclude: "/node_modules/",
+          exclude: /node_modules/,
           use: [
             {
               loader: "swc-loader",
@@ -211,8 +222,7 @@ export default function (env, args, isProd = false) {
         },
         {
           test: /\.css$/,
-          use: [isServer ? "ignore-loader" : MiniCssExtractPlugin.loader, "css-loader"],
-          exclude: /\.module\.css$/,
+          use: isServer ? ["ignore-loader"] : [MiniCssExtractPlugin.loader, "css-loader"],
         },
         {
           test: /\.s[ac]ss$/i,

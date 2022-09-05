@@ -1,10 +1,17 @@
 import { HttpClient } from "src/core/services/http-client.js";
-import * as toolkitRaw from "@reduxjs/toolkit";
-import { AnyAction, EnhancedStore, MiddlewareArray, ReducersMapObject, Store } from "@reduxjs/toolkit";
+import {
+  AnyAction,
+  EnhancedStore,
+  MiddlewareArray,
+  ReducersMapObject,
+  Store,
+  Dispatch,
+  ThunkDispatch,
+} from "@reduxjs/toolkit";
+import { configureStore, combineReducers } from "./redux.imports.js";
 import { ThunkMiddleware } from "redux-thunk";
 import AuthReducer from "pages/auth/auth.redux";
 import { RootState as RootStateType } from "./root-state.js";
-const { configureStore, combineReducers } = ((toolkitRaw as any).default ?? toolkitRaw) as typeof toolkitRaw;
 
 const reducer = {
   auth: AuthReducer,
@@ -52,8 +59,7 @@ export function createStore(lazyReducers?: ReducersMapObject) {
 }
 
 export type RootState = RootStateType;
-export type AppDispatch = toolkitRaw.ThunkDispatch<any, typeof HttpClient, toolkitRaw.AnyAction> &
-  toolkitRaw.Dispatch<toolkitRaw.AnyAction>;
+export type AppDispatch = ThunkDispatch<any, typeof HttpClient, AnyAction> & Dispatch<AnyAction>;
 export type AppStore = EnhancedStore<
   RootState,
   AnyAction,

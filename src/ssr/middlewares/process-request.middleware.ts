@@ -6,7 +6,7 @@ import { Request, Response } from "express";
 import { getHtmlStartPart } from "../functions/getHtml.js";
 import { sendResponse } from "../functions/send-response.js";
 import { processRequest as processRequestServer } from "core/functions/process-request";
-import SsrConfig from "src/react-ssr.config.js";
+import { ssrConfig } from "src/react-ssr.config.js";
 
 /**
  * Process all get requests
@@ -29,7 +29,6 @@ export const processRequest = () => {
 
     resp.setHeader("Content-type", "text/html");
     resp.write(getHtmlStartPart());
-    const ssrConfig = SsrConfig();
 
     // if (!route.isSSR) {
     //   const store = createStore();
