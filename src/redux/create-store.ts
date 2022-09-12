@@ -12,9 +12,11 @@ import { configureStore, combineReducers } from "./redux.imports.js";
 import { ThunkMiddleware } from "redux-thunk";
 import AuthReducer from "pages/auth/auth.redux";
 import { RootState as RootStateType } from "./root-state.js";
+import AppReducer from "src/app.redux.js";
 
 const reducer = {
   auth: AuthReducer,
+  app: AppReducer
 };
 /**
  * All reducers will always hold all the reducers loaded

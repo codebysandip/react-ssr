@@ -1,102 +1,88 @@
-import { Response } from "express";
-import { renderToPipeableStream } from "react-dom/server";
+import { renderToString } from "react-dom/server";
 import { StaticRouter } from "react-router-dom/server.js";
-import { PageData } from "../core/models/page-data.js";
-import ServerError from "pages/error/500/500.component.js";
-import { getHtmlEndPart, getHtmlMidPart, getHtmlStartPart } from "./functions/getHtml.js";
-import { Writable } from "stream";
 import { CompModule } from "../core/models/route.model.js";
-import { Helmet, HelmetData } from "react-helmet";
-import { ROUTE_500 } from "src/const.js";
+import { Helmet } from "react-helmet";
 import { ContextData } from "src/core/models/context.model.js";
 import ReactSsrApp from "src/index.js";
 import { ssrConfig } from "src/react-ssr.config.js";
+import { Component } from "react";
+import { getWebpackBuildHash } from "./functions/get-webpack-build-hash.js";
+import jsBeautify from "js-beautify";
+import { Empty } from "core/components/empty/empty.component.js";
 
-class HtmlWritable extends Writable {
-  private resp: Response;
-  private chunks: any[] = [];
-  private html = "";
-  public helmet!: HelmetData;
-
-  constructor(resp: Response) {
-    super();
-    this.resp = resp;
-  }
-
-  getHtml() {
-    return this.html;
-  }
-
-  _write(chunk: any, encoding: BufferEncoding, callback: () => void) {
-    if (!this.chunks.length) {
-      this.helmet = Helmet.renderStatic();
-      this.resp.write(getHtmlMidPart(this.helmet));
-    }
-    this.chunks.push(chunk);
-    this.resp.write(chunk);
-    callback();
-  }
-
-  _final(callback: any) {
-    this.html = Buffer.concat(this.chunks).toString();
-    callback();
+const hashObj = getWebpackBuildHash();
+/**
+ * Base HTML template.
+ * This component will use as index.html
+ */
+class HtmlTemplate extends Component<HtmlTemplateProps> {
+  public render() {
+    const helmet = Helmet.renderStatic();
+    const ssrDataScript = `
+        window.__SSRDATA__ = ${JSON.stringify(this.props.ssrData)};
+        `;
+    const helmetBody = helmet.bodyAttributes.toComponent();
+    return (
+      <html {...helmet.htmlAttributes.toComponent()}>
+        <head>
+          <meta charSet="utf-8" />
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1.0, user-scalable=0"
+          />
+          <link rel="shortcut icon" href="/favicon.ico" />
+          <link
+            href={`/assets/css/style${!process.env.IS_LOCAL ? "." + hashObj?.styleHash : ""}.css`}
+            rel="stylesheet"
+          />
+          {helmet.style.toComponent()}
+          {helmet.title.toComponent()}
+          {helmet.link.toComponent()}
+          {helmet.meta.toComponent()}
+        </head>
+        <body {...helmetBody}>
+          {helmet.noscript.toComponent()}
+          <div id="root" dangerouslySetInnerHTML={{ __html: this.props.html }}></div>
+          <script dangerouslySetInnerHTML={{ __html: ssrDataScript }}></script>
+          <script src={`/client${!process.env.IS_LOCAL ? "." + hashObj?.clientJsHash : ""}.js`}></script>
+          {helmet.script.toComponent()}
+        </body>
+      </html>
+    );
   }
 }
+
+interface HtmlTemplateProps {
+  ssrData: any;
+  html: string;
+}
+
 /**
  * Get rendered HTML
  * @param Component component to render
- * @param props Page props {@link PageData}
+ * @param props Page props {@link ApiResponse<PageData>}
  * @param url request url
- * @param isError isError page
  * @returns rendered HTML
  */
-export function pipeHtml(
-  ctx: ContextData,
-  module: CompModule,
-  props: PageData,
-  url: string,
-  isError: boolean,
-  doCache: boolean,
-) {
-  let didError = isError;
-  const writeable = new HtmlWritable(ctx.res as Response);
-  const stream = renderToPipeableStream(
+export function getHtml(module: CompModule, ctx: ContextData, url: string, isSSR = true) {
+  if (ssrConfig.getSsrData) {
+    ctx.ssrData = ssrConfig.getSsrData(ctx);
+  }
+
+  if (!isSSR) {
+    module = {
+      default: Empty,
+    };
+  }
+
+  const innerHtml = renderToString(
     <StaticRouter location={url}>
       <ReactSsrApp module={module} ctx={ctx} />
     </StaticRouter>,
-    {
-      onShellReady() {
-        stream.pipe(writeable);
-      },
-      onShellError() {
-        console.log("onShellError!!");
-        const errorHtmlStream = renderToPipeableStream(<ServerError />);
-        errorHtmlStream.pipe(writeable);
-      },
-      onError(err) {
-        console.log("error!!", err);
-        didError = true;
-        url = ROUTE_500;
-      },
-    },
   );
-  writeable.on("finish", () => {
-    if (ssrConfig.getSsrData) {
-      ctx.ssrData = ssrConfig.getSsrData(ctx);
-    }
-    const htmlEndPart = getHtmlEndPart(
-      ctx.ssrData || ctx.pageData || {},
-      didError,
-      url,
-      writeable.helmet.script.toString(),
-    );
-    (ctx.res as Response).write(htmlEndPart);
-    (ctx.res as Response).end();
-    if (!didError && doCache) {
-      staticPageCache.set(
-        url,
-        getHtmlStartPart() + getHtmlMidPart(writeable.helmet) + writeable.getHtml() + htmlEndPart,
-      );
-    }
-  });
+  let html = renderToString(<HtmlTemplate ssrData={ctx.ssrData || ctx.pageData} html={innerHtml}></HtmlTemplate>);
+  if (process.env.IS_LOCAL) {
+    html = jsBeautify.html_beautify(html);
+  }
+  return html;
 }

@@ -10,31 +10,25 @@ const colors = {
     Cyan: "\x1b[36m",
   },
 };
-const printMsg = function (msg, color, newline, padding) {
-  if (newline === undefined) {
-    newline = false;
-  }
-  if (padding === undefined) {
-    padding = 0;
-  }
+const printMsg = function (msg: string[], color: string, newline = false, padding = 0) {
   process.stdout.write("  ");
   if (padding) process.stdout.write(" ".repeat(padding));
   process.stdout.write(color);
   process.stdout.write(colors.Bright);
-  process.stdout.write("" + msg);
+  process.stdout.write("" + msg.join(""));
   process.stdout.write(colors.Reset);
   if (newline) console.log();
 };
 
-export const log = function (msg) {
+export const log = function (...msg: any[]) {
   return printMsg(msg, colors.fg.Green, true);
 };
-export const warn = function (msg) {
+export const warn = function (...msg: string[]) {
   return printMsg(msg, colors.fg.Yellow, true);
 };
-export const error = function (msg) {
+export const error = function (...msg: string[]) {
   return printMsg(msg, colors.fg.Red, true);
 };
-export const cyan = function (msg) {
+export const cyan = function (...msg: string[]) {
   return printMsg(msg, colors.fg.Cyan, true);
 };

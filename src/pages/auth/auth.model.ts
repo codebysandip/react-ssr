@@ -1,3 +1,8 @@
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
 export interface LoginPayload {
   email: string;
   password: string;
@@ -21,7 +26,12 @@ export interface Name {
   lastname: string;
 }
 
-export interface User {
+export interface JwtToken {
+  iat?: number;
+  exp?: number;
+}
+
+export interface TokenData extends JwtToken {
   address: Address;
   id: number;
   email: string;
@@ -30,6 +40,4 @@ export interface User {
   name: Name;
   phone: string;
   __v: number;
-  iat?: number;
-  exp?: number;
 }

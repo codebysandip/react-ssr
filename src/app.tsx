@@ -10,17 +10,11 @@ import { SsrHead } from "core/components/ssr-head/ssr-head.comp.js";
 import "./style.scss";
 import { Loader } from "core/components/loader/loader.comp.js";
 import { Toaster } from "./core/components/toaster/toaster.comp.js";
+import { useAppDispatch } from "./core/hook.js";
+import { SHOW_LOADER } from "./core/services/http-client.js";
 
-/**
- * Check for rendering is first time.
- * We declared outside of react component because we don't want to re render on changing
- * value of isFirst.
- * In case of first rendering, we will provide lazy component to component(we get in client.tsx)
- * so that lazy component will able to render route component without laoding component asychronousally
- * and will prevent from hydration fail. Check comment on {@linkfile ./client.tsx:23}
- */
-let isFirst = true;
 export function App(props: AppProps) {
+  const dispatch = useAppDispatch();
   const location = useLocation();
   const checkHeader = () => {
     let isHeaderVisible = true;
@@ -33,37 +27,66 @@ export function App(props: AppProps) {
     return isHeaderVisible;
   };
   const [showHeader, setShowHeader] = useState(checkHeader());
+  const [showLoader, setShowLoader] = useState(false);
 
   useEffect(() => {
-    isFirst = false;
     const isHeaderVisible = checkHeader();
     if (isHeaderVisible !== showHeader) {
       setShowHeader(isHeaderVisible);
     }
   }, [location.pathname]);
 
+  useEffect(() => {
+    // listening onmmesage event to recieve message fron service worker
+    navigator.serviceWorker.onmessage = function (evt) {
+      const message = JSON.parse(evt.data);
+
+      const isRefresh = message.type === "refresh";
+
+      // check for message type of refresh
+      // we enabled api caching in service worker. First api service from cache if available then
+      // service worker calls api to fetch response and saves in cache and also return back us via postMessage with type refresh
+      if (isRefresh) {
+        console.log("serviceWorker updated in background!!", message);
+        if (message.extra) {
+          dispatch({
+            type: message.extra,
+            payload: message.data,
+          });
+        }
+      }
+    };
+
+    window.addEventListener(SHOW_LOADER, (e) => {
+      setShowLoader(e.detail);
+    });
+    return function () {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      window.removeEventListener(SHOW_LOADER, () => {});
+    };
+  }, []);
+
   return (
     <>
-      {/* Use SsrHead component to set common Head */}
-      <SsrHead />
+      {/* Use SsrHead component to set common Head tags */}
+      {process.env.IS_SERVER && <SsrHead />}
+      {/* Header and footer should not visible on error page if header/footer is dynamic.
+      Why? becuase may be error page coming because of Header/Footer api */}
       {showHeader && <Header />}
       <div className="container">
         <Routes>
           {PageRoutes.map((r, idx) => {
-            const match = matchPath(r.path, location.pathname);
             return (
               <Route
                 path={r.path}
-                element={
-                  <Lazy moduleProvider={r.component} module={isFirst && match ? props.module : undefined} {...props} />
-                }
+                element={<Lazy moduleProvider={r.component} module={props.module} {...props} />}
                 key={idx}
               />
             );
           })}
         </Routes>
       </div>
-      <Loader />
+      <Loader show={showLoader} />
       <Toaster />
     </>
   );

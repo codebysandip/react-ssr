@@ -1,16 +1,83 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { COOKIE_REFRESH_TOKEN, COOKIE_ACCESS_TOKEN, URL_REFERESH_TOKEN, INTERNET_NOT_AVAILABLE } from "src/const.js";
-import { ApiResponse } from "../models/api-response.js";
-import { CookieService } from "./cookie.service.js";
-import { ssrConfig } from "src/react-ssr.config.js";
-import axios, { AxiosRequestConfig, ResponseType, AxiosResponse, AxiosError } from "axios";
-import { setAccessAndRefreshToken } from "../functions/get-token.js";
+import axios, { AxiosRequestConfig, ResponseType, AxiosResponse, AxiosError, Method, AxiosRequestHeaders } from "axios";
 import { ContextData } from "../models/context.model.js";
-import { CommonService } from "./common.service.js";
-import { retryPromise } from "../functions/retry-promise.js";
 
-const HttClientConfig = ssrConfig.httpClient;
 export class HttpClient {
+  /**
+   * set maxRetryCount to retry HttpClient to defined number of times
+   * HttpClient retry request in case of internet not available or api will respond 5xx status
+   */
+  public static maxRetryCount = 3;
+  /**
+   * HttpClient uses isAuthDefault to set default value for {@link HttpClientOptions.isAuth}
+   */
+  public static isAuthDefault = false;
+  public static internetNotAvialiableMsg = "Please check your network connection. Internet not available";
+  /**
+   * Implement this function to return sucess and error message from api resonse
+   * HttpClient will call this function after getting response from api
+   * to create ApiResponse object
+ */
+  public static processMessage?: (response: AxiosResponse<any> | AxiosError<any>) => string[];
+  /**
+   * Implement this function to return data from api resonse
+   * HttpClient will call this function after getting response from api
+   * to create ApiResponse object
+   */
+  public static processData?: (response: AxiosResponse<any> | AxiosError<any>) => any;
+  /**
+   * implement this function to retiurn code from api response
+   * HttpClient will call this function after getting response from api
+   * to create ApiResponse object
+   */
+  public static getErrorCode?: (response: AxiosResponse<any> | AxiosError<any>) => number;
+  /**
+   * implement this function to retiurn status code from api response
+   * HttpClient will call this function after getting response from api
+   * to create ApiResponse object
+   */
+  public static getStatusCode?: (response: AxiosResponse<any> | AxiosError<any>) => number;
+  /**
+   * HttpClient will call this function just before return ApiResponse
+   */
+  public static onResponse?: (apiResponse: ApiResponse<any>, options: HttpClientOptions) => void;
+  /**
+   * HttpClient calls this function to get Auth token
+   * return empty string in case token not available
+   * in case of empty string HttpClient will send ApiResponse with 401 status
+   */
+  public static getAuthToken?: (options: HttpClientOptions) => string;
+  /**
+   * HttpClient calls this function when {@link HttpClientOptions.isAuth} sets to true
+   * this function must return authentication header
+   */
+  public static getAuthHeader?: (token: string) => AxiosRequestHeaders;
+  /**
+   * HttpClient calls this function when api server respond with 401 status code
+   * HttpClient calls this function to regenerate token
+   * If this function will return succcess then HttpClient will call api again with new token
+   */
+  public static handleRefreshTokenFlow?: (options: HttpClientOptions) => Promise<ApiResponse<unknown>>;
+
+  private static loaderCount = 0;
+
+  public static toggleLoader(status: boolean) {
+    if (typeof window !== "undefined") {
+      if (status) {
+        this.loaderCount += 1;
+      } else {
+        this.loaderCount -= 1;
+      }
+      if (!status) {
+        if (this.loaderCount === 0) {
+          window.dispatchEvent(LoaderEvent(false));
+        }
+        return;
+      }
+      window.dispatchEvent(LoaderEvent(status));
+    }
+  }
+
   public static get<T>(url: string, options?: HttpClientOptions) {
     return this.sendRequest<T>(url, "GET", options);
   }
@@ -37,17 +104,7 @@ export class HttpClient {
     return `${process.env.IS_SERVER ? process.env.API_BASE_URL : ""}${url}`;
   }
 
-  private static getDefaultApiResponseObj() {
-    const response: ApiResponse<null> = {
-      status: 200,
-      data: null,
-      message: [],
-      errorCode: -1,
-    };
-    return response;
-  }
-
-  private static setDefaultHttpClientOptions(options?: HttpClientOptions) {
+  private static setDefaultHttpClientOptions<T>(options?: HttpClientOptions) {
     if (!options) {
       options = {};
     }
@@ -56,21 +113,42 @@ export class HttpClient {
     }
     if (options.isAuth === undefined) {
       // change based on requirement
-      options.isAuth = HttClientConfig.isAuthDefault;
+      options.isAuth = this.isAuthDefault;
     }
     if (!options.responseType) {
       options.responseType = "json";
     }
 
     if (options.showLoader === undefined) {
-      options.showLoader = true;
+      options.showLoader = false;
+    }
+    if (!process.env.IS_SERVER && options.extra) {
+      options.headers["extra"] = options.extra;
+    }
+
+    if (options.doCache === undefined) {
+      options.doCache = false;
+    }
+    if (options.doCache) {
+      options.headers["doCache"] = true;
+    } else {
+      options.headers["doCache"] = false;
     }
     if (options.isAuth) {
-      const token = CookieService.get(COOKIE_ACCESS_TOKEN, options.ctx?.req);
+      if (!this.getAuthToken) {
+        throw new Error("Please set HttpClient.getAuthToken in your application");
+      }
+      const token = this.getAuthToken({ ...options });
       if (token) {
-        options.headers["Authorization"] = `Bearer ${token}`;
+        if (!this.getAuthHeader) {
+          throw new Error("Please set HttpClient.getAuthHeader in your application");
+        }
+        options.headers = {
+          ...options.headers,
+          ...this.getAuthHeader(token),
+        };
       } else {
-        const apiResponse = this.getDefaultApiResponseObj();
+        const apiResponse = getDefaultApiResponseObj<T>();
         apiResponse.status = 401;
         return Promise.resolve(apiResponse);
       }
@@ -78,12 +156,12 @@ export class HttpClient {
     return options;
   }
 
-  private static sendRequest<T>(
+  public static sendRequest<T>(
     url: string,
-    method: "GET" | "POST" | "PUT" | "DELETE",
+    method: Method | string,
     options: HttpClientOptions = {},
   ): Promise<ApiResponse<T | null>> {
-    const newoptions = this.setDefaultHttpClientOptions(options);
+    const newoptions = this.setDefaultHttpClientOptions<T>(options);
     if (newoptions instanceof Promise) {
       return newoptions;
     } else {
@@ -91,99 +169,31 @@ export class HttpClient {
     }
 
     if (options.showLoader) {
-      CommonService.toggleLoader(true);
+      this.toggleLoader(true);
     }
     options.url = this.getUrl(url);
     options.method = method;
-    const maxRetryCount = options.maxRetryCount || HttClientConfig.maxRetryCount;
+    const maxRetryCount = options.maxRetryCount || this.maxRetryCount;
     const requestConfig: AxiosRequestConfig = options;
-    // @ts-ignore
     return (
-      retryPromise(CommonService.isOnline, 1000, maxRetryCount)
+      retryPromise(isOnline, 1000, maxRetryCount)
         .then(() => {
           return (
             axios(requestConfig)
-              // @ts-ignore
               .then((response) => {
-                return this.handleResponse<T>(response, true, options);
+                return this.handleResponse<T>(response, options);
               })
               // this catch will execute When error in original request
               // if 401 status will come then handleErrorResponse will try to
               // regenerate token from refresh token
-              // @ts-ignore
-              .catch((err) => {
-                return this.handleErrorResponse<T>(err, true, options);
-              })
-              // this catch will execute only when refresh token request
-              // will throw error response
-              .catch((err: AxiosError<T> | ApiResponse<T>) => {
-                if ((err as AxiosError).isAxiosError) {
-                  const apiResponse = this.getDefaultApiResponseObj();
-                  apiResponse.status = 401;
-                  return apiResponse;
-                } else if (err.status && err.message) {
-                  return err;
-                } else {
-                  // this will execute only for any client error
-                  const apiResponse = this.getDefaultApiResponseObj();
-                  apiResponse.status = 600;
-                  return apiResponse;
-                }
-              })
-              // @ts-ignore
-              .then((response) => {
-                // response of refresh token request
-                if (
-                  (response as AxiosResponse<AuthResponse>).config &&
-                  (response as AxiosResponse<AuthResponse>).config.url === URL_REFERESH_TOKEN
-                ) {
-                  const apiResponse = this.getApiResponseObject<AuthResponse>(response as AxiosResponse<AuthResponse>);
-                  // if status 200 then token generated
-                  if (apiResponse.status === 200) {
-                    // save new token in cookie storage
-                    setAccessAndRefreshToken(
-                      apiResponse.data.accessToken,
-                      apiResponse.data.refreshToken,
-                      options.ctx?.res,
-                    );
-                    // add new token in Authorization header
-                    if (!requestConfig.headers) {
-                      requestConfig.headers = {};
-                    }
-                    requestConfig.headers["Authorization"] = `Bearer ${apiResponse.data?.accessToken}`;
-                    // send original request again
-                    return axios(requestConfig);
-                  } else {
-                    // logout && redirect to login page
-                    const apiResponseN = this.getDefaultApiResponseObj();
-                    apiResponse.status = 401;
-                    return apiResponseN;
-                  }
-                } else {
-                  return response as ApiResponse<T | null>;
-                }
-              })
-              // this catch will execute only after token regenerated and error in original request
               .catch((err: AxiosError<T>) => {
-                // @ts-ignore
-                return this.handleErrorResponse<T>(err, false, options || {}) as Promise<ApiResponse<T | null>>;
-              })
-              .then((response: any) => {
-                // response of original request after token regenertated
-                if (
-                  (response as AxiosResponse<T>).request &&
-                  (response as AxiosResponse<T>).request.url === requestConfig.url
-                ) {
-                  const handledResponse = this.handleResponse<T>(response as AxiosResponse<T>, false, options || {});
-                  return handledResponse as ApiResponse<T>;
-                }
-                return response as ApiResponse<T>;
+                return this.handleErrorResponse<T>(err, options);
               })
               // this catch will catch any unknown error
               .catch((error: Error) => {
                 console.error("Unknown Error!!", error);
                 // [TODO] this error should log in database to get client side errors
-                const response = this.getDefaultApiResponseObj();
+                const response = getDefaultApiResponseObj<null>();
                 response.status = 600;
                 return response;
               })
@@ -195,11 +205,11 @@ export class HttpClient {
                   // throw Error as strigify response because we will need response
                   // to return to component
                   // throwing error because retry will retry request
-                  return retryPromise(
+                  return retryPromise<ApiResponse<T>>(
                     () => {
                       // @ts-ignore
                       return axios(requestConfig).then((res: AxiosResponse<T>) => {
-                        return this.handleResponse<T>(res, false, options);
+                        return this.handleResponse<T>(res, options);
                       });
                     },
                     1000,
@@ -213,10 +223,10 @@ export class HttpClient {
               })
               .then((response) => {
                 if (options.showLoader) {
-                  CommonService.toggleLoader(false);
+                  this.toggleLoader(false);
                 }
-                if (HttClientConfig.onResponse) {
-                  HttClientConfig.onResponse(response as ApiResponse<any>, options);
+                if (this.onResponse) {
+                  this.onResponse(response as ApiResponse<any>, options);
                 }
                 return response;
               })
@@ -228,11 +238,12 @@ export class HttpClient {
           const apiResponse: ApiResponse<null> = {
             status: 0,
             data: null,
-            message: [INTERNET_NOT_AVAILABLE],
+            message: [this.internetNotAvialiableMsg],
             errorCode: -1,
+            isError: true
           };
-          if (HttClientConfig.onResponse) {
-            HttClientConfig.onResponse(apiResponse, options);
+          if (this.onResponse) {
+            this.onResponse(apiResponse, options);
           }
           return apiResponse;
         })
@@ -245,12 +256,32 @@ export class HttpClient {
    * @returns {@link ApiResponse}
    */
   private static getApiResponseObject<T>(response: AxiosResponse<T> | AxiosError<T>) {
-    const message = HttClientConfig.processMessage(response);
+    if (!this.processMessage) {
+      throw new Error("Please set HttpClient.processMessage in your application")
+    }
+    const message = this.processMessage(response);
+    let isError = false;
+    if (!this.getStatusCode) {
+      throw new Error("Please set HttpClient.getStatusCode in your application")
+    }
+    const statusCode = this.getStatusCode(response);
+    if (statusCode >= 400 || statusCode === 0) {
+      isError = true;
+    }
+
+    if (!this.processData) {
+      throw new Error("Please set HttpClient.processData in your application")
+    }
+    if (!this.getErrorCode) {
+      throw new Error("Please set HttpClient.getErrorCode in your application")
+    }
+
     const apiResponse: ApiResponse<T> = {
-      status: HttClientConfig.getStatusCode(response),
-      data: HttClientConfig.processData(response),
+      status: statusCode,
+      data: this.processData(response),
       message,
-      errorCode: HttClientConfig.getErrorCode(response),
+      errorCode: this.getErrorCode(response),
+      isError
     };
     if (process.env.NODE_ENV === "test") {
       apiResponse.response = response;
@@ -258,7 +289,7 @@ export class HttpClient {
     return apiResponse;
   }
 
-  private static handleResponse<T>(response: AxiosResponse<T>, isFirst: boolean, options: HttpClientOptions) {
+  private static handleResponse<T>(response: AxiosResponse<T>, options: HttpClientOptions) {
     if (process.env.IS_SERVER && options.ctx?.res && !options.ctx.res.headersSent) {
       // check if api sending cookie to set
       const setCookie = response.headers["Set-Cookie"] || response.headers["Set-Cookie".toLocaleLowerCase()];
@@ -269,42 +300,42 @@ export class HttpClient {
       }
     }
     const apiResponse = this.getApiResponseObject<T>(response);
-    if (apiResponse.status.toString().startsWith("2")) {
+    if (!apiResponse.isError) {
       return apiResponse;
     }
     // some api always send 200 status and follows a response structure
     // and sends actual response status in response body
-    return this.handleErrorServerResponse(apiResponse, isFirst, options);
+    return this.handleErrorServerResponse(apiResponse, options);
   }
 
   private static handleErrorResponse<T>(
     response: AxiosResponse<T> | AxiosError<T>,
-    isFirst: boolean,
     options: HttpClientOptions,
   ) {
     const apiResponse = this.getApiResponseObject<T>(response);
-    return this.handleErrorServerResponse(apiResponse, isFirst, options);
+    return this.handleErrorServerResponse(apiResponse, options);
   }
 
   private static handleErrorServerResponse<T>(
     apiResponse: ApiResponse<T | null>,
-    isFirst: boolean,
     options: HttpClientOptions,
   ) {
     if (apiResponse.status === 401) {
-      if (!isFirst) {
-        apiResponse.data = null;
+      if (!this.handleRefreshTokenFlow) {
         return apiResponse;
       }
       // This code will execute when token is invalid
-      // get refresh token from cookie storage
-      const refreshToken = CookieService.get(COOKIE_REFRESH_TOKEN, options.ctx?.req);
-      // regenerate token from refresh token
-      return axios({
-        url: this.getUrl(URL_REFERESH_TOKEN),
-        data: { refreshToken },
-        method: "POST",
-      }) as Promise<AxiosResponse<T> | AxiosError<T>>;
+      return this.handleRefreshTokenFlow(options).then(res => {
+        if (res.status === undefined) {
+          throw new Error("handleRefreshTokenFlow should return object of ApiResponse")
+        }
+        return res as ApiResponse<T>;
+      }).catch(err => {
+        if (err.status === undefined) {
+          throw new Error("handleRefreshTokenFlow should return object of ApiResponse")
+        }
+        return err as ApiResponse<T>;
+      });
     } else {
       if (!options.sendResponseWhenError) {
         apiResponse.data = null;
@@ -315,11 +346,6 @@ export class HttpClient {
 }
 
 export interface HttpClientOptions extends AxiosRequestConfig {
-  queryString?:
-    | string
-    | URLSearchParams
-    | Record<string, string | number | boolean | string[] | number[] | boolean[]>
-    | [string, string | number | boolean | string[] | number[] | boolean[]][];
   /**
    * Request is authenticated
    * If true Authorization header will send
@@ -348,7 +374,13 @@ export interface HttpClientOptions extends AxiosRequestConfig {
   ctx?: ContextData;
   /**
    * Show loader
-   * @default true
+   * HttpClient will dispatch CustomEvent with name {@link SHOW_LOADER}
+   * Listen this event to show loader
+   * @example
+   * window.addEventListener(SHOW_LOADER, (e) => {
+      // code will go here to show loader
+    });
+   * @default false
    */
   showLoader?: boolean;
   /**
@@ -356,9 +388,113 @@ export interface HttpClientOptions extends AxiosRequestConfig {
    * @default true
    */
   showNotificationMessage?: boolean;
+  /**
+   * extra used by service worker while caching
+   * service worker send back this extra via postMessage
+   */
+  extra?: string;
+  /**
+   * By default caching from service worker will diable for all api request
+   * To enable caching for specific api set this option to false
+   */
+  doCache?: boolean;
 }
 
-export interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
+
+export function getDefaultApiResponseObj<T>(data?: T) {
+  const response: ApiResponse<T | null> = {
+    status: 200,
+    data: data || null,
+    message: [],
+    errorCode: -1,
+    isError: false
+  };
+  return response;
+}
+
+/**
+ * Custom Response converted by HttpClient
+ * for ease of frontend development
+ */
+export interface ApiResponse<T> {
+  /**
+   * status code of response
+   * If server api response will send status in response body as key status then
+   * HttpClient will use response body status otherwise response status will use
+   */
+  status: number;
+  /**
+   * response data of server
+   * HttpClient will convert api rensponse into ApiResponse
+   * If API will send data key in response body as key then HttpClient will use response body data
+   * otheriwise HttpClient will put response body in ApiResponse.data
+   */
+  data: T;
+  /**
+   * Message in case of success and error
+   * Error message can be multiple in case of validation of form
+   */
+  message: string[];
+  /**
+   * Error Code. Some api sends error code.
+   * Error code helps in logging and also helps in multi language to show message
+   * based on error code
+   * If API will not send error then default value will return
+   * @default -1
+   */
+  errorCode: number | string;
+  /**
+   * ajaxResponse will available only in case of jest test
+   * Don't use in service/component. It will always be undefined
+   */
+  response?: AxiosResponse<T> | AxiosError<T>;
+  /**
+   * Can use to check response was success or error
+   * HttpClient will set true only in case of status code 4xx, 5xx, no internet available
+   * or status code 600 (client error)
+   */
+  isError: boolean;
+}
+
+export const SHOW_LOADER = "showLoader";
+export function LoaderEvent(status: boolean) {
+  return new CustomEvent<boolean>(SHOW_LOADER, { detail: status });
+}
+
+export function retryPromise<T>(
+  fn: () => Promise<any>,
+  ms = 1000,
+  maxRetries = 5,
+  retries = 0,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  rejectFn: Function | undefined = undefined,
+) {
+  return new Promise<T>((resolve, reject) => {
+    if (!rejectFn) {
+      rejectFn = reject;
+    }
+    fn()
+      .then(resolve)
+      .catch(() => {
+        setTimeout(() => {
+          console.log("retrying failed promise...", retries);
+          ++retries;
+          if (retries === maxRetries) {
+            return rejectFn && rejectFn("maximum retries exceeded");
+          }
+          retryPromise<T>(fn, ms, maxRetries, retries, rejectFn).then(resolve);
+        }, ms);
+      });
+  });
+};
+
+export function isOnline() {
+  return new Promise<boolean>((resolve, reject) => {
+    const status = process.env.IS_SERVER ? true : navigator.onLine;
+    if (status) {
+      resolve(status);
+    } else {
+      reject(status);
+    }
+  });
 }

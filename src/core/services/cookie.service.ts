@@ -52,7 +52,10 @@ export class CookieService {
 
     const cookie = `${name}=; expires=${date}; path=/`;
     if (process.env.IS_SERVER) {
-      res?.setHeader("Set-Cookie", cookie);
+      res?.cookie(`${name}`, "", {
+        expires: date,
+        path: "/"
+      });
     } else {
       document.cookie = cookie;
     }

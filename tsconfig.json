@@ -2,6 +2,7 @@
   "compilerOptions": {
     "outDir": "./build/ts/",
     "typeRoots": ["./node_modules/@types", "./typings"],
+    "lib": ["ES2020", "DOM", "WebWorker"],
     "baseUrl": "./",
     "sourceMap": true,
     "noImplicitAny": true,

@@ -1,9 +1,0 @@
-{
-  "watch": [
-    "src/ssr",
-    "src/**/*.redux.ts",
-    "src/redux",
-    "test-api.ts"
-  ],
-  "ext": "ts,tsx"
-}

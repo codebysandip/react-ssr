@@ -2,12 +2,13 @@ import * as logger from "./logger.js";
 import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import { existsSync } from "node:fs";
+
 const require = createRequire(import.meta.url);
 
 const packageJson = require(resolve(process.cwd(), `package.json`));
 
 const depsList = ["", ...Object.keys(packageJson.devDependencies), ...Object.keys(packageJson.dependencies)];
-const reqList = [];
+const reqList: string[] = [];
 
 depsList.every((dep) => {
   const nodeModulesPath = resolve(process.cwd(), `node_modules/${dep}`);

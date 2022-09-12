@@ -16,7 +16,7 @@ const initialState: HomeState = {
 
 export const fetchProducts = () => {
   return async (dispatch: AppDispatch, _getState: GetState, api: ThunkApi) => {
-    const apiResponse = await api.get<HomeData>("/api/product");
+    const apiResponse = await api.get<HomeData>("/api/product", { extra: "home/productsPageDataLoaded" });
     dispatch(productsPageDataLoaded(apiResponse.data || { products: [] }));
     return apiResponse;
   };
@@ -25,7 +25,6 @@ export const fetchProducts = () => {
 export const fetchProductById = (id: number, ctx: ContextData) => {
   return async (dispatch: AppDispatch, _getState: GetState, api: ThunkApi) => {
     const apiResponse = await api.get<Product>(`/api/product/${id}`, { isAuth: true, ctx });
-    console.log("fetchProductById!!", apiResponse.data);
     dispatch(productByIdLoaded(apiResponse.data || undefined));
     return apiResponse;
   };
@@ -42,11 +41,6 @@ const homeSlice = createSlice({
       state.productById = action.payload;
     },
   },
-  // extraReducers: (builder) => {
-  //   builder.addCase(fetchProducts.fulfilled, (state, action) => {
-  //     state.products = action.payload;
-  //   });
-  // },
 });
 
 export const { productsPageDataLoaded, productByIdLoaded } = homeSlice.actions;
