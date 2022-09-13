@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 
 const secretKey = "react-ssr";
 const accessTokenExpTime = "5m";
-const refreshTokenExpTime = 60 * 60;
+const refreshTokenExpTime = "60m";
 // mimic api to sent data after 50 sec
 app.use((req, res, next) => {
   setTimeout(() => {

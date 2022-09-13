@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import axios, { AxiosRequestConfig, ResponseType, AxiosResponse, AxiosError, Method, AxiosRequestHeaders } from "axios";
-import { ContextData } from "../models/context.model.js";
-
+import { Request, Response } from "express";
 export class HttpClient {
   /**
    * set maxRetryCount to retry HttpClient to defined number of times
@@ -58,11 +57,27 @@ export class HttpClient {
    * If this function will return succcess then HttpClient will call api again with new token
    */
   public static handleRefreshTokenFlow?: (options: HttpClientOptions) => Promise<ApiResponse<unknown>>;
+  /**
+   * HttpClient call this function to set url of request  
+   * You can use this function to set domain based on env variable for every request
+   */
+  public static setUrl: (url: string) => string;
+  /**
+   * HttpClient use isServer to check code executing on client or server  
+   * If your project have any env variable to check server then override implementation.
+   */
+  public static isServer = typeof window === "undefined";
 
   private static loaderCount = 0;
 
+  /**
+   * toggleLoader distpatch {@link LoaderEvent}  
+   * toggleLoader dispatches false event only when all disptached true will return false
+   * @param status status boolean to show/hide Loader
+   * @returns void
+   */
   public static toggleLoader(status: boolean) {
-    if (typeof window !== "undefined") {
+    if (!this.isServer) {
       if (status) {
         this.loaderCount += 1;
       } else {
@@ -100,10 +115,6 @@ export class HttpClient {
     return this.sendRequest<T>(url, "DELETE", options);
   }
 
-  private static getUrl(url: string) {
-    return `${process.env.IS_SERVER ? process.env.API_BASE_URL : ""}${url}`;
-  }
-
   private static setDefaultHttpClientOptions<T>(options?: HttpClientOptions) {
     if (!options) {
       options = {};
@@ -122,7 +133,7 @@ export class HttpClient {
     if (options.showLoader === undefined) {
       options.showLoader = false;
     }
-    if (!process.env.IS_SERVER && options.extra) {
+    if (!this.isServer && options.extra) {
       options.headers["extra"] = options.extra;
     }
 
@@ -171,7 +182,7 @@ export class HttpClient {
     if (options.showLoader) {
       this.toggleLoader(true);
     }
-    options.url = this.getUrl(url);
+    options.url = this.setUrl ? this.setUrl(url) : url;
     options.method = method;
     const maxRetryCount = options.maxRetryCount || this.maxRetryCount;
     const requestConfig: AxiosRequestConfig = options;
@@ -207,7 +218,6 @@ export class HttpClient {
                   // throwing error because retry will retry request
                   return retryPromise<ApiResponse<T>>(
                     () => {
-                      // @ts-ignore
                       return axios(requestConfig).then((res: AxiosResponse<T>) => {
                         return this.handleResponse<T>(res, options);
                       });
@@ -290,12 +300,12 @@ export class HttpClient {
   }
 
   private static handleResponse<T>(response: AxiosResponse<T>, options: HttpClientOptions) {
-    if (process.env.IS_SERVER && options.ctx?.res && !options.ctx.res.headersSent) {
+    if (this.isServer && options.nodeReqObj && !options.nodeRespObj?.headersSent) {
       // check if api sending cookie to set
       const setCookie = response.headers["Set-Cookie"] || response.headers["Set-Cookie".toLocaleLowerCase()];
       if (setCookie) {
-        if (options.ctx.res) {
-          options.ctx.res.setHeader("Set-Cookie", setCookie.replace(/\r?\n|\r/g, ""));
+        if (options.nodeRespObj) {
+          options.nodeRespObj.setHeader("Set-Cookie", setCookie.replace(/\r?\n|\r/g, ""));
         }
       }
     }
@@ -369,19 +379,25 @@ export interface HttpClientOptions extends AxiosRequestConfig {
    */
   maxRetryCount?: number;
   /**
-   * Context Data will be necessary to pass when HttpClient will run on server and needs data from cookie
+   * Request object of node. This will use only in case of getting
+   * cookie on server
    */
-  ctx?: ContextData;
+  nodeReqObj?: Request;
   /**
-   * Show loader
-   * HttpClient will dispatch CustomEvent with name {@link SHOW_LOADER}
-   * Listen this event to show loader
-   * @example
-   * window.addEventListener(SHOW_LOADER, (e) => {
-      // code will go here to show loader
-    });
-   * @default false
+   * Response object of node/express.  
+   * This will use only in case of setting cookie on server
    */
+  nodeRespObj?: Response;
+  /**
+  * Show loader
+  * HttpClient will dispatch CustomEvent with name {@link SHOW_LOADER}
+  * Listen this event to show loader
+  * @example
+  * window.addEventListener(SHOW_LOADER, (e) => {
+     // code will go here to show loader
+   });
+  * @default false
+  */
   showLoader?: boolean;
   /**
    * Show toast/snackbar when error
@@ -389,12 +405,12 @@ export interface HttpClientOptions extends AxiosRequestConfig {
    */
   showNotificationMessage?: boolean;
   /**
-   * extra used by service worker while caching
+   * extra used by service worker while caching.  
    * service worker send back this extra via postMessage
    */
   extra?: string;
   /**
-   * By default caching from service worker will diable for all api request
+   * By default caching from service worker will diable for all api request  
    * To enable caching for specific api set this option to false
    */
   doCache?: boolean;
@@ -418,49 +434,71 @@ export function getDefaultApiResponseObj<T>(data?: T) {
  */
 export interface ApiResponse<T> {
   /**
-   * status code of response
-   * If server api response will send status in response body as key status then
+   * status code of response  
+   * If server api response will send status in response body as key status then  
    * HttpClient will use response body status otherwise response status will use
    */
   status: number;
   /**
-   * response data of server
-   * HttpClient will convert api rensponse into ApiResponse
-   * If API will send data key in response body as key then HttpClient will use response body data
-   * otheriwise HttpClient will put response body in ApiResponse.data
+   * response data of server  
+   * HttpClient will convert api rensponse into ApiResponse  
+   * If API will send data key in response body as key then HttpClient will use
+   * response body data otheriwise HttpClient will put response body in {@link ApiResponse.data}
    */
   data: T;
   /**
-   * Message in case of success and error
+   * Message in case of success and error  
    * Error message can be multiple in case of validation of form
    */
   message: string[];
   /**
-   * Error Code. Some api sends error code.
-   * Error code helps in logging and also helps in multi language to show message
-   * based on error code
-   * If API will not send error then default value will return
+   * Error Code. Some api sends error code.  
+   * Error code helps in logging and also helps in multi language to show message  
+   * based on error code  
+   * If API will not send errorCode then default -1 value will return
    * @default -1
    */
   errorCode: number | string;
   /**
-   * ajaxResponse will available only in case of jest test
+   * response will available only in case of jest test  
    * Don't use in service/component. It will always be undefined
    */
   response?: AxiosResponse<T> | AxiosError<T>;
   /**
-   * Can use to check response was success or error
+   * Can use to check response was success or error  
    * HttpClient will set true only in case of status code 4xx, 5xx, no internet available
    * or status code 600 (client error)
    */
   isError: boolean;
 }
 
+/**
+ * const for event name for event show loader
+ */
 export const SHOW_LOADER = "showLoader";
+/**
+ * Use this function to create event for dispatch  
+ * HttpClient will dispatch this custom event when {@link HttpClientOptions.showLoader} will be true
+ * @param status boolean value to show or hide loader
+ * @returns CustomEvent with type {@link SHOW_LOADER}
+ * @example 
+ * // to show loader
+ * window.dispatchEvent(LoaderEvent(false));
+ */
 export function LoaderEvent(status: boolean) {
   return new CustomEvent<boolean>(SHOW_LOADER, { detail: status });
 }
 
+/**
+ * retry promise when rejected  
+ * retryPromise will retry until maximum retries reach or till when give promise resolve
+ * @param fn Function show return promise
+ * @param ms number of milliseconds after retry request
+ * @param maxRetries number of times to retry promise on fail
+ * @param retries how many times retried
+ * @param rejectFn Don't set its for internet use only
+ * @returns resolved data or string "maximum retries exceeded"
+ */
 export function retryPromise<T>(
   fn: () => Promise<any>,
   ms = 1000,
@@ -486,11 +524,16 @@ export function retryPromise<T>(
         }, ms);
       });
   });
-};
+}
 
+/**
+ * isOnline returns online status (connected to internet) of user on client side  
+ * On server side it will always return true
+ * @returns Promise<boolean>
+ */
 export function isOnline() {
   return new Promise<boolean>((resolve, reject) => {
-    const status = process.env.IS_SERVER ? true : navigator.onLine;
+    const status = typeof window === "undefined" ? true : navigator.onLine;
     if (status) {
       resolve(status);
     } else {

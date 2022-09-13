@@ -5,12 +5,16 @@ import { AppDispatch, RootState } from "src/redux/create-store.js";
 import { LoginPayload } from "../auth.model.js";
 import { login } from "../auth.redux.js";
 import * as Yup from "yup";
-import { Formik, Form, Field } from "formik";
+import { Formik, Form } from "formik";
+import { FormGroup } from "src/core/components/form/FormGroup.js";
+import { FormVlidation } from "src/core/services/form-validation.service.js";
 
 class Login extends Component<LoginProps, LoginState> {
   private loginSchema = Yup.object().shape({
-    email: Yup.string().required("Email is required").email("Email is not valid").default(""),
-    password: Yup.string().required("Password is required").default(""),
+    email: Yup.string().required().email(),
+    password: Yup.string()
+      .required()
+      .matches(/^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/, { name: "password" }),
   });
 
   private navigateToHomeIfLoggedIn() {
@@ -33,7 +37,7 @@ class Login extends Component<LoginProps, LoginState> {
 
   render(): ReactNode {
     return (
-      <div>
+      <div className="d-flex flex-column align-items-center">
         <h1>Login</h1>
         {this.props.errorMessage && <h3 className="invalid-feedback">{this.props.errorMessage}</h3>}
         <Formik
@@ -43,25 +47,33 @@ class Login extends Component<LoginProps, LoginState> {
             password: "",
           }}
           onSubmit={(data) => this.login(data)}
+          // FormVlidation.validateForm sets error message for FormGroup component
+          // this line is required to use FormGroup component
+          validate={(values) => FormVlidation.validateForm(this.loginSchema, values)}
         >
-          {({ errors, touched }) => (
-            <Form>
-              <div className="form-group">
-                <label htmlFor="email">Email address</label>
-                <Field name="email" id="email" className="form-control" />
-                {errors.email && touched.email && <div className="invalid-feedback">{errors.email}</div>}
-              </div>
-              <div className="form-group">
-                <label htmlFor="password">Password</label>
-                <Field type="password" name="password" id="password" className="form-control" />
-                {errors.password && touched.password && <div className="invalid-feedback">{errors.password}</div>}
-              </div>
-
-              <button type="submit" className="btn btn-primary mt-4">
-                Login
-              </button>
-            </Form>
-          )}
+          {({ errors, touched }) => {
+            return (
+              <Form className="w-50">
+                <FormGroup
+                  name="email"
+                  type="text"
+                  errors={errors}
+                  touched={touched}
+                  labelText="Email Address"
+                />
+                <FormGroup
+                  name="password"
+                  type="password"
+                  errors={errors}
+                  touched={touched}
+                  labelText="Password"
+                />
+                <button type="submit" className="btn btn-primary mt-4">
+                  Login
+                </button>
+              </Form>
+            );
+          }}
         </Formik>
       </div>
     );

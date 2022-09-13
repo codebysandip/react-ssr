@@ -113,7 +113,7 @@ export default function Lazy(props: LazyProps) {
 export interface LazyProps {
   /**
    * Module to render
-   * Module will come only when page will reload (check client.tsx)
+   * Module will come only when page will reload check [client.tsx](../../../client.tsx)
    */
   module?: CompModule;
   moduleProvider: CompModuleImport;

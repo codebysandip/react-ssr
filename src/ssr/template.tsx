@@ -11,6 +11,7 @@ import jsBeautify from "js-beautify";
 import { Empty } from "core/components/empty/empty.component.js";
 
 const hashObj = getWebpackBuildHash();
+const isProd = process.env.ENV !== "development";
 /**
  * Base HTML template.
  * This component will use as index.html
@@ -32,7 +33,7 @@ class HtmlTemplate extends Component<HtmlTemplateProps> {
           />
           <link rel="shortcut icon" href="/favicon.ico" />
           <link
-            href={`/assets/css/style${!process.env.IS_LOCAL ? "." + hashObj?.styleHash : ""}.css`}
+            href={`/assets/css/style${isProd ? "." + hashObj?.styleHash : ""}.css`}
             rel="stylesheet"
           />
           {helmet.style.toComponent()}
@@ -44,7 +45,7 @@ class HtmlTemplate extends Component<HtmlTemplateProps> {
           {helmet.noscript.toComponent()}
           <div id="root" dangerouslySetInnerHTML={{ __html: this.props.html }}></div>
           <script dangerouslySetInnerHTML={{ __html: ssrDataScript }}></script>
-          <script src={`/client${!process.env.IS_LOCAL ? "." + hashObj?.clientJsHash : ""}.js`}></script>
+          <script src={`/client${isProd ? "." + hashObj?.clientJsHash : ""}.js`}></script>
           {helmet.script.toComponent()}
         </body>
       </html>
@@ -59,10 +60,11 @@ interface HtmlTemplateProps {
 
 /**
  * Get rendered HTML
- * @param Component component to render
- * @param props Page props {@link ApiResponse<PageData>}
- * @param url request url
- * @returns rendered HTML
+ * @param module Module exported from page component
+ * @param ctx {@link ContextData}
+ * @param url url of request
+ * @param isSSR flag for page will render on server or client
+ * @returns
  */
 export function getHtml(module: CompModule, ctx: ContextData, url: string, isSSR = true) {
   if (ssrConfig.getSsrData) {
@@ -80,7 +82,9 @@ export function getHtml(module: CompModule, ctx: ContextData, url: string, isSSR
       <ReactSsrApp module={module} ctx={ctx} />
     </StaticRouter>,
   );
-  let html = renderToString(<HtmlTemplate ssrData={ctx.ssrData || ctx.pageData} html={innerHtml}></HtmlTemplate>);
+  let html = renderToString(
+    <HtmlTemplate ssrData={ctx.ssrData || ctx.pageData} html={innerHtml}></HtmlTemplate>,
+  );
   if (process.env.IS_LOCAL) {
     html = jsBeautify.html_beautify(html);
   }

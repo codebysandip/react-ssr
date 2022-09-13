@@ -60,6 +60,7 @@ export const processRequest = () => {
           if (!pageData) {
             pageData = {};
           }
+          ctx.ssrData = pageData;
 
           const html = getHtml(module, ctx, url, route.isSSR);
           if (route.static || !route.isSSR) {

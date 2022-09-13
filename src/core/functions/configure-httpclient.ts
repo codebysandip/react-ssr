@@ -1,8 +1,10 @@
 import { AxiosResponse, AxiosError } from "axios";
-import { COOKIE_ACCESS_TOKEN, INTERNET_NOT_AVAILABLE } from "src/const.js";
+import { COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN, INTERNET_NOT_AVAILABLE, URL_REFERESH_TOKEN } from "src/const.js";
+import { AuthResponse } from "src/pages/auth/auth.model.js";
 import { CommonService } from "../services/common.service.js";
 import { CookieService } from "../services/cookie.service.js";
-import { HttpClient } from "../services/http-client.js";
+import { ApiResponse, getDefaultApiResponseObj, HttpClient, HttpClientOptions } from "../services/http-client.js";
+import { setAccessAndRefreshToken } from "./get-token.js";
 
 export function configureHttpClient() {
   HttpClient.getStatusCode = (response: AxiosResponse<any> | AxiosError<any>) => {
@@ -106,7 +108,7 @@ export function configureHttpClient() {
   };
 
   HttpClient.getAuthToken = (options) => {
-    return CookieService.get(COOKIE_ACCESS_TOKEN, options.ctx?.req) || "";
+    return CookieService.get(COOKIE_ACCESS_TOKEN, options.nodeReqObj) || "";
   };
 
   HttpClient.getAuthHeader = (token) => {
@@ -117,4 +119,28 @@ export function configureHttpClient() {
 
   HttpClient.internetNotAvialiableMsg = INTERNET_NOT_AVAILABLE;
 
+  HttpClient.handleRefreshTokenFlow = (options: HttpClientOptions) => {
+    const refreshToken = CookieService.get(COOKIE_REFRESH_TOKEN, options.nodeReqObj);
+    const apiResponse = getDefaultApiResponseObj();
+    if (!refreshToken) {
+      apiResponse.status = 401;
+      apiResponse.message = ["Refresh Token not available"];
+      return Promise.resolve(apiResponse);
+    }
+    return HttpClient.post<AuthResponse>(URL_REFERESH_TOKEN, { refreshToken }).then(resp => {
+      if (!resp.isError && resp.data) {
+        setAccessAndRefreshToken(
+          resp as ApiResponse<AuthResponse>,
+          options.nodeRespObj,
+        )
+        return HttpClient.sendRequest(options.url || "/", options.method || "GET", options);
+      }
+      apiResponse.message = resp.message;
+      return apiResponse;
+    });
+  }
+
+  HttpClient.setUrl = (url) => {
+    return `${process.env.IS_SERVER ? process.env.API_BASE_URL : ""}${url}`
+  };
 }

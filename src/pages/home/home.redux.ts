@@ -24,7 +24,10 @@ export const fetchProducts = () => {
 
 export const fetchProductById = (id: number, ctx: ContextData) => {
   return async (dispatch: AppDispatch, _getState: GetState, api: ThunkApi) => {
-    const apiResponse = await api.get<Product>(`/api/product/${id}`, { isAuth: true, ctx });
+    const apiResponse = await api.get<Product>(
+      `/api/product/${id}`,
+      { isAuth: true, nodeReqObj: ctx.req, nodeRespObj: ctx.res }
+    );
     dispatch(productByIdLoaded(apiResponse.data || undefined));
     return apiResponse;
   };
