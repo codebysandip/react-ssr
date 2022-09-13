@@ -9,14 +9,16 @@ import { ssrConfig } from "src/react-ssr.config.js";
 import { ContextDataWithStore } from "./core/models/context-with-store.model.js";
 import { ContextData } from "./core/models/context.model.js";
 import { AppStore } from "./redux/create-store.js";
+import { configureHttpClient } from "./core/functions/configure-httpclient.js";
 
 // store should create only one time
-// we declared isFirst outside of react because we don;t want to re render again
+// we declared isFirst outside of react because we don't want to re render again
 // when setting it to false
 let isFirst = true;
 // store should not change/update when react updates itself
 let store: AppStore;
 
+configureHttpClient();
 export default function ReactSsrApp(props: ReactSsrAppProps) {
   const location = useLocation();
   const searchParams = useSearchParams();

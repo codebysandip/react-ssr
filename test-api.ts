@@ -6,7 +6,8 @@ import bodyParser from "body-parser";
 import jwt from "jsonwebtoken";
 import { NextFunction } from "webpack-dev-middleware";
 import { URL_REFERESH_TOKEN } from "src/const.js";
-import { User } from "src/pages/auth/auth.model.js";
+import { TokenData } from "src/pages/auth/auth.model.js";
+import etag from "etag";
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -14,12 +15,34 @@ app.use(bodyParser.json());
 
 const secretKey = "react-ssr";
 const accessTokenExpTime = "5m";
-const refreshTokenExpTime = 60 * 60;
+const refreshTokenExpTime = "60m";
 // mimic api to sent data after 50 sec
 app.use((req, res, next) => {
   setTimeout(() => {
     next();
   }, 50);
+});
+
+// overide json and send methods of Response
+// add etag header and modify response body if etag matched
+app.use((req, res, next) => {
+  const send = res.send;
+  const json = res.json;
+  res.send = function (body) {
+    return send.call(this, body);
+  };
+  res.json = function (body) {
+    const etagVal = etag(JSON.stringify(body), { weak: true });
+    this.setHeader("etag", etagVal);
+    if (req.headers.etag && req.headers.etag === etagVal) {
+      console.log("etag!!", req.headers.etag, etagVal);
+      return json.call(this, {});
+    } else {
+      return json.call(this, body);
+    }
+  };
+
+  next();
 });
 
 app.post("/api/login", (req, res) => {
@@ -47,9 +70,28 @@ app.post("/api/login", (req, res) => {
   }
 });
 
+app.get("/api/header", (req, res) => {
+  res.json({
+    links: [
+      {
+        text: "Home",
+        url: "/"
+      },
+      {
+        text: "404 Page",
+        url: "/404"
+      },
+      {
+        text: "500 Page",
+        url: "/500"
+      },
+    ]
+  })
+})
+
 app.post(URL_REFERESH_TOKEN, (req, res) => {
   try {
-    const decoded = jwt.verify(req.body.refreshToken, secretKey) as User;
+    const decoded = jwt.verify(req.body.refreshToken, secretKey) as TokenData;
     delete decoded.iat;
     delete decoded.exp;
     const token = jwt.sign(decoded, secretKey, {

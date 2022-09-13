@@ -5,15 +5,17 @@ import { ROUTE_LOGIN } from "src/const.js";
 import { AppDispatch, RootState } from "src/redux/create-store.js";
 import { connect } from "react-redux";
 import { withRouter, WithRouterProps } from "src/core/hoc/with-routes.hoc.js";
+import { CommonService } from "src/core/services/common.service.js";
 
 class HeaderComp extends Component<HeaderProps> {
   public logout() {
     this.props.logout();
+    CommonService.logout();
     this.props.router.navigate(ROUTE_LOGIN);
   }
 
   public componentDidUpdate(prevProps: HeaderProps) {
-    if (prevProps.isLoggedIn !== this.props.isLoggedIn && !prevProps.isLoggedIn) {
+    if (prevProps.isLoggedIn !== this.props.isLoggedIn && !this.props.isLoggedIn) {
       this.props.router.navigate(ROUTE_LOGIN);
     }
   }
@@ -30,21 +32,14 @@ class HeaderComp extends Component<HeaderProps> {
           </button>
           <div className="collapse navbar-collapse">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-              <li className="nav-item">
-                <Link className="nav-link active" to="/">
-                  Home
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/404">
-                  404 page
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/500">
-                  500 page
-                </Link>
-              </li>
+              {this.props.header.links.map((link, idx) => (
+                <li className="nav-item" key={idx}>
+                  <Link className="nav-link active" to={link.url}>
+                    {link.text}
+                  </Link>
+                </li>
+              ))}
+
               <li className="nav-item">
                 {!this.props.isLoggedIn && (
                   <Link className="nav-link" to={ROUTE_LOGIN}>
@@ -68,12 +63,13 @@ class HeaderComp extends Component<HeaderProps> {
 const mapStateToProps = (state: RootState) => {
   return {
     isLoggedIn: state.auth.isLoggedIn,
+    header: state.app.header,
   };
 };
 
 const mapDispatchToProps = (dispatch: AppDispatch) => {
   return {
-    logout: () => dispatch(logoutAction({})),
+    logout: () => dispatch(logoutAction()),
   };
 };
 

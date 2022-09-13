@@ -3,6 +3,7 @@ import { navigatorOnline } from "../../utils/spy-on/navigator.spy.js";
 import { COOKIE_ACCESS_TOKEN } from "src/const.js";
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
+import { configureHttpClient } from "src/core/functions/configure-httpclient.js";
 
 const mock = new MockAdapter(axios);
 const request = {
@@ -30,6 +31,7 @@ describe("HttpClient", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     navigatorOnline(true);
+    configureHttpClient();
   });
 
   it("Should return ApiResponse.status 200", async () => {

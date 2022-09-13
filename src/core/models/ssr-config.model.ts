@@ -1,54 +1,9 @@
-import { AxiosResponse, AxiosError } from "axios";
-import { HttpClientOptions } from "../services/http-client.js";
-import { ApiResponse } from "./api-response.js";
+import { ApiResponse } from "core/services/http-client.js";
 import { ContextData } from "./context.model.js";
 import { PageRedirect } from "./page-data.js";
 import { CompModule } from "./route.model.js";
 
-export interface HttpClient {
-  /**
-   * ReactSsr retry request in HttpClient when 5xx error or
-   * internet not available
-   * set this for number of times HttpClient will retry
-   */
-  maxRetryCount: number;
-  /**
-   * set this for default of HttpClientOptions.isAuth
-   */
-  isAuthDefault: boolean;
-  /**
-   * Implement this function to return sucess and error message from api resonse
-   * HttpClient will call this function after getting response from api
-   * to create ApiResponse object
-   */
-  processMessage: (response: AxiosResponse<any> | AxiosError<any>) => string[];
-  /**
-   * Implement this function to return data from api resonse
-   * HttpClient will call this function after getting response from api
-   * to create ApiResponse object
-   */
-  processData: (response: AxiosResponse<any> | AxiosError<any>) => any;
-  /**
-   * implement this function to retiurn code from api response
-   * HttpClient will call this function after getting response from api
-   * to create ApiResponse object
-   */
-  getErrorCode: (response: AxiosResponse<any> | AxiosError<any>) => number;
-  /**
-   * implement this function to retiurn code from api response
-   * HttpClient will call this function after getting response from api
-   * to create ApiResponse object
-   */
-  getStatusCode: (response: AxiosResponse<any> | AxiosError<any>) => number;
-  /**
-   * HttpClient will call this function after getting response in case of success
-   * as well as error
-   */
-  onResponse?: (apiResponse: ApiResponse<any>, options: HttpClientOptions) => void;
-}
-
 export interface SSRConfig {
-  httpClient: HttpClient;
   /**
    * Implement this function react-ssr.config.ts to create store
    * ReactSsr internally call this function before calling getInitialProps
@@ -58,21 +13,30 @@ export interface SSRConfig {
    */
   configureStore?: (module: CompModule, ctx: ContextData) => void;
   /**
-   * Implement this function to execute common code
-   * ReactSsr internally call this function before calling getInitialProps
-   * This function get call on server as well as client
+   * Implement this function to execute common code and fetch dynamic header/footer
+   * ReactSsr internally call this function before calling getInitialProps.
+   * This function get call on server as well as client so if you need to execute any code
+   * on server only then
+   * @example
+   * if (process.env.IS_SERVER) {
+   *  // put code here to execute only on server like dynamic header
+   * }
+   * @returns If you are calling/(dispatching action for) api make sure to return {@link Promise<ApiResponse<any>>}
+   * ReactSsr will check ApiResponse.status for sucess
    */
-  preInitialProps?: (ctx: ContextData) => void;
+  preInitialProps?: (ctx: ContextData) => Promise<ApiResponse<any>> | void;
   /**
    * Implement this function to modify ssrData
    * ReactSsr set ssr data on window object with key __SSRDATA__
-   * Widely used to function when you implement store
-   * ReactSsr call this function after react page rendered
+   * Widely used this function when you implement store (store.getState())
+   * ReactSsr will call this function if implemented
+   * @returns any data to set __SSRDATA__
    */
   getSsrData?: (ctx: ContextData) => any;
   /**
    * Validate response of api and return redirect path in case of error
    * ReactSsr call this function after getting api response
+   * Note: this funcation will call only for page api
    * This function will call on both client and server
    * client will navigate to returned path if path available
    * @param response ApiResponse

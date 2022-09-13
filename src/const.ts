@@ -29,5 +29,4 @@ User should redirect to appropriate page base on status of api
 export const INTERNET_NOT_AVAILABLE = "Please check your network connection. Internet not available";
 
 /* ##### Events ##### */
-export const SHOW_LOADER = "showLoader";
 export const TOAST = "toast";

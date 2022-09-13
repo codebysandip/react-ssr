@@ -1,14 +1,26 @@
 import { Request, Response } from "express";
 import { COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN } from "src/const.js";
-import { User } from "src/pages/auth/auth.model.js";
+import { JwtToken, TokenData } from "src/pages/auth/auth.model.js";
+import { ApiResponse } from "core/services/http-client.js";
 import { CookieService } from "../services/cookie.service.js";
+import { AuthResponse } from "pages/auth/auth.model.js";
 
 function getToken(key: string, req?: Request) {
   if (process.env.IS_SERVER && !req) {
     throw new Error("req cann't be undefined in SSR");
   }
   const accessToken = CookieService.get(key, req);
-  return accessToken;
+  if (!accessToken) {
+    return null;
+  }
+  const tokenData = decodeToken<JwtToken>(accessToken);
+  if (isValidJwtToken(tokenData)) {
+    return {
+      token: accessToken,
+      tokenData
+    }
+  }
+  return null;
 }
 /**
  * get access token from cookie
@@ -16,7 +28,11 @@ function getToken(key: string, req?: Request) {
  * @returns access token from cookie
  */
 export function getAccessToken(req?: Request) {
-  return getToken(COOKIE_ACCESS_TOKEN, req);
+  const tokenwithData = getToken(COOKIE_ACCESS_TOKEN, req);
+  if (!tokenwithData) {
+    return null;
+  }
+  return tokenwithData.token;
 }
 
 /**
@@ -25,13 +41,24 @@ export function getAccessToken(req?: Request) {
  * @returns decoded token of type T
  */
 export function decodeToken<T>(token: string) {
-  let tokenStr = "";
-  if (process.env.IS_SERVER) {
-    tokenStr = Buffer.from(token.split(".")[1], "base64").toString();
-  } else {
-    tokenStr = atob(token.split(".")[1]);
+  try {
+    let tokenStr = "";
+    if (process.env.IS_SERVER) {
+      tokenStr = Buffer.from(token.split(".")[1], "base64").toString();
+    } else {
+      tokenStr = atob(token.split(".")[1]);
+    }
+    return JSON.parse(tokenStr) as T;
+  } catch {
+    throw new Error("Invalid Jwt token");
   }
-  return JSON.parse(tokenStr) as T;
+}
+
+export function isValidJwtToken(tokenData: JwtToken) {
+  if ((tokenData.exp || 1) * 1000 > Date.now()) {
+    return tokenData;
+  }
+  return null;
 }
 /**
  * get access token data from cookie
@@ -39,12 +66,11 @@ export function decodeToken<T>(token: string) {
  * @returns decoded token of type T
  */
 export function getAccessTokenData(req?: Request) {
-  const accessToken = getAccessToken(req);
-  if (accessToken) {
-    return decodeToken<User>(accessToken);
-  } else {
-    return undefined;
+  const tokenwithData = getToken(COOKIE_ACCESS_TOKEN, req);
+  if (!tokenwithData) {
+    return null;
   }
+  return tokenwithData.tokenData as TokenData;
 }
 
 /**
@@ -53,7 +79,11 @@ export function getAccessTokenData(req?: Request) {
  * @returns refresh token from cookie
  */
 export function getRefreshToken(req?: Request) {
-  return getToken(COOKIE_REFRESH_TOKEN, req);
+  const tokenwithData = getToken(COOKIE_REFRESH_TOKEN, req);
+  if (!tokenwithData) {
+    return null;
+  }
+  return tokenwithData.token;
 }
 
 /**
@@ -61,13 +91,13 @@ export function getRefreshToken(req?: Request) {
  * @param req Node Request Object
  * @returns decoded token of type T
  */
-export function getRefreshTokenData(req?: Request) {
-  const accessToken = getRefreshToken(req);
-  if (accessToken) {
-    return decodeToken<User>(accessToken);
-  } else {
-    return undefined;
+export function getRefreshToknenData(req?: Request) {
+  const tokenwithData = getToken(COOKIE_REFRESH_TOKEN, req);
+  if (!tokenwithData) {
+    return null;
   }
+  return tokenwithData.tokenData as TokenData;
+
 }
 
 /**
@@ -77,18 +107,18 @@ export function getRefreshTokenData(req?: Request) {
  * @param refreshToken Refresh Token
  * @param res Node Response Object
  */
-export function setAccessAndRefreshToken(accessToken: string, refreshToken: string, res?: Response) {
-  const accessTokenData = decodeToken<User>(accessToken);
-  const refreshTokenData = decodeToken<User>(refreshToken);
+export function setAccessAndRefreshToken(apiResponse: ApiResponse<AuthResponse>, res?: Response) {
+  const accessTokenData = decodeToken<TokenData>(apiResponse.data.accessToken);
+  const refreshTokenData = decodeToken<TokenData>(apiResponse.data.refreshToken);
   CookieService.set(
     COOKIE_ACCESS_TOKEN,
-    accessToken,
+    apiResponse.data.accessToken,
     new Date(accessTokenData.exp ? accessTokenData.exp * 1000 : Date.now()),
     res,
   );
   CookieService.set(
     COOKIE_REFRESH_TOKEN,
-    refreshToken,
+    apiResponse.data.refreshToken,
     new Date(refreshTokenData?.exp ? refreshTokenData?.exp * 1000 : Date.now()),
     res,
   );

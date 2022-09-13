@@ -8,6 +8,7 @@ import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import Dotenv from "dotenv-webpack";
 import ReactRefreshPlugin from "@pmmmwh/react-refresh-webpack-plugin";
+import WorkboxPlugin from "workbox-webpack-plugin";
 
 import { isServerFn, isLocalFn, getPath } from "./functions/helper-functions.js";
 import { join } from "path";
@@ -19,7 +20,6 @@ import { readFileSync } from "fs";
  * @returns webpack common config
  */
 export default function (env, args, isProd = false) {
-  const isWatch = JSON.parse(env.WATCH || env.IS_LOCAL);
   const packageJson = JSON.parse(readFileSync(join(process.cwd(), "package.json"), { encoding: "utf-8" }));
   const tsconfigJson = JSON.parse(readFileSync(join(process.cwd(), "tsconfig.json"), { encoding: "utf-8" }));
 
@@ -117,8 +117,6 @@ export default function (env, args, isProd = false) {
       new webpack.ProvidePlugin({
         process: "process/browser",
       }),
-    );
-    plugins.push(
       new CopyWebpackPlugin({
         patterns: [
           {
@@ -128,6 +126,12 @@ export default function (env, args, isProd = false) {
           },
         ],
       }),
+      // new WorkboxPlugin.InjectManifest({
+      //   swSrc: getPath("src/service-worker.js"),
+      //   swDest: join(outFolder, "service-worker.js"),
+      //   mode: !isLocal ? "production" : "development",
+      //   maximumFileSizeToCacheInBytes: isLocal ? 10 * 1000 * 1000 : 500 * 1000,
+      // }),
     );
   }
 
@@ -163,7 +167,7 @@ export default function (env, args, isProd = false) {
     experiments: {
       outputModule: true,
     },
-    watch: isWatch,
+    watch: isLocal,
     watchOptions: {
       ignored: ["**/node_modules", "**/config"],
     },
@@ -209,13 +213,13 @@ export default function (env, args, isProd = false) {
                     },
                   },
                 },
-                // isModule: true,
-                // sourceMaps: isLocal,
-                // inlineSourcesContent: isLocal,
-                // module: {
-                //   type: "es6",
-                //   lazy: true,
-                // },
+                isModule: true,
+                sourceMaps: isLocal,
+                inlineSourcesContent: isLocal,
+                module: {
+                  type: "es6",
+                  lazy: true,
+                },
               },
             },
           ],

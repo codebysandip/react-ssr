@@ -22,7 +22,7 @@ class EditProduct extends Component<EditComponentProps> {
   render(): ReactNode {
     const product = this.props.productById;
     if (!product) {
-      return <h1>Loading...</h1>;
+      return <h1>Data Loading...</h1>;
     }
     return (
       <div>

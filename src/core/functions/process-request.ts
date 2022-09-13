@@ -1,7 +1,8 @@
 import { ROUTE_500 } from "src/const.js";
 import { ssrConfig } from "src/react-ssr.config.js";
 
-import { ApiResponse } from "../models/api-response.js";
+import { ApiResponse, getDefaultApiResponseObj } from "core/services/http-client.js";
+import { GetInitialProps } from "../models/common.model.js";
 import { ContextData } from "../models/context.model.js";
 import { IRedirect, PageData, PageRedirect } from "../models/page-data.js";
 import { CompModule } from "../models/route.model.js";
@@ -13,23 +14,32 @@ export function processRequest(module: CompModule, ctx: ContextData) {
     apiResponse?: ApiResponse<PageData>;
   }>((resolve) => {
     const Component = module.default;
+    if (!Component) {
+      throw new Error("Page component must export component as default");
+    }
     const getInitialProps = Component.getInitialProps || module.getInitialProps;
 
+    let headerFooterPromise: Promise<ApiResponse<any>> | void;
     if (ssrConfig.preInitialProps) {
-      ssrConfig.preInitialProps(ctx);
+      headerFooterPromise = ssrConfig.preInitialProps(ctx);
     }
 
     // get page data
     if (getInitialProps) {
       // call page/route getInitialProps static method to get async data to render page
       // this data will pass as props to page/route component
-      const initialPropsAsync = getInitialProps(ctx);
+      const initialPropsAsync: ReturnType<GetInitialProps> = getInitialProps(ctx);
       if (initialPropsAsync instanceof Promise) {
         // add common api calls in fork join
         // common api like header/footer api and put in PageData.header
-        Promise.all([initialPropsAsync])
+        const promiseArr = [initialPropsAsync];
+        if (headerFooterPromise instanceof Promise) {
+          promiseArr.push(headerFooterPromise);
+        }
+        let pageData: any = {};
+        Promise.all(promiseArr)
           .then((result) => {
-            let redirect: PageRedirect;
+            let redirect: PageRedirect = { path: "" };
             if ((result[0] as IRedirect).redirect) {
               redirect = (result[0] as IRedirect).redirect;
               if (typeof redirect !== "object" || redirect.path === undefined) {
@@ -41,20 +51,32 @@ export function processRequest(module: CompModule, ctx: ContextData) {
               });
               return;
             } else {
-              redirect = ssrConfig.validateApiResponse(result[0] as ApiResponse<PageData>, ctx);
+              // check for every api response object for error
+              result.forEach((apiResponse) => {
+                const resp = apiResponse as ApiResponse<any>;
+                const redirectObj = ssrConfig.validateApiResponse(resp, ctx);
+                if (redirectObj.path && !redirect.path) {
+                  redirect = redirectObj;
+                }
+                if (!redirect.path && typeof resp.data === "object") {
+                  pageData = {
+                    ...pageData,
+                    ...resp.data,
+                  };
+                }
+              });
             }
 
             if (redirect.path) {
               resolve({
                 redirect,
                 isError: true,
-                apiResponse: result[0] as ApiResponse<PageData>,
               });
             } else {
               resolve({
                 redirect: { path: "" },
                 isError: false,
-                apiResponse: result[0],
+                apiResponse: getDefaultApiResponseObj<any>(pageData),
               });
             }
           })

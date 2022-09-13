@@ -10,10 +10,12 @@ const Home = (props: HomeProps) => {
   const pageData = props.pageData;
   return (
     <>
-      <Helmet>
-        {/* <title>{pageData.seo?.title}</title> */}
-        <body className="my-class" />
-      </Helmet>
+      {process.env.IS_SERVER && (
+        <Helmet>
+          <title>{pageData.seo?.title || "My Title"}</title>
+          <body className="my-class" />
+        </Helmet>
+      )}
       <div className="table-responsive">
         <table className="table">
           <thead>

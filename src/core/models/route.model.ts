@@ -1,5 +1,5 @@
 import { Reducer } from "@reduxjs/toolkit";
-import { ApiResponse } from "./api-response.js";
+import { ApiResponse } from "core/services/http-client.js";
 import { ContextDataWithStore } from "./context-with-store.model.js";
 import { PageData } from "./page-data.js";
 
@@ -23,7 +23,6 @@ export interface IRoute {
    * There is case when page is not for SEO or page access required login
    */
   isSSR: boolean;
-  params?: Record<string, string>;
 }
 
 export type CompModule = {

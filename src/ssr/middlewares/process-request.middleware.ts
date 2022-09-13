@@ -1,12 +1,13 @@
 import { getRoute } from "core/functions/get-route.js";
-import { pipeHtml } from "src/ssr/template.js";
+import { getHtml } from "src/ssr/template.js";
 import { createContextServer } from "core/functions/create-context.js";
 import { PageData } from "core/models/page-data.js";
 import { Request, Response } from "express";
-import { getHtmlStartPart } from "../functions/getHtml.js";
 import { sendResponse } from "../functions/send-response.js";
 import { processRequest as processRequestServer } from "core/functions/process-request";
 import { ssrConfig } from "src/react-ssr.config.js";
+import { ROUTE_404 } from "src/const.js";
+import { matchPath } from "react-router";
 
 /**
  * Process all get requests
@@ -17,25 +18,24 @@ export const processRequest = () => {
   return (req: Request, resp: Response) => {
     // match route from React routes
     const route = getRoute(req.path);
-    req.params = route.params || {};
+    if (!route) {
+      resp.redirect(ROUTE_404);
+      return
+    }
+    req.params = (matchPath(route.path, req.path)?.params as Record<string, string>) || {};
     if (route.static || !route.isSSR) {
       const html = staticPageCache.get(req.url) as string;
       if (html) {
         console.log("static page!!", req.url);
+        if (process.env.IS_LOCAL) {
+          resp.send(html);
+          return;
+        }
         sendResponse(html, resp, req);
         return;
       }
     }
 
-    resp.setHeader("Content-type", "text/html");
-    resp.write(getHtmlStartPart());
-
-    // if (!route.isSSR) {
-    //   const store = createStore();
-    //   const ctx = createContextServer(req, resp, store as any);
-    //   pipeHtml(resp, { default: Empty }, {}, req.path, false, true, ctx.store);
-    //   return;
-    // }
     // get component asychronously
     route
       .component()
@@ -45,10 +45,6 @@ export const processRequest = () => {
           ssrConfig.configureStore(module, ctx);
         }
 
-        processRequestServer(module, ctx).then((data) => {
-          sendHtml(data.isError ? data.redirect.path : req.url, data.apiResponse?.data, data.isError);
-        });
-
         /**
          * Send HTML back to client
          * @param url Reuest url path
@@ -56,11 +52,37 @@ export const processRequest = () => {
          * @param isError is error page
          */
         const sendHtml = (url: string, pageData?: PageData, isError = false) => {
+          // redirect to error path in case of error
+          if (isError) {
+            resp.redirect(url);
+            return;
+          }
           if (!pageData) {
             pageData = {};
           }
-          pipeHtml(ctx, module, pageData, url, isError, route.static || false);
+          ctx.ssrData = pageData;
+
+          const html = getHtml(module, ctx, url, route.isSSR);
+          if (route.static || !route.isSSR) {
+            staticPageCache.set(req.url, html);
+          }
+          if (process.env.IS_LOCAL) {
+            resp.send(html);
+            return;
+          }
+          sendResponse(html, resp, req);
         };
+
+        if (!route.isSSR) {
+          sendHtml(req.url, undefined, false)
+        } else {
+          processRequestServer(module, ctx).then((data) => {
+            if (resp.headersSent) {
+              return;
+            }
+            sendHtml(data.isError ? data.redirect.path : req.url, data.apiResponse?.data, data.isError);
+          });
+        }
       })
       .catch((err) => {
         console.error(`Error in fetching page component for ${route.path}. Error: ${err}`);

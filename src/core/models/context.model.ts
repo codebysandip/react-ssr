@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ApiResponse } from "./api-response.js";
+import { ApiResponse } from "core/services/http-client.js";
 import { PageData } from "./page-data.js";
 
 export interface ContextData {

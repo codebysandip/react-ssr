@@ -13,7 +13,6 @@ export function Toaster(props: ToastContainerProps) {
 
   useEffect(() => {
     window.addEventListener("toast", (e) => {
-      console.log("toast", e);
       if (!lazyToast) {
         import(/* webpackChunkName: "toaster" */ "./toaster-lazy.com.js").then((module) => {
           setLazyToast(module);
