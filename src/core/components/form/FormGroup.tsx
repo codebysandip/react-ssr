@@ -34,8 +34,20 @@ export interface FormGroupProps extends Partial<HTMLInputElement> {
    * labelText also used by ValidationMessage service to show error meesage
    */
   labelText: string;
+  /**
+   * Class name for input element
+   */
   className?: string;
+  /**
+   * css class for form-group dev
+   */
   formGroupClass?: string;
+  /**
+   * FormikErrors object
+   */
   errors: FormikErrors<any>;
+  /**
+   * FormikTouched object
+   */
   touched: FormikTouched<any>;
 }

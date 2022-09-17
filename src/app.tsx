@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Header } from "core/components/header/header.js";
 import { Route, Routes } from "react-router-dom";
-import Lazy from "./core/components/lazy/lazy.component.js";
+import LazyRoute from "./core/components/lazy-route/lazy-route.component.js";
 import { matchPath, useLocation } from "react-router";
 import { Routes as PageRoutes } from "./routes.js";
 import { NO_HEADER_PATHS } from "./const.js";
@@ -73,13 +73,15 @@ export function App(props: AppProps) {
       {/* Header and footer should not visible on error page if header/footer is dynamic.
       Why? becuase may be error page coming because of Header/Footer api */}
       {showHeader && <Header />}
-      <div className="container">
+      <div className="container mt-4 mb-4">
         <Routes>
           {PageRoutes.map((r, idx) => {
             return (
               <Route
                 path={r.path}
-                element={<Lazy moduleProvider={r.component} module={props.module} {...props} />}
+                element={
+                  <LazyRoute moduleProvider={r.component} module={props.module} {...props} />
+                }
                 key={idx}
               />
             );
@@ -95,5 +97,4 @@ export function App(props: AppProps) {
 export interface AppProps {
   module?: CompModule;
   pageProps?: any;
-  store?: any;
 }

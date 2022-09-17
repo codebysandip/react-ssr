@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import express, { Request, Response } from "express";
-import Products from "./products.json";
-import Users from "./users.json";
+import Products from "./mocks/products.json";
+import Users from "./mocks/users.json";
 import bodyParser from "body-parser";
 import jwt from "jsonwebtoken";
 import { NextFunction } from "webpack-dev-middleware";
@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 
 const secretKey = "react-ssr";
 const accessTokenExpTime = "5m";
-const refreshTokenExpTime = "60m";
+const refreshTokenExpTime = "7m";
 // mimic api to sent data after 50 sec
 app.use((req, res, next) => {
   setTimeout(() => {
@@ -141,11 +141,17 @@ app.get("/api/product", (req, res) => {
   res.json({ products: Products, seo: { title: "Products Listing" } });
 });
 
+
+app.get("/api/product/top-products", (req, res) => {
+  res.json(Products.slice(0, 3))
+});
+
 app.get("/api/product/:id", validateTokenMiddleware, (req, res) => {
   const product = Products.find((p) => p.id === parseInt(req.params.id));
   console.log("product!!", product, req.params.id);
   res.status(product ? 200 : 204).json(product || {});
 });
+
 
 app.get("/api/user", (req, res) => {
   res.json({ users: Users });

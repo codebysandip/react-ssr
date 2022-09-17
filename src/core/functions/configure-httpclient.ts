@@ -88,7 +88,7 @@ export function configureHttpClient() {
     } else {
       resp = (response as AxiosError<any>).response;
     }
-    return resp?.data.status || resp?.status || 0;
+    return resp?.data?.status || resp?.status || 0;
   };
 
   HttpClient.onResponse = (apiResponse) => {
@@ -135,6 +135,9 @@ export function configureHttpClient() {
         )
         return HttpClient.sendRequest(options.url || "/", options.method || "GET", options);
       }
+      // if unable to generate token from refresh token then mark request as 401 unAuthorized
+      apiResponse.status = 401;
+      apiResponse.isError = true;
       apiResponse.message = resp.message;
       return apiResponse;
     });

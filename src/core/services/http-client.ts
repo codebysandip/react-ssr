@@ -224,7 +224,9 @@ export class HttpClient {
                     },
                     1000,
                     maxRetryCount,
-                  ).catch(() => {
+                  ).then(apiResponse => {
+                    return apiResponse;
+                  }).catch(() => {
                     // in case of error send same response generated
                     return response;
                   });
@@ -496,7 +498,7 @@ export function LoaderEvent(status: boolean) {
  * @param ms number of milliseconds after retry request
  * @param maxRetries number of times to retry promise on fail
  * @param retries how many times retried
- * @param rejectFn Don't set its for internet use only
+ * @param rejectFn Don't set its for interal use only
  * @returns resolved data or string "maximum retries exceeded"
  */
 export function retryPromise<T>(
@@ -533,7 +535,7 @@ export function retryPromise<T>(
  */
 export function isOnline() {
   return new Promise<boolean>((resolve, reject) => {
-    const status = typeof window === "undefined" ? true : navigator.onLine;
+    const status = typeof window === "undefined" ? true : navigator.onLine || true;
     if (status) {
       resolve(status);
     } else {

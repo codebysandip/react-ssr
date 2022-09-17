@@ -2,7 +2,6 @@ import { merge } from "webpack-merge";
 import commonConfig from "./webpack.common.js";
 import { isServerFn, getPath, isLocalFn } from "./functions/helper-functions.js";
 import TerserPlugin from "terser-webpack-plugin";
-import MetaInfoPlugin from "./plugins/meta-info.plugin.js";
 import CompressionPlugin from "compression-webpack-plugin";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import { getDevServerConfig } from "./functions/get-devServer-config.js";
@@ -21,7 +20,6 @@ const prodConfig = (env) => {
   // on github action don't compress to save build time
   if (!isServer && process.env.GITHUB_ACTION !== "true") {
     plugins.push(
-      new MetaInfoPlugin({ path: getPath("build/meta.json") }),
       new CompressionPlugin({
         filename: "[file].gz[query]",
         algorithm: "gzip",

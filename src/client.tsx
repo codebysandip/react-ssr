@@ -32,6 +32,9 @@ const hydrateApp = (module: CompModule) => {
 // of npm start and hit enter. nodemon will restart server
 // Below line will automatically get removed in production build
 if (process.env.IS_LOCAL && (module as any).hot) {
+  console.log("updating app via reload or hot reload!!");
+  // fixed for hot reload
+  window.isFirstRendering = true;
   const root = createRoot(container);
   route?.component().then((module) => {
     root.render(createBrowserRouter(module));

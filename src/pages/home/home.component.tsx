@@ -5,6 +5,9 @@ import { Link } from "react-router-dom";
 import HomeReducer from "pages/home/home.redux";
 import { Helmet } from "react-helmet";
 import { ContextDataWithStore } from "src/core/models/context-with-store.model.js";
+import "./home.comp.scss";
+import { Image } from "src/core/components/image/image.comp.js";
+import { InView } from "src/core/components/in-view/in-view.comp.js";
 
 const Home = (props: HomeProps) => {
   const pageData = props.pageData;
@@ -14,41 +17,40 @@ const Home = (props: HomeProps) => {
         <Helmet>
           <title>{pageData.seo?.title || "My Title"}</title>
           <body className="my-class" />
+          {/* metaJson will available only on server side */}
+          {process.env.IS_SERVER && <link href={metaJson.chunkCss["home"]} rel="stylesheet" />}
         </Helmet>
       )}
-      <div className="table-responsive">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Id</th>
-              <th>Title</th>
-              <th>Price</th>
-              <th>Rating</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pageData.products.map((product, index) => {
-              return (
-                <tr key={index}>
-                  <td>{product.id}</td>
-                  <td>{product.title}</td>
-                  <td>{product.price}</td>
-                  <td>{product.rating.rate}</td>
-                  <td>
-                    <Link to={`/product/edit/${product.id}`} type="button" className="btn btn-primary btn-sm me-3">
-                      Edit
-                    </Link>
-                    <button type="button" className="btn btn-primary btn-sm">
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div className="d-flex flex-row flex-wrap">
+        {pageData.products.map((product, idx) => {
+          return (
+            <div className={`card productCard`} key={idx}>
+              <Image src={product.image} className="card-img-top" alt="..." />
+              <div className="card-body">
+                <h5 className="card-title">{product.title}</h5>
+                <p className="card-text">{product.description}</p>
+                <Link to={`/product/edit/${product.id}`} className="btn btn-primary">
+                  Edit
+                </Link>
+              </div>
+            </div>
+          );
+        })}
       </div>
+      {/* test code for InView */}
+      <InView>
+        {(inView) =>
+          inView ? (
+            import("./components/top-products.comp.js")
+          ) : (
+            <div className="d-flex flex-row flex-wrap">
+              {[1, 2, 3].map((val) => (
+                <div className="productCard skeleton" key={val}></div>
+              ))}
+            </div>
+          )
+        }
+      </InView>
     </>
   );
 };

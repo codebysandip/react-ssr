@@ -5,8 +5,8 @@
   "main": "build/server.js",
   "type": "module",
   "scripts": {
-    "start": "npm run verify && cross-env ENV=development ts-node-esm scripts/build.ts --transpile-only",
-    "start:prod": "npm run verify && cross-env ENV=production ts-node-esm scripts/build.ts --transpile-only",
+    "start": "npm run verify && cross-env ENV=development nodemon --watch config/ scripts/build.ts --transpile-only",
+    "start:prod": "npm run verify && cross-env ENV=production nodemon --watch config/ --transpile-only",
     "start:test-api": "nodemon --watch build/testApi.js build/testApi.js",
     "build:client:prod": "npx webpack --config ./config/webpack.prod.js --env IS_LOCAL=false --env IS_SERVER=false --env ENV=production",
     "build:server:prod": "npx webpack --config ./config/webpack.prod.js --env IS_LOCAL=false --env IS_SERVER=true --env ENV=production",

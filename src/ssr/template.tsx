@@ -6,12 +6,21 @@ import { ContextData } from "src/core/models/context.model.js";
 import ReactSsrApp from "src/index.js";
 import { ssrConfig } from "src/react-ssr.config.js";
 import { Component } from "react";
-import { getWebpackBuildHash } from "./functions/get-webpack-build-hash.js";
+import { getWebpackBuildMetaJson } from "./functions/get-webpack-build-meta-json.js";
 import jsBeautify from "js-beautify";
 import { Empty } from "core/components/empty/empty.component.js";
 
-const hashObj = getWebpackBuildHash();
-const isProd = process.env.ENV !== "development";
+// on development env met.json will not available until CSR build will not finish
+// so wait for few seconds to finish client build
+setTimeout(
+  () => {
+    const metaJson = getWebpackBuildMetaJson();
+    global.metaJson = metaJson;
+  },
+  process.env.IS_LOCAL ? 1000 * 2 : 0,
+);
+
+const chunkRegex = /[a-z-0-9]{2,}(\.chunk\.css)/;
 /**
  * Base HTML template.
  * This component will use as index.html
@@ -22,6 +31,11 @@ class HtmlTemplate extends Component<HtmlTemplateProps> {
     const ssrDataScript = `
         window.__SSRDATA__ = ${JSON.stringify(this.props.ssrData)};
         `;
+    const styleLinks = helmet.link.toString();
+    const match = styleLinks.match(chunkRegex);
+    if (!match) {
+      // [TODO] if match not found then try to get page css through Request path
+    }
     const helmetBody = helmet.bodyAttributes.toComponent();
     return (
       <html {...helmet.htmlAttributes.toComponent()}>
@@ -32,10 +46,7 @@ class HtmlTemplate extends Component<HtmlTemplateProps> {
             content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1.0, user-scalable=0"
           />
           <link rel="shortcut icon" href="/favicon.ico" />
-          <link
-            href={`/assets/css/style${isProd ? "." + hashObj?.styleHash : ""}.css`}
-            rel="stylesheet"
-          />
+          <link href={metaJson.mainStyle} rel="stylesheet" />
           {helmet.style.toComponent()}
           {helmet.title.toComponent()}
           {helmet.link.toComponent()}
@@ -45,7 +56,7 @@ class HtmlTemplate extends Component<HtmlTemplateProps> {
           {helmet.noscript.toComponent()}
           <div id="root" dangerouslySetInnerHTML={{ __html: this.props.html }}></div>
           <script dangerouslySetInnerHTML={{ __html: ssrDataScript }}></script>
-          <script src={`/client${isProd ? "." + hashObj?.clientJsHash : ""}.js`}></script>
+          <script src={metaJson.mainJs}></script>
           {helmet.script.toComponent()}
         </body>
       </html>

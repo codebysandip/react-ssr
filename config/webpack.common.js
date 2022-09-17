@@ -9,6 +9,7 @@ import CopyWebpackPlugin from "copy-webpack-plugin";
 import Dotenv from "dotenv-webpack";
 import ReactRefreshPlugin from "@pmmmwh/react-refresh-webpack-plugin";
 import WorkboxPlugin from "workbox-webpack-plugin";
+import MetaInfoPlugin from "./plugins/meta-info.plugin.js";
 
 import { isServerFn, isLocalFn, getPath } from "./functions/helper-functions.js";
 import { join } from "path";
@@ -20,8 +21,12 @@ import { readFileSync } from "fs";
  * @returns webpack common config
  */
 export default function (env, args, isProd = false) {
-  const packageJson = JSON.parse(readFileSync(join(process.cwd(), "package.json"), { encoding: "utf-8" }));
-  const tsconfigJson = JSON.parse(readFileSync(join(process.cwd(), "tsconfig.json"), { encoding: "utf-8" }));
+  const packageJson = JSON.parse(
+    readFileSync(join(process.cwd(), "package.json"), { encoding: "utf-8" }),
+  );
+  const tsconfigJson = JSON.parse(
+    readFileSync(join(process.cwd(), "tsconfig.json"), { encoding: "utf-8" }),
+  );
 
   /**
    * Is Build running for Server or Client
@@ -74,7 +79,9 @@ export default function (env, args, isProd = false) {
     }
   });
   const miniCssFileName = !isLocal ? "assets/css/style.[contenthash].css" : "assets/css/style.css";
-  const miniCssChunkName = !isLocal ? "assets/css/[name].[contenthash].chunk.css" : "assets/css/[name].chunk.css";
+  const miniCssChunkName = !isLocal
+    ? "assets/css/[name].[contenthash].chunk.css"
+    : "assets/css/[name].chunk.css";
   let slash = "/";
   if (process.platform === "win32") {
     slash = "\\";
@@ -126,12 +133,14 @@ export default function (env, args, isProd = false) {
           },
         ],
       }),
-      // new WorkboxPlugin.InjectManifest({
-      //   swSrc: getPath("src/service-worker.js"),
-      //   swDest: join(outFolder, "service-worker.js"),
-      //   mode: !isLocal ? "production" : "development",
-      //   maximumFileSizeToCacheInBytes: isLocal ? 10 * 1000 * 1000 : 500 * 1000,
-      // }),
+      new MetaInfoPlugin({ path: getPath("build/meta.json") }),
+      new WorkboxPlugin.InjectManifest({
+        swSrc: getPath("src/service-worker.js"),
+        swDest: join(outFolder, "service-worker.js"),
+        mode: !isLocal ? "production" : "development",
+        maximumFileSizeToCacheInBytes: isLocal ? 10 * 1000 * 1000 : 500 * 1000,
+        exclude: [/.*(.hot-update.)(m?js)$/, /\.map$/],
+      }),
     );
   }
 

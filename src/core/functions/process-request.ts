@@ -21,7 +21,7 @@ export function processRequest(module: CompModule, ctx: ContextData) {
 
     let headerFooterPromise: Promise<ApiResponse<any>> | void;
     if (ssrConfig.preInitialProps) {
-      headerFooterPromise = ssrConfig.preInitialProps(ctx);
+      headerFooterPromise = ssrConfig.preInitialProps(ctx, module);
     }
 
     // get page data

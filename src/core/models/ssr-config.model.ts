@@ -24,7 +24,7 @@ export interface SSRConfig {
    * @returns If you are calling/(dispatching action for) api make sure to return {@link Promise<ApiResponse<any>>}
    * ReactSsr will check ApiResponse.status for sucess
    */
-  preInitialProps?: (ctx: ContextData) => Promise<ApiResponse<any>> | void;
+  preInitialProps?: (ctx: ContextData, moduleObj: CompModule) => Promise<ApiResponse<any>> | void;
   /**
    * Implement this function to modify ssrData
    * ReactSsr set ssr data on window object with key __SSRDATA__
