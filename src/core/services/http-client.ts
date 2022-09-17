@@ -66,7 +66,7 @@ export class HttpClient {
    * HttpClient use isServer to check code executing on client or server  
    * If your project have any env variable to check server then override implementation.
    */
-  public static isServer = typeof window === "undefined";
+  public static isServer = process.env.NODE_ENV === "test" ? false : typeof window === "undefined";
 
   private static loaderCount = 0;
 
@@ -257,6 +257,7 @@ export class HttpClient {
           if (this.onResponse) {
             this.onResponse(apiResponse, options);
           }
+          console.log("api response!!", apiResponse);
           return apiResponse;
         })
     );
@@ -535,7 +536,7 @@ export function retryPromise<T>(
  */
 export function isOnline() {
   return new Promise<boolean>((resolve, reject) => {
-    const status = typeof window === "undefined" ? true : navigator.onLine || true;
+    const status = HttpClient.isServer ? true : navigator.onLine;
     if (status) {
       resolve(status);
     } else {
