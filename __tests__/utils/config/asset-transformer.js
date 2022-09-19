@@ -1,9 +1,10 @@
 import { basename } from "path";
 
 export default {
-  process(_src, filename, _config, _options) {
+  process(_src, filename, _options) {
+    console.log("asset-transformer!!", filename);
     return {
-      code: `export default ${JSON.stringify(basename(filename))};`,
+      code: `module.exports = ${JSON.stringify(basename(filename))};`,
     };
   },
 };

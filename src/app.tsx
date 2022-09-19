@@ -37,7 +37,7 @@ export function App(props: AppProps) {
   }, [location.pathname]);
 
   useEffect(() => {
-    // listening onmmesage event to recieve message fron service worker
+    // listening onmmesage event to receive message from service worker
     navigator.serviceWorker.onmessage = function (evt) {
       const message = JSON.parse(evt.data);
 
@@ -71,7 +71,7 @@ export function App(props: AppProps) {
       {/* Use SsrHead component to set common Head tags */}
       {process.env.IS_SERVER && <SsrHead />}
       {/* Header and footer should not visible on error page if header/footer is dynamic.
-      Why? becuase may be error page coming because of Header/Footer api */}
+      Why? because may be error page coming because of Header/Footer api */}
       {showHeader && <Header />}
       <div className="container mt-4 mb-4">
         <Routes>

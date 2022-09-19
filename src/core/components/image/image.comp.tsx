@@ -1,13 +1,13 @@
 import { DetailedHTMLProps, ImgHTMLAttributes, useEffect, useRef, useState } from "react";
-import spinner from "assets/images/Spinner-1s-200px.svg";
+// import spinner from "assets/images/Spinner-1s-200px.svg";
 
 /**
- * Image component defers loading of image. Intially it will load
+ * Image component defers loading of image. Initially it will load
  * {@link ImageProps.loadingSrc} image When image will be in user's view
  * then it will load actual image {@link ImageProps.src}
  * Image component works on the concept of [IntersectionObserver](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)
  * @param props Image props {@link ImageProps}
- * @returns Image component having fature of lazy loading of image
+ * @returns Image component having feature of lazy loading of image
  */
 export function Image(props: ImageProps) {
   const ref = useRef(null);
@@ -26,7 +26,14 @@ export function Image(props: ImageProps) {
     ref.current && observer.observe(ref.current);
   }, []);
 
-  return <img data-src={src} src={inView ? src : loadingSrc || spinner} ref={ref} {...rest} />;
+  return (
+    <img
+      data-src={src}
+      src={inView ? src : loadingSrc || "assets/images/Spinner-1s-200px.svg"}
+      ref={ref}
+      {...rest}
+    />
+  );
 }
 
 export interface ImageProps

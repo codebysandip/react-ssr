@@ -5,7 +5,7 @@ import Users from "./mocks/users.json";
 import bodyParser from "body-parser";
 import jwt from "jsonwebtoken";
 import { NextFunction } from "webpack-dev-middleware";
-import { URL_REFERESH_TOKEN } from "src/const.js";
+import { URL_REFRESH_TOKEN } from "src/const.js";
 import { TokenData } from "src/pages/auth/auth.model.js";
 import etag from "etag";
 
@@ -89,7 +89,7 @@ app.get("/api/header", (req, res) => {
   })
 })
 
-app.post(URL_REFERESH_TOKEN, (req, res) => {
+app.post(URL_REFRESH_TOKEN, (req, res) => {
   try {
     const decoded = jwt.verify(req.body.refreshToken, secretKey) as TokenData;
     delete decoded.iat;

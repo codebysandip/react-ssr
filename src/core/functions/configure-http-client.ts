@@ -1,5 +1,5 @@
 import { AxiosResponse, AxiosError } from "axios";
-import { COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN, INTERNET_NOT_AVAILABLE, URL_REFERESH_TOKEN } from "src/const.js";
+import { COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN, INTERNET_NOT_AVAILABLE, URL_REFRESH_TOKEN } from "src/const.js";
 import { AuthResponse } from "src/pages/auth/auth.model.js";
 import { CommonService } from "../services/common.service.js";
 import { CookieService } from "../services/cookie.service.js";
@@ -117,7 +117,7 @@ export function configureHttpClient() {
     };
   };
 
-  HttpClient.internetNotAvialiableMsg = INTERNET_NOT_AVAILABLE;
+  HttpClient.internetNotAvailableMsg = INTERNET_NOT_AVAILABLE;
 
   HttpClient.handleRefreshTokenFlow = (options: HttpClientOptions) => {
     const refreshToken = CookieService.get(COOKIE_REFRESH_TOKEN, options.nodeReqObj);
@@ -127,7 +127,7 @@ export function configureHttpClient() {
       apiResponse.message = ["Refresh Token not available"];
       return Promise.resolve(apiResponse);
     }
-    return HttpClient.post<AuthResponse>(URL_REFERESH_TOKEN, { refreshToken }).then(resp => {
+    return HttpClient.post<AuthResponse>(URL_REFRESH_TOKEN, { refreshToken }).then(resp => {
       if (!resp.isError && resp.data) {
         setAccessAndRefreshToken(
           resp as ApiResponse<AuthResponse>,

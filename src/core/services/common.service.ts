@@ -7,7 +7,7 @@ import { CookieService } from "./cookie.service.js";
 export class CommonService {
   public static toast(toaster: Toaster) {
     if (!process.env.IS_SERVER) {
-      window.dispatchEvent(new ToastEvent(toaster));
+      window.dispatchEvent(ToastEvent(toaster));
     }
   }
 

@@ -36,7 +36,7 @@ export const processRequest = () => {
       }
     }
 
-    // get component asychronously
+    // get component asynchronously
     route
       .component()
       .then(async (module) => {
@@ -47,7 +47,7 @@ export const processRequest = () => {
 
         /**
          * Send HTML back to client
-         * @param url Reuest url path
+         * @param url Request url path
          * @param pageData PageData of page
          * @param isError is error page
          */

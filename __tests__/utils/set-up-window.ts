@@ -9,9 +9,22 @@ Object.defineProperty(window.document, "cookie", {
   get() {
     return cookieData;
   },
-  set(cookieValue) {
+  set(cookieValue: string) {
     const cookies = cookieData.split("; ");
-    const cookieName = cookieValue.split("=").shift();
+    const parts = cookieValue.split("; ");
+    const expirePart = parts.find(p => p.startsWith("expires"));
+    let isExpired = false;
+    if (expirePart) {
+      const expire = expirePart.split("=")[1];
+      if (!expire) {
+        throw new Error("Invalid expire format");
+      }
+      isExpired = new Date() > new Date(expire);
+    }
+    const cookieName = parts[0].split("=").shift();
+    if (!cookieName) {
+      throw new Error("Invalid cookie to set");
+    }
     const cookieNameLength = cookieName.length;
     let cookieIndex = -1;
     cookies.forEach((value, index) => {
@@ -20,9 +33,15 @@ Object.defineProperty(window.document, "cookie", {
       }
     });
     if (cookieIndex > -1) {
-      cookies[cookieIndex] = `${cookieValue}`;
+      if (isExpired) {
+        cookies.splice(cookieIndex, 1);
+      } else {
+        cookies[cookieIndex] = `${cookieValue}`;
+      }
     } else {
-      cookies.push(`${cookieValue}`);
+      if (!isExpired) {
+        cookies.push(`${cookieValue}`);
+      }
     }
     cookieData = cookies.join("; ").trim();
   },

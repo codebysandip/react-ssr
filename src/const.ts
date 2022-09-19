@@ -3,7 +3,7 @@ export const COOKIE_ACCESS_TOKEN = "accessToken";
 export const COOKIE_REFRESH_TOKEN = "refreshToken";
 
 /* ##### API URLS ##### */
-export const URL_REFERESH_TOKEN = "/api/refresh-token";
+export const URL_REFRESH_TOKEN = "/api/refresh-token";
 
 /* ##### Page URLS ##### */
 export const ROUTE_HOME = "/";

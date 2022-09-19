@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 export class CookieService {
   public static get(name: string, req?: Request) {
     if (process.env.IS_SERVER && !req) {
-      throw new Error("req paramater cannot be null or undefined to get cookie in SSR");
+      throw new Error("req parameter cannot be null or undefined to get cookie in SSR");
     }
     const cookie = process.env.IS_SERVER ? req?.headers.cookie : document.cookie;
     const allCookies = cookie?.split("; ");

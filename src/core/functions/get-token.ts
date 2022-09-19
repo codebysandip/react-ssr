@@ -7,7 +7,7 @@ import { AuthResponse } from "pages/auth/auth.model.js";
 
 function getToken(key: string, req?: Request) {
   if (process.env.IS_SERVER && !req) {
-    throw new Error("req cann't be undefined in SSR");
+    throw new Error("req can't be undefined in SSR");
   }
   const accessToken = CookieService.get(key, req);
   if (!accessToken) {
@@ -28,11 +28,11 @@ function getToken(key: string, req?: Request) {
  * @returns access token from cookie
  */
 export function getAccessToken(req?: Request) {
-  const tokenwithData = getToken(COOKIE_ACCESS_TOKEN, req);
-  if (!tokenwithData) {
+  const tokenWithData = getToken(COOKIE_ACCESS_TOKEN, req);
+  if (!tokenWithData) {
     return null;
   }
-  return tokenwithData.token;
+  return tokenWithData.token;
 }
 
 /**
@@ -66,11 +66,11 @@ export function isValidJwtToken(tokenData: JwtToken) {
  * @returns decoded token of type T
  */
 export function getAccessTokenData(req?: Request) {
-  const tokenwithData = getToken(COOKIE_ACCESS_TOKEN, req);
-  if (!tokenwithData) {
+  const tokenWithData = getToken(COOKIE_ACCESS_TOKEN, req);
+  if (!tokenWithData) {
     return null;
   }
-  return tokenwithData.tokenData as TokenData;
+  return tokenWithData.tokenData as TokenData;
 }
 
 /**
@@ -79,25 +79,11 @@ export function getAccessTokenData(req?: Request) {
  * @returns refresh token from cookie
  */
 export function getRefreshToken(req?: Request) {
-  const tokenwithData = getToken(COOKIE_REFRESH_TOKEN, req);
-  if (!tokenwithData) {
+  const tokenWithData = getToken(COOKIE_REFRESH_TOKEN, req);
+  if (!tokenWithData) {
     return null;
   }
-  return tokenwithData.token;
-}
-
-/**
- * get refresh token data from cookie
- * @param req Node Request Object
- * @returns decoded token of type T
- */
-export function getRefreshToknenData(req?: Request) {
-  const tokenwithData = getToken(COOKIE_REFRESH_TOKEN, req);
-  if (!tokenwithData) {
-    return null;
-  }
-  return tokenwithData.tokenData as TokenData;
-
+  return tokenWithData.token;
 }
 
 /**
