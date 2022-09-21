@@ -22,9 +22,9 @@ export interface SSRConfig {
    *  // put code here to execute only on server like dynamic header
    * }
    * @returns If you are calling/(dispatching action for) api make sure to return {@link Promise<ApiResponse<any>>}
-   * ReactSsr will check ApiResponse.status for sucess
+   * ReactSsr will check ApiResponse.status for success
    */
-  preInitialProps?: (ctx: ContextData, moduleObj: CompModule) => Promise<ApiResponse<any>> | void;
+  preInitialProps?: (ctx: ContextData, moduleObj: CompModule, isFirstRendering: boolean) => Promise<ApiResponse<any>> | void;
   /**
    * Implement this function to modify ssrData
    * ReactSsr set ssr data on window object with key __SSRDATA__
@@ -36,7 +36,7 @@ export interface SSRConfig {
   /**
    * Validate response of api and return redirect path in case of error
    * ReactSsr call this function after getting api response
-   * Note: this funcation will call only for page api
+   * Note: this function will call only for page api
    * This function will call on both client and server
    * client will navigate to returned path if path available
    * @param response ApiResponse

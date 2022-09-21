@@ -8,6 +8,7 @@ import { NextFunction } from "webpack-dev-middleware";
 import { URL_REFRESH_TOKEN } from "src/const.js";
 import { TokenData } from "src/pages/auth/auth.model.js";
 import etag from "etag";
+import HeaderData from "./mocks/headers.json"
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -23,7 +24,7 @@ app.use((req, res, next) => {
   }, 50);
 });
 
-// overide json and send methods of Response
+// override json and send methods of Response
 // add etag header and modify response body if etag matched
 app.use((req, res, next) => {
   const send = res.send;
@@ -71,22 +72,7 @@ app.post("/api/login", (req, res) => {
 });
 
 app.get("/api/header", (req, res) => {
-  res.json({
-    links: [
-      {
-        text: "Home",
-        url: "/"
-      },
-      {
-        text: "404 Page",
-        url: "/404"
-      },
-      {
-        text: "500 Page",
-        url: "/500"
-      },
-    ]
-  })
+  res.json(HeaderData)
 })
 
 app.post(URL_REFRESH_TOKEN, (req, res) => {

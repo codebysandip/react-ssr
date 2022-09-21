@@ -21,15 +21,23 @@ const Home = (props: HomeProps) => {
           {process.env.IS_SERVER && <link href={metaJson.chunkCss["home"]} rel="stylesheet" />}
         </Helmet>
       )}
-      <div className="d-flex flex-row flex-wrap">
+      <div className="d-flex flex-row flex-wrap" data-test-id="home-page">
         {pageData.products.map((product, idx) => {
           return (
-            <div className={`card productCard`} key={idx}>
+            <div
+              className={`card productCard`}
+              key={idx}
+              data-test-id={`product-card-${product.id}`}
+            >
               <Image src={product.image} className="card-img-top" alt="..." />
               <div className="card-body">
                 <h5 className="card-title">{product.title}</h5>
                 <p className="card-text">{product.description}</p>
-                <Link to={`/product/edit/${product.id}`} className="btn btn-primary">
+                <Link
+                  to={`/product/edit/${product.id}`}
+                  className="btn btn-primary"
+                  data-test-id={`home-edit-btn-${product.id}`}
+                >
                   Edit
                 </Link>
               </div>

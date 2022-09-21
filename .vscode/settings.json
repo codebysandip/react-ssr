@@ -6,5 +6,16 @@
   "editor.tabSize": 2,
   "javascript.preferences.importModuleSpecifierEnding": "js",
   "typescript.preferences.importModuleSpecifierEnding": "js",
-  "cSpell.words": ["formik", "mddir", "onmmesage", "pmmmwh", "reduxjs", "Sandip", "toastify"]
+  "cSpell.words": [
+    "formik",
+    "maxlength",
+    "mddir",
+    "onmmesage",
+    "pmmmwh",
+    "reduxjs",
+    "Sandip",
+    "SSRDATA",
+    "toastify"
+  ],
+  "jestrunner.jestCommand": "npm run test"
 }

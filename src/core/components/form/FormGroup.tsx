@@ -1,12 +1,12 @@
 import { Field, FormikErrors, FormikTouched } from "formik";
-import { FormVlidation } from "src/core/services/form-validation.service.js";
+import { FormValidation } from "src/core/services/form-validation.service.js";
 
 export function FormGroup(props: FormGroupProps) {
   const { type, name, labelText, className, formGroupClass, errors, touched, ...inputProps } =
     props;
 
   const getErrorMessage = () => {
-    const message = FormVlidation.message(errors[name] as string, labelText);
+    const message = FormValidation.message(errors[name] as string, labelText);
     return message;
   };
   return (
@@ -31,7 +31,7 @@ export interface FormGroupProps extends Partial<HTMLInputElement> {
   name: string;
   /**
    * text for label of input
-   * labelText also used by ValidationMessage service to show error meesage
+   * labelText also used by ValidationMessage service to show error message
    */
   labelText: string;
   /**

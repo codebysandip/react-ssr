@@ -24,7 +24,7 @@ class HeaderComp extends Component<HeaderProps> {
     return (
       <nav className="navbar navbar-expand-lg navbar-light bg-light">
         <div className="container-fluid">
-          <Link className="navbar-brand" to="/">
+          <Link className="navbar-brand" to="/" data-test-id="navbar">
             Navbar
           </Link>
           <button className="navbar-toggler" type="button">
@@ -34,7 +34,7 @@ class HeaderComp extends Component<HeaderProps> {
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               {this.props.header.links.map((link, idx) => (
                 <li className="nav-item" key={idx}>
-                  <Link className="nav-link active" to={link.url}>
+                  <Link className="nav-link active" to={link.url} data-test-id={link.url}>
                     {link.text}
                   </Link>
                 </li>

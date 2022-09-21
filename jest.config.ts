@@ -55,8 +55,6 @@ const jestConfig: Config = {
     ...pathsToModuleNameMapper(tsconfigJson.compilerOptions.paths, { prefix: '<rootDir>/' }),
     /* cSpell:disable-next-line */
     ".+\\.(css|styl|less|sass|scss)$": "<rootDir>/__tests__/utils/config/style-mock.js",
-    /* cSpell:disable-next-line */
-    // ".+\\.(png|jpg|svg)$": "<rootDir>/__tests__/utils/config/file-mock.js",
   },
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   // modulePathIgnorePatterns: [],
@@ -99,7 +97,7 @@ const jestConfig: Config = {
   // runner: "jest-runner",
 
   // The paths to modules that run some code to configure or set up the testing environment before each test
-  setupFiles: ["./__tests__/utils/set-up-env-jest.ts", "./__tests__/utils/set-up-window.ts"],
+  setupFiles: ["./__tests__/utils/set-up-env-jest.ts", "./__tests__/utils/set-up-window.ts", "./__tests__/utils/set-up-jest.ts"],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
   // setupFilesAfterEnv: [],

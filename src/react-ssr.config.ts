@@ -22,7 +22,7 @@ export const ssrConfig: SSRConfig = {
     const store = createStore(module.reducer);
     (ctx as ContextDataWithStore).store = store as AppStore;
   },
-  preInitialProps: (ctx: ContextData, moduleObj) => {
+  preInitialProps: (ctx: ContextData, moduleObj, isFirstRendering) => {
     // inject lazy loaded reducer into store
     if (moduleObj.reducer && (ctx as any).store) {
       replaceReducer((ctx as any).store, moduleObj.reducer);
@@ -41,7 +41,7 @@ export const ssrConfig: SSRConfig = {
     const route = getRoute(ctx.location.pathname);
     // Route.isSSR will false then server will not send page data and header data
     // so on client side fetch data for header
-    if ((process.env.IS_SERVER && route?.isSSR) || (!process.env.IS_SERVER && window.isFirstRendering)) {
+    if ((process.env.IS_SERVER && route?.isSSR) || (!process.env.IS_SERVER && isFirstRendering)) {
       return store.dispatch(fetchHeader());
     }
   },

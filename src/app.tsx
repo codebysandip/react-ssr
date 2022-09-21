@@ -37,25 +37,27 @@ export function App(props: AppProps) {
   }, [location.pathname]);
 
   useEffect(() => {
-    // listening onmmesage event to receive message from service worker
-    navigator.serviceWorker.onmessage = function (evt) {
-      const message = JSON.parse(evt.data);
+    if ("serviceWorker" in navigator) {
+      // listening onmmesage event to receive message from service worker
+      navigator.serviceWorker.onmessage = function (evt) {
+        const message = JSON.parse(evt.data);
 
-      const isRefresh = message.type === "refresh";
+        const isRefresh = message.type === "refresh";
 
-      // check for message type of refresh
-      // we enabled api caching in service worker. First api service from cache if available then
-      // service worker calls api to fetch response and saves in cache and also return back us via postMessage with type refresh
-      if (isRefresh) {
-        console.log("serviceWorker updated in background!!", message);
-        if (message.extra) {
-          dispatch({
-            type: message.extra,
-            payload: message.data,
-          });
+        // check for message type of refresh
+        // we enabled api caching in service worker. First api service from cache if available then
+        // service worker calls api to fetch response and saves in cache and also return back us via postMessage with type refresh
+        if (isRefresh) {
+          console.log("serviceWorker updated in background!!", message);
+          if (message.extra) {
+            dispatch({
+              type: message.extra,
+              payload: message.data,
+            });
+          }
         }
-      }
-    };
+      };
+    }
 
     window.addEventListener(SHOW_LOADER, (e) => {
       setShowLoader(e.detail);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { CompModule, CompModuleImport, IRoute } from "src/core/models/route.model.js";
 import { processRequest } from "core/functions/process-request.js";
@@ -17,6 +17,7 @@ import { useContextData } from "src/core/hook.js";
 export default function LazyRoute(props: LazyProps) {
   let module = props.module;
   const [Comp, setComp] = useState<CompModule | null>(props.module || null);
+  const isFirstRendering = useRef<boolean>(true);
   const ctx = useContextData();
   const [pageData, setPageData] = useState((ctx as any).store ? {} : window.__SSRDATA__ || {});
   const location = useLocation();
@@ -25,13 +26,13 @@ export default function LazyRoute(props: LazyProps) {
   // if IRoute.isSSR will false then server will not process request for any api calls
   // in that case page data will not available on client. So need to fetch data on client for page
   let route: IRoute | undefined;
-  if (!process.env.IS_SERVER && window.isFirstRendering && module) {
+  if (!process.env.IS_SERVER && isFirstRendering.current && module) {
     route = getRoute(location.pathname);
     if (!route?.isSSR) {
       if (props.module) {
-        processRequest(props.module, ctx).then((data) => {
+        processRequest(props.module, ctx, isFirstRendering.current).then((data) => {
           // after process request mark isFirstRendering to false
-          window.isFirstRendering = false;
+          isFirstRendering.current = false;
           if (data.isError) {
             navigate(data.redirect.path, {
               replace: data.redirect.replace || false,
@@ -41,8 +42,8 @@ export default function LazyRoute(props: LazyProps) {
         });
       }
     } else {
-      // if page full rendered on SSR then we can isFirstRendering to false here
-      window.isFirstRendering = false;
+      // if page full rendered on SSR then we can set isFirstRendering to false here
+      isFirstRendering.current = false;
     }
   }
 
@@ -55,11 +56,7 @@ export default function LazyRoute(props: LazyProps) {
     retryPromise(isOnline, 1000, HttpClient.maxRetryCount)
       .then(() => {
         props.moduleProvider().then((moduleObj) => {
-          // params resolves only after route match
-          // index.tsx willnever get right params because it's hireachy is above route render
-          // ctx.params = params as Record<string, string>;
-          console.log("params!!", ctx.params);
-          processRequest(moduleObj, ctx).then((data) => {
+          processRequest(moduleObj, ctx, isFirstRendering.current).then((data) => {
             if (data.isError) {
               navigate(data.redirect.path, {
                 replace: data.redirect.replace || false,

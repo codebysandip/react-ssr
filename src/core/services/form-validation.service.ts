@@ -1,6 +1,6 @@
 import * as Yup from "yup";
 
-export class FormVlidation {
+export class FormValidation {
   private static error = new Map<string, string>();
 
   public static errorMapping: Record<string, string> = {
@@ -38,7 +38,12 @@ export class FormVlidation {
           if (errorObj[validationError.path || "default"]) {
             return;
           }
-          const mappedErrorMessage = this.getMappedErrorMessage(validationError?.type || "");
+          let mappedErrorMessage = "";
+          if (validationError.type === "oneOf") {
+            mappedErrorMessage = typeof validationError?.errors[0] === "string" ? validationError?.errors[0] : this.getMappedErrorMessage((validationError?.errors[0] as { name: string }).name) || "";
+          } else {
+            mappedErrorMessage = this.getMappedErrorMessage(validationError?.type || "") || "";
+          }
           if (!mappedErrorMessage) {
             console.error(`ValidationMessage: Error Mapping is not available with key: ${validationError.path}`);
             return "";

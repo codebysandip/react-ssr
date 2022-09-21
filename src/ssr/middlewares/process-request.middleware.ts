@@ -5,9 +5,9 @@ import { PageData } from "core/models/page-data.js";
 import { Request, Response } from "express";
 import { sendResponse } from "../functions/send-response.js";
 import { processRequest as processRequestServer } from "core/functions/process-request";
-import { ssrConfig } from "src/react-ssr.config.js";
 import { ROUTE_404 } from "src/const.js";
 import { matchPath } from "react-router";
+import { ssrConfig } from "src/react-ssr.config.js";
 
 /**
  * Process all get requests
@@ -41,9 +41,6 @@ export const processRequest = () => {
       .component()
       .then(async (module) => {
         const ctx = createContextServer(req, resp);
-        if (ssrConfig.configureStore) {
-          ssrConfig.configureStore(module, ctx);
-        }
 
         /**
          * Send HTML back to client
@@ -74,9 +71,13 @@ export const processRequest = () => {
         };
 
         if (!route.isSSR) {
+          if (ssrConfig.configureStore) {
+            ssrConfig.configureStore(module, ctx);
+          }
+
           sendHtml(req.url, undefined, false)
         } else {
-          processRequestServer(module, ctx).then((data) => {
+          processRequestServer(module, ctx, true).then((data) => {
             if (resp.headersSent) {
               return;
             }

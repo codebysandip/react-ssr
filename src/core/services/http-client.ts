@@ -66,7 +66,7 @@ export class HttpClient {
    * HttpClient use isServer to check code executing on client or server  
    * If your project have any env variable to check server then override implementation.
    */
-  public static isServer = process.env.NODE_ENV === "test" ? false : typeof window === "undefined";
+  public static isServer = process.env.IS_SERVER;
 
   private static loaderCount = 0;
 

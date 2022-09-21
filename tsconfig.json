@@ -24,7 +24,9 @@
       "src/*": ["src/*"],
       "pages/*": ["src/pages/*"],
       "core/*": ["src/core/*"],
-      "assets/*": ["src/assets/*"]
+      "assets/*": ["src/assets/*"],
+      "mocks/*": ["mocks/*"],
+      "tests/*": ["__tests__/*"]
     },
     "downlevelIteration": true,
     "skipLibCheck": true,

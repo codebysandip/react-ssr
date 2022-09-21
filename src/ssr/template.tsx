@@ -25,7 +25,7 @@ const chunkRegex = /[a-z-0-9]{2,}(\.chunk\.css)/;
  * Base HTML template.
  * This component will use as index.html
  */
-class HtmlTemplate extends Component<HtmlTemplateProps> {
+export class HtmlTemplate extends Component<HtmlTemplateProps> {
   public render() {
     const helmet = Helmet.renderStatic();
     /* cSpell:disable-next-line */

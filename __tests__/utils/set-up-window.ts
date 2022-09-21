@@ -46,3 +46,19 @@ Object.defineProperty(window.document, "cookie", {
     cookieData = cookies.join("; ").trim();
   },
 });
+
+Object.defineProperty(window, "IntersectionObserver", {
+  get() {
+    function IntersectionObserver() {
+      return {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        observe: () => { },
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        unobserve: () => { },
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        disconnect: () => { }
+      }
+    }
+    return IntersectionObserver;
+  },
+})

@@ -1,5 +1,5 @@
 import { DetailedHTMLProps, ImgHTMLAttributes, useEffect, useRef, useState } from "react";
-// import spinner from "assets/images/Spinner-1s-200px.svg";
+import spinner from "assets/images/Spinner-1s-200px.svg";
 
 /**
  * Image component defers loading of image. Initially it will load
@@ -29,9 +29,10 @@ export function Image(props: ImageProps) {
   return (
     <img
       data-src={src}
-      src={inView ? src : loadingSrc || "assets/images/Spinner-1s-200px.svg"}
+      src={inView ? src : loadingSrc || spinner}
       ref={ref}
       {...rest}
+      data-test-id="lazy-image"
     />
   );
 }

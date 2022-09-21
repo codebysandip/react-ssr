@@ -10,7 +10,7 @@ export class CookieService {
     if (!allCookies) {
       return undefined;
     }
-    const cookiePart = allCookies.find((c) => c.split("=")[0].trim() === name);
+    const cookiePart: string | undefined = allCookies.find((c) => c.split("=")[0].trim() === name);
     return cookiePart ? cookiePart.split("=")[1].trim() : undefined;
   }
 
