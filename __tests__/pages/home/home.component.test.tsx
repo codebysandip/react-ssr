@@ -1,4 +1,3 @@
-// import Home from "pages/home/home.component.js";
 import { screen } from "@testing-library/react";
 import Products from "mocks/products.json";
 import "@testing-library/jest-dom/extend-expect";

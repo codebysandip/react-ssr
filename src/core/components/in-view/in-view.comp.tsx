@@ -29,7 +29,13 @@ const InViewComp = (props: InViewProps & WithContextProps) => {
                 if (!props.ctx) {
                   return;
                 }
-                m.loadData(props.ctx)
+                const loadDataPromise = m.loadData(props.ctx);
+                if (!(loadDataPromise instanceof Promise)) {
+                  throw new Error(
+                    `loadData of component ${m.default.constructor.name} must return Promise`,
+                  );
+                }
+                loadDataPromise
                   .then((apiData) => {
                     setInView(true);
                     setLazyComp({ default: m.default });
@@ -80,7 +86,7 @@ const InViewComp = (props: InViewProps & WithContextProps) => {
 /**
  * InView component defers loading of component.
  * it works on [IntersectionObserver](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API).
- * Intially InView will load Skeleton component provided by you(inView false)
+ * Initially InView will load Skeleton component provided by you(inView false)
  * When component(Skeleton) will be in view then InView will load actual component (inView true)
  */
 export const InView = withContext<InViewProps>(InViewComp) as (

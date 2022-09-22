@@ -1,6 +1,6 @@
 import { merge } from "webpack-merge";
 import commonConfig from "./webpack.common.js";
-import { isServerFn, getPath, isLocalFn } from "./functions/helper-functions.js";
+import { isServerFn, isLocalFn } from "./functions/helper-functions.js";
 import TerserPlugin from "terser-webpack-plugin";
 import CompressionPlugin from "compression-webpack-plugin";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";

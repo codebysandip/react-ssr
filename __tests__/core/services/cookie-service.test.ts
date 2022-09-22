@@ -2,9 +2,14 @@ import { CookieService } from "src/core/services/cookie.service.js"
 import { jest } from "@jest/globals";
 
 describe("CookieService", () => {
-  // beforeEach(() => {
-  //   process.env.IS_SERVER = false;
-  // });
+  const OLD_ENV = process.env;
+  beforeEach(() => {
+    process.env = { ...OLD_ENV };
+  });
+
+  afterEach(() => {
+    process.env = OLD_ENV
+  })
 
   it("should set cookie in browser", () => {
     const cookieName = "test-cookie";
