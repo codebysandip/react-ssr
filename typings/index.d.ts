@@ -13,14 +13,9 @@ declare global {
     interface Window {
         pageProps?: ApiResponse<PageData>;
         __SSRDATA__: any;
-        /**
-         * Check rendering is first or not
-         * Don't set it. It is used by [LazyRoute](../src/core/components/lazy-route/lazy-route.component.tsx) and LazyRoute set it
-         */
-        isFirstRendering: boolean;
     }
     interface WindowEventMap {
-        [SHOW_LOADER]: CustomeEvent<boolean>;
+        [SHOW_LOADER]: CustomEvent<boolean>;
         ["toast"]: CustomEvent<Toaster>;
     }
     class SsrComponent<P = {}, S = {}> extends React.Component<P, S> {
