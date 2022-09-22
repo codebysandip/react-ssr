@@ -105,8 +105,6 @@ export default function (env, args, isProd = false) {
         .substring(1)
         .split(slash)[0];
       if (
-        // packageJson.dependencies[context] ||
-        // packageJson.devDependencies[context] ||
         packageJson.dependencies[resource.request] ||
         packageJson.devDependencies[resource.request] ||
         context === "config"
@@ -114,6 +112,9 @@ export default function (env, args, isProd = false) {
         return;
       }
       resource.request = resource.request.replace(/.js$/, "");
+      if (resource.request.indexOf("redux.imports") !== -1) {
+        resource.request = resource.request.replace("redux.imports", "redux.imports.prod");
+      }
     }),
   ];
 
