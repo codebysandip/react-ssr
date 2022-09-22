@@ -2,51 +2,61 @@ import { Provider } from "react-redux";
 import { App } from "./app.js";
 import { CompModule } from "core/models/route.model.js";
 import { createContextClient } from "core/functions/create-context.js";
-import { useLocation, useParams } from "react-router";
-import { useSearchParams } from "react-router-dom";
+import { useLocation } from "react-router";
+import { useSearchParams, useParams } from "react-router-dom";
 import { ssrConfig } from "src/react-ssr.config.js";
 
 import { ContextDataWithStore } from "./core/models/context-with-store.model.js";
 import { ContextData } from "./core/models/context.model.js";
 import { AppStore } from "./redux/create-store.js";
-import { configureHttpClient } from "./core/functions/configure-httpclient.js";
+import { configureHttpClient } from "./core/functions/configure-http-client.js";
+import { ContextProvider } from "./core/contexts/context-data-context.js";
+import { useRef } from "react";
 
-// store should create only one time
-// we declared isFirst outside of react because we don't want to re render again
-// when setting it to false
-let isFirst = true;
-// store should not change/update when react updates itself
-let store: AppStore;
+configureHttpClient();
 
 configureHttpClient();
 export default function ReactSsrApp(props: ReactSsrAppProps) {
+  const isFirstRendering = useRef<boolean>(true);
+  const store = useRef<AppStore | null>(null);
   const location = useLocation();
   const searchParams = useSearchParams();
   const params = useParams();
 
-  let ctx: ContextData;
-  if (process.env.IS_SERVER) {
-    ctx = props.ctx as ContextData;
-  } else {
-    ctx = createContextClient(location, searchParams[0], params as Record<string, string>);
-  }
-  if (isFirst) {
-    isFirst = false;
-    // ssrConfig.configureStore already called on server
-    // if we will again call here then new store will get created and we will lost page data
-    if (!process.env.IS_SERVER && ssrConfig.configureStore) {
-      ssrConfig.configureStore(props.module, props.ctx || ctx);
+  const ctx: ContextData = process.env.IS_SERVER
+    ? (props.ctx as ContextData)
+    : createContextClient(location, searchParams[0], params as Record<string, string>);
+
+  if (!process.env.IS_SERVER) {
+    if (isFirstRendering.current) {
+      isFirstRendering.current = false;
+      // ssrConfig.configureStore already called on server
+      // before creating it on client check code should running on client
+      // if we will again call here then new store will get created and we will lost page data
+      if (ssrConfig.configureStore) {
+        // this will create store and will save store object in ctx for future use
+        ssrConfig.configureStore(props.module, props.ctx || ctx);
+      }
+      store.current = (ctx as ContextDataWithStore).store;
+    } else {
+      (ctx as ContextDataWithStore).store = store.current as AppStore;
     }
-    store = (ctx as ContextDataWithStore).store;
   }
+
   return (
-    <Provider store={store}>
-      <App module={props.module} store={store} />
+    <Provider store={(props.ctx as ContextDataWithStore)?.store || store.current}>
+      <ContextProvider ctx={ctx}>
+        <App module={props.module} />
+      </ContextProvider>
     </Provider>
   );
 }
 
 interface ReactSsrAppProps {
   module: CompModule;
+  /**
+   * ctx prop will have value only on SSR
+   * on client side it will always be undefined
+   */
   ctx?: ContextData;
 }

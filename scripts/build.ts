@@ -23,7 +23,7 @@ let isServerBuildCompleted = false;
  * SSR node server
  */
 const startAppNodeServer = () => {
-  shell.exec(`nodemon --watch --delay 2000ms "build/server.js" --exec "node build/server.js"`, {
+  shell.exec(`nodemon --delay 2000ms --watch "build/server.js" --exec "node build/server.js"`, {
     async: true,
     cwd: process.cwd(),
   }, (code: any, stdout: any, stderr: any) => {

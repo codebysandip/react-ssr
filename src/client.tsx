@@ -28,10 +28,11 @@ const hydrateApp = (module: CompModule) => {
 };
 
 // Hot module reload
-// Don't delete below if condinition. If you need to reload server type rs in same command window
+// Don't delete below if condition. If you need to reload server type rs in same command window
 // of npm start and hit enter. nodemon will restart server
 // Below line will automatically get removed in production build
 if (process.env.IS_LOCAL && (module as any).hot) {
+  console.log("updating app via reload or hot reload!!");
   const root = createRoot(container);
   route?.component().then((module) => {
     root.render(createBrowserRouter(module));
@@ -39,9 +40,9 @@ if (process.env.IS_LOCAL && (module as any).hot) {
 } else {
   /**
    * During hydration Client side HTML should match with virtual DOM.
-   * Rendering is synchronousn but lazy loading of component is asynchronus.
+   * Rendering is synchronous but lazy loading of component is asynchronous.
    * So while getting route component(asynchronous lazy loading), Hydration will complete
-   * creation of virtual DOM synchronousally. When React will compare vitual DOM with actual DOM
+   * creation of virtual DOM synchronously. When React will compare virtual DOM with actual DOM
    * then route component HTML will not be there. In this case hydration will fail and React will re render
    * again on client side. Re rendering of full page will decrease the performance
    */

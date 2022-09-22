@@ -7,12 +7,17 @@ import { ContextData } from "../models/context.model.js";
 import { IRedirect, PageData, PageRedirect } from "../models/page-data.js";
 import { CompModule } from "../models/route.model.js";
 
-export function processRequest(module: CompModule, ctx: ContextData) {
+export function processRequest(module: CompModule, ctx: ContextData, isFirstRendering: boolean) {
   return new Promise<{
     redirect: PageRedirect;
     isError: boolean;
     apiResponse?: ApiResponse<PageData>;
   }>((resolve) => {
+    if (process.env.IS_SERVER) {
+      if (ssrConfig.configureStore) {
+        ssrConfig.configureStore(module, ctx);
+      }
+    }
     const Component = module.default;
     if (!Component) {
       throw new Error("Page component must export component as default");
@@ -21,7 +26,7 @@ export function processRequest(module: CompModule, ctx: ContextData) {
 
     let headerFooterPromise: Promise<ApiResponse<any>> | void;
     if (ssrConfig.preInitialProps) {
-      headerFooterPromise = ssrConfig.preInitialProps(ctx);
+      headerFooterPromise = ssrConfig.preInitialProps(ctx, module, isFirstRendering);
     }
 
     // get page data

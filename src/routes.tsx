@@ -19,13 +19,16 @@ export const Routes: IRoute[] = [
   },
   {
     path: "/product/edit/:id",
-    component: () => import(/* webpackChunkName: "edit-product" */ "src/pages/home/edit/edit-product.component.js"),
+    component: () =>
+      import(
+        /* webpackChunkName: "edit-product" */ "src/pages/home/edit/edit-product.component.js"
+      ),
     isSSR: false,
   },
   {
     path: ROUTE_LOGIN,
     component: () => import(/* webpackChunkName: "login" */ "pages/auth/login/login.comp.js"),
-    isSSR: true,
+    isSSR: false,
   },
   // Replace 404 component code with own code
   {

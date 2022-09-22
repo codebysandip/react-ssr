@@ -51,7 +51,11 @@ const jestConfig: Config = {
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
-  moduleNameMapper: pathsToModuleNameMapper(tsconfigJson.compilerOptions.paths, { prefix: '<rootDir>/' }),
+  moduleNameMapper: {
+    ...pathsToModuleNameMapper(tsconfigJson.compilerOptions.paths, { prefix: '<rootDir>/' }),
+    /* cSpell:disable-next-line */
+    ".+\\.(css|styl|less|sass|scss)$": "<rootDir>/__tests__/utils/config/style-mock.js",
+  },
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   // modulePathIgnorePatterns: [],
 
@@ -93,7 +97,7 @@ const jestConfig: Config = {
   // runner: "jest-runner",
 
   // The paths to modules that run some code to configure or set up the testing environment before each test
-  setupFiles: ["./__tests__/utils/set-up-env-jest.ts", "./__tests__/utils/set-up-window.ts"],
+  setupFiles: ["./__tests__/utils/set-up-env-jest.ts", "./__tests__/utils/set-up-window.ts", "./__tests__/utils/set-up-jest.ts"],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
   // setupFilesAfterEnv: [],
@@ -139,18 +143,22 @@ const jestConfig: Config = {
         },
       },
     }],
-    ".+\\.(css|styl|less|sass|scss|png|jpg|ttf|woff|woff2)$":
+    /* cSpell:disable-next-line */
+    ".+\\.(png|jpg|ttf|woff|woff2|svg)$":
       "<rootDir>/__tests__/utils/config/asset-transformer.js",
   },
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   transformIgnorePatterns: ["/node_modules/"],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
+
+  /* cSpell:disable-next-line */
   // unmockedModulePathPatterns: undefined,
 
   // Indicates whether each individual test should be reported during the run
   verbose: false,
   silent: false,
+  extensionsToTreatAsEsm: [".ts", ".tsx"]
 
   // An array of regexp patterns that are matched against all source file paths before re-running tests in watch mode
   // watchPathIgnorePatterns: [],

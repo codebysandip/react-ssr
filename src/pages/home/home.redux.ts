@@ -8,10 +8,12 @@ import { createSlice } from "src/redux/redux.imports.js";
 export interface HomeState {
   pageData: HomeData;
   productById?: Product;
+  topProducts: Product[];
 }
 const initialState: HomeState = {
   pageData: { products: [] },
   productById: undefined,
+  topProducts: []
 };
 
 export const fetchProducts = () => {
@@ -33,6 +35,14 @@ export const fetchProductById = (id: number, ctx: ContextData) => {
   };
 };
 
+export function fetchTopProducts() {
+  return async (dispatch: AppDispatch, _getState: GetState, api: ThunkApi) => {
+    const apiResponse = await api.get<Product[]>("/api/product/top-products");
+    dispatch(topProductsLoaded(apiResponse.data || []));
+    return apiResponse;
+  }
+}
+
 const homeSlice = createSlice({
   name: "home",
   initialState,
@@ -43,8 +53,11 @@ const homeSlice = createSlice({
     productByIdLoaded: (state, action: PayloadAction<Product | undefined>) => {
       state.productById = action.payload;
     },
+    topProductsLoaded: (state, action: PayloadAction<Product[]>) => {
+      state.topProducts = action.payload;
+    }
   },
 });
 
-export const { productsPageDataLoaded, productByIdLoaded } = homeSlice.actions;
+export const { productsPageDataLoaded, productByIdLoaded, topProductsLoaded } = homeSlice.actions;
 export default homeSlice.reducer;

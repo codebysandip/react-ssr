@@ -11,27 +11,27 @@ export class HttpClient {
    * HttpClient uses isAuthDefault to set default value for {@link HttpClientOptions.isAuth}
    */
   public static isAuthDefault = false;
-  public static internetNotAvialiableMsg = "Please check your network connection. Internet not available";
+  public static internetNotAvailableMsg = "Please check your network connection. Internet not available";
   /**
-   * Implement this function to return sucess and error message from api resonse
+   * Implement this function to return success and error message from api response
    * HttpClient will call this function after getting response from api
    * to create ApiResponse object
  */
   public static processMessage?: (response: AxiosResponse<any> | AxiosError<any>) => string[];
   /**
-   * Implement this function to return data from api resonse
+   * Implement this function to return data from api response
    * HttpClient will call this function after getting response from api
    * to create ApiResponse object
    */
   public static processData?: (response: AxiosResponse<any> | AxiosError<any>) => any;
   /**
-   * implement this function to retiurn code from api response
+   * implement this function to return code from api response
    * HttpClient will call this function after getting response from api
    * to create ApiResponse object
    */
   public static getErrorCode?: (response: AxiosResponse<any> | AxiosError<any>) => number;
   /**
-   * implement this function to retiurn status code from api response
+   * implement this function to return status code from api response
    * HttpClient will call this function after getting response from api
    * to create ApiResponse object
    */
@@ -54,7 +54,7 @@ export class HttpClient {
   /**
    * HttpClient calls this function when api server respond with 401 status code
    * HttpClient calls this function to regenerate token
-   * If this function will return succcess then HttpClient will call api again with new token
+   * If this function will return success then HttpClient will call api again with new token
    */
   public static handleRefreshTokenFlow?: (options: HttpClientOptions) => Promise<ApiResponse<unknown>>;
   /**
@@ -66,13 +66,13 @@ export class HttpClient {
    * HttpClient use isServer to check code executing on client or server  
    * If your project have any env variable to check server then override implementation.
    */
-  public static isServer = typeof window === "undefined";
+  public static isServer = process.env.IS_SERVER;
 
   private static loaderCount = 0;
 
   /**
-   * toggleLoader distpatch {@link LoaderEvent}  
-   * toggleLoader dispatches false event only when all disptached true will return false
+   * toggleLoader dispatch {@link LoaderEvent}  
+   * toggleLoader dispatches false event only when all dispatched true will return false
    * @param status status boolean to show/hide Loader
    * @returns void
    */
@@ -172,11 +172,11 @@ export class HttpClient {
     method: Method | string,
     options: HttpClientOptions = {},
   ): Promise<ApiResponse<T | null>> {
-    const newoptions = this.setDefaultHttpClientOptions<T>(options);
-    if (newoptions instanceof Promise) {
-      return newoptions;
+    const newOptions = this.setDefaultHttpClientOptions<T>(options);
+    if (newOptions instanceof Promise) {
+      return newOptions;
     } else {
-      options = newoptions;
+      options = newOptions;
     }
 
     if (options.showLoader) {
@@ -213,7 +213,7 @@ export class HttpClient {
                 // only checking for 5xx because retry should happen only in case of server error
                 // not in the case of 4xx which is client error or 2xx success case
                 if (response.status.toString().startsWith("5") || response.status === 0) {
-                  // throw Error as strigify response because we will need response
+                  // throw Error as stringify response because we will need response
                   // to return to component
                   // throwing error because retry will retry request
                   return retryPromise<ApiResponse<T>>(
@@ -224,7 +224,9 @@ export class HttpClient {
                     },
                     1000,
                     maxRetryCount,
-                  ).catch(() => {
+                  ).then(apiResponse => {
+                    return apiResponse;
+                  }).catch(() => {
                     // in case of error send same response generated
                     return response;
                   });
@@ -248,7 +250,7 @@ export class HttpClient {
           const apiResponse: ApiResponse<null> = {
             status: 0,
             data: null,
-            message: [this.internetNotAvialiableMsg],
+            message: [this.internetNotAvailableMsg],
             errorCode: -1,
             isError: true
           };
@@ -410,7 +412,7 @@ export interface HttpClientOptions extends AxiosRequestConfig {
    */
   extra?: string;
   /**
-   * By default caching from service worker will diable for all api request  
+   * By default caching from service worker will disable for all api request  
    * To enable caching for specific api set this option to false
    */
   doCache?: boolean;
@@ -441,9 +443,9 @@ export interface ApiResponse<T> {
   status: number;
   /**
    * response data of server  
-   * HttpClient will convert api rensponse into ApiResponse  
+   * HttpClient will convert api response into ApiResponse  
    * If API will send data key in response body as key then HttpClient will use
-   * response body data otheriwise HttpClient will put response body in {@link ApiResponse.data}
+   * response body data otherwise HttpClient will put response body in {@link ApiResponse.data}
    */
   data: T;
   /**
@@ -496,7 +498,7 @@ export function LoaderEvent(status: boolean) {
  * @param ms number of milliseconds after retry request
  * @param maxRetries number of times to retry promise on fail
  * @param retries how many times retried
- * @param rejectFn Don't set its for internet use only
+ * @param rejectFn Don't set its for internal use only
  * @returns resolved data or string "maximum retries exceeded"
  */
 export function retryPromise<T>(
@@ -533,7 +535,7 @@ export function retryPromise<T>(
  */
 export function isOnline() {
   return new Promise<boolean>((resolve, reject) => {
-    const status = typeof window === "undefined" ? true : navigator.onLine;
+    const status = HttpClient.isServer ? true : navigator.onLine;
     if (status) {
       resolve(status);
     } else {

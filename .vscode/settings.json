@@ -5,5 +5,17 @@
   "editor.formatOnSave": true,
   "editor.tabSize": 2,
   "javascript.preferences.importModuleSpecifierEnding": "js",
-  "typescript.preferences.importModuleSpecifierEnding": "js"
+  "typescript.preferences.importModuleSpecifierEnding": "js",
+  "cSpell.words": [
+    "formik",
+    "maxlength",
+    "mddir",
+    "onmmesage",
+    "pmmmwh",
+    "reduxjs",
+    "Sandip",
+    "SSRDATA",
+    "toastify"
+  ],
+  "jestrunner.jestCommand": "npm run test"
 }

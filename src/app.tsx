@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Header } from "core/components/header/header.js";
 import { Route, Routes } from "react-router-dom";
-import Lazy from "./core/components/lazy/lazy.component.js";
+import LazyRoute from "./core/components/lazy-route/lazy-route.component.js";
 import { matchPath, useLocation } from "react-router";
 import { Routes as PageRoutes } from "./routes.js";
 import { NO_HEADER_PATHS } from "./const.js";
@@ -37,25 +37,27 @@ export function App(props: AppProps) {
   }, [location.pathname]);
 
   useEffect(() => {
-    // listening onmmesage event to recieve message fron service worker
-    navigator.serviceWorker.onmessage = function (evt) {
-      const message = JSON.parse(evt.data);
+    if ("serviceWorker" in navigator) {
+      // listening onmmesage event to receive message from service worker
+      navigator.serviceWorker.onmessage = function (evt) {
+        const message = JSON.parse(evt.data);
 
-      const isRefresh = message.type === "refresh";
+        const isRefresh = message.type === "refresh";
 
-      // check for message type of refresh
-      // we enabled api caching in service worker. First api service from cache if available then
-      // service worker calls api to fetch response and saves in cache and also return back us via postMessage with type refresh
-      if (isRefresh) {
-        console.log("serviceWorker updated in background!!", message);
-        if (message.extra) {
-          dispatch({
-            type: message.extra,
-            payload: message.data,
-          });
+        // check for message type of refresh
+        // we enabled api caching in service worker. First api service from cache if available then
+        // service worker calls api to fetch response and saves in cache and also return back us via postMessage with type refresh
+        if (isRefresh) {
+          console.log("serviceWorker updated in background!!", message);
+          if (message.extra) {
+            dispatch({
+              type: message.extra,
+              payload: message.data,
+            });
+          }
         }
-      }
-    };
+      };
+    }
 
     window.addEventListener(SHOW_LOADER, (e) => {
       setShowLoader(e.detail);
@@ -71,15 +73,17 @@ export function App(props: AppProps) {
       {/* Use SsrHead component to set common Head tags */}
       {process.env.IS_SERVER && <SsrHead />}
       {/* Header and footer should not visible on error page if header/footer is dynamic.
-      Why? becuase may be error page coming because of Header/Footer api */}
+      Why? because may be error page coming because of Header/Footer api */}
       {showHeader && <Header />}
-      <div className="container">
+      <div className="container mt-4 mb-4">
         <Routes>
           {PageRoutes.map((r, idx) => {
             return (
               <Route
                 path={r.path}
-                element={<Lazy moduleProvider={r.component} module={props.module} {...props} />}
+                element={
+                  <LazyRoute moduleProvider={r.component} module={props.module} {...props} />
+                }
                 key={idx}
               />
             );
@@ -95,5 +99,4 @@ export function App(props: AppProps) {
 export interface AppProps {
   module?: CompModule;
   pageProps?: any;
-  store?: any;
 }

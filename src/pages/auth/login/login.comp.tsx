@@ -7,7 +7,7 @@ import { login } from "../auth.redux.js";
 import * as Yup from "yup";
 import { Formik, Form } from "formik";
 import { FormGroup } from "src/core/components/form/FormGroup.js";
-import { FormVlidation } from "src/core/services/form-validation.service.js";
+import { FormValidation } from "src/core/services/form-validation.service.js";
 
 class Login extends Component<LoginProps, LoginState> {
   private loginSchema = Yup.object().shape({
@@ -37,7 +37,7 @@ class Login extends Component<LoginProps, LoginState> {
 
   render(): ReactNode {
     return (
-      <div className="d-flex flex-column align-items-center">
+      <div className="d-flex flex-column align-items-center" data-test-id="login-page">
         <h1>Login</h1>
         {this.props.errorMessage && <h3 className="invalid-feedback">{this.props.errorMessage}</h3>}
         <Formik
@@ -47,9 +47,9 @@ class Login extends Component<LoginProps, LoginState> {
             password: "",
           }}
           onSubmit={(data) => this.login(data)}
-          // FormVlidation.validateForm sets error message for FormGroup component
+          // FormValidation.validateForm sets error message for FormGroup component
           // this line is required to use FormGroup component
-          validate={(values) => FormVlidation.validateForm(this.loginSchema, values)}
+          validate={(values) => FormValidation.validateForm(this.loginSchema, values)}
         >
           {({ errors, touched }) => {
             return (

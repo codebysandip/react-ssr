@@ -14,10 +14,17 @@ export default class MetaInfoPlugin {
     compiler.hooks.assetEmitted.tap(
       this.constructor.name,
       (file, { content, source, outputPath, compilation, targetPath }) => {
-        if (file.match(/style.[\w].+(.css)$/)) {
-          this.metaInfo.styleHash = file.split(".")[1];
-        } else if (file.match(/client.[\w].+(.js)$/)) {
-          this.metaInfo.clientJsHash = file.split(".")[1];
+        if (file.match(/(style).*(\.css)$/)) {
+          this.metaInfo.mainStyle = file;
+        } else if (file.match(/^(client).*(\.js)$/)) {
+          this.metaInfo.mainJs = file;
+        } else if (file.match(/.*(.chunk.css)$/)) {
+          if (!this.metaInfo.chunkCss) {
+            this.metaInfo.chunkCss = {};
+          }
+          const splitted = file.split(".");
+          const pathParts = splitted[0].split("/");
+          this.metaInfo.chunkCss[pathParts[pathParts.length - 1]] = file;
         }
       },
     );

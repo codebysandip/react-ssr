@@ -2,7 +2,7 @@ import { getAccessTokenData } from "./core/functions/get-token.js";
 import { CompModule } from "./core/models/route.model.js";
 import { SSRConfig } from "./core/models/ssr-config.model.js";
 import { loginSuccess, logout } from "./pages/auth/auth.redux.js";
-import { AppStore, createStore } from "src/redux/create-store";
+import { AppStore, createStore, replaceReducer } from "src/redux/create-store";
 import { ContextData } from "./core/models/context.model.js";
 import { ContextDataWithStore } from "./core/models/context-with-store.model.js";
 import {
@@ -22,7 +22,12 @@ export const ssrConfig: SSRConfig = {
     const store = createStore(module.reducer);
     (ctx as ContextDataWithStore).store = store as AppStore;
   },
-  preInitialProps: (ctx: ContextData) => {
+  preInitialProps: (ctx: ContextData, moduleObj, isFirstRendering) => {
+    // inject lazy loaded reducer into store
+    if (moduleObj.reducer && (ctx as any).store) {
+      replaceReducer((ctx as any).store, moduleObj.reducer);
+    }
+
     const accessTokenData = getAccessTokenData(ctx.req);
     const store = (ctx as ContextDataWithStore).store;
     if (accessTokenData) {
@@ -36,7 +41,7 @@ export const ssrConfig: SSRConfig = {
     const route = getRoute(ctx.location.pathname);
     // Route.isSSR will false then server will not send page data and header data
     // so on client side fetch data for header
-    if (route?.isSSR || !process.env.IS_SERVER) {
+    if ((process.env.IS_SERVER && route?.isSSR) || (!process.env.IS_SERVER && isFirstRendering)) {
       return store.dispatch(fetchHeader());
     }
   },
