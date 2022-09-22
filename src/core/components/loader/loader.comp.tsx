@@ -1,4 +1,4 @@
-// import "./loader.scss";
+import "./loader.scss";
 
 export function Loader(props: LoaderProps) {
   if (!props.show) {

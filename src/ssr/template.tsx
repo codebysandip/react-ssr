@@ -28,7 +28,6 @@ const chunkRegex = /[a-z-0-9]{2,}(\.chunk\.css)/;
 export class HtmlTemplate extends Component<HtmlTemplateProps> {
   public render() {
     const helmet = Helmet.renderStatic();
-    /* cSpell:disable-next-line */
     const ssrDataScript = `window.__SSRDATA__ = ${JSON.stringify(this.props.ssrData)};`;
     const styleLinks = helmet.link.toString();
     const match = styleLinks.match(chunkRegex);

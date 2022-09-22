@@ -15,6 +15,7 @@ import { useRef } from "react";
 
 configureHttpClient();
 
+configureHttpClient();
 export default function ReactSsrApp(props: ReactSsrAppProps) {
   const isFirstRendering = useRef<boolean>(true);
   const store = useRef<AppStore | null>(null);

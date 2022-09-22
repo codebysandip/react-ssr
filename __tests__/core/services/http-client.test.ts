@@ -36,6 +36,7 @@ describe("HttpClient", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     navigatorOnline(true);
+    configureHttpClient();
   });
 
   afterEach(() => {
