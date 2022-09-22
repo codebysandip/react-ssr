@@ -91,15 +91,8 @@ export function configureHttpClient() {
     return resp?.data?.status || resp?.status || 0;
   };
 
-  HttpClient.onResponse = (apiResponse) => {
-    if (apiResponse.status === 0) {
-      CommonService.toast({
-        type: "error",
-        message: apiResponse.message[0],
-      });
-      return;
-    }
-    if (apiResponse.isError && apiResponse.message.length) {
+  HttpClient.onResponse = (apiResponse, options) => {
+    if (apiResponse.isError && apiResponse.message.length && options.showLoader) {
       CommonService.toast({
         type: "error",
         message: apiResponse.message[0],
