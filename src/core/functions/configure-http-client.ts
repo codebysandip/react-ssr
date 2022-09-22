@@ -6,14 +6,19 @@ import { CookieService } from "../services/cookie.service.js";
 import { ApiResponse, getDefaultApiResponseObj, HttpClient, HttpClientOptions } from "../services/http-client.js";
 import { setAccessAndRefreshToken } from "./get-token.js";
 
+export function getAxiosResponseFromResponse(response: AxiosResponse<any> | AxiosError<any>) {
+  let resp: AxiosResponse | undefined;
+  if (!(response as AxiosError).isAxiosError) {
+    resp = response as AxiosResponse<any>;
+  } else {
+    resp = (response as AxiosError<any>).response;
+  }
+  return resp;
+}
+
 export function configureHttpClient() {
   HttpClient.getStatusCode = (response: AxiosResponse<any> | AxiosError<any>) => {
-    let resp: AxiosResponse | undefined;
-    if (!(response as AxiosError).isAxiosError) {
-      resp = response as AxiosResponse<any>;
-    } else {
-      resp = (response as AxiosError<any>).response;
-    }
+    const resp = getAxiosResponseFromResponse(response);
     return resp?.data.status || resp?.status || 0;
   };
 
@@ -22,12 +27,7 @@ export function configureHttpClient() {
  * with your own code
  */
   HttpClient.processMessage = (response: AxiosResponse<any> | AxiosError<any>) => {
-    let resp: AxiosResponse | undefined;
-    if (!(response as AxiosError).isAxiosError) {
-      resp = response as AxiosResponse<any>;
-    } else {
-      resp = (response as AxiosError<any>).response;
-    }
+    const resp = getAxiosResponseFromResponse(response);
 
     const data: any = resp?.data;
     let message: string[] = [];
@@ -57,12 +57,7 @@ export function configureHttpClient() {
    * @returns Api Response
    */
   HttpClient.processData = (response: AxiosResponse<any> | AxiosError<any>) => {
-    let resp: AxiosResponse | undefined;
-    if (!(response as AxiosError).isAxiosError) {
-      resp = response as AxiosResponse<any>;
-    } else {
-      resp = (response as AxiosError<any>).response;
-    }
+    const resp = getAxiosResponseFromResponse(response);
 
     const data: any = resp?.data;
     // can check instanceOf to know response type
@@ -71,23 +66,13 @@ export function configureHttpClient() {
   };
 
   HttpClient.getErrorCode = (response: AxiosResponse<any> | AxiosError<any>) => {
-    let resp: AxiosResponse | undefined;
-    if (!(response as AxiosError).isAxiosError) {
-      resp = response as AxiosResponse<any>;
-    } else {
-      resp = (response as AxiosError<any>).response;
-    }
+    const resp = getAxiosResponseFromResponse(response);
     const data: any = resp?.data;
     return data?.errorCode || -1;
   };
 
   HttpClient.getStatusCode = (response: AxiosResponse<any> | AxiosError<any>) => {
-    let resp: AxiosResponse | undefined;
-    if (!(response as AxiosError).isAxiosError) {
-      resp = response as AxiosResponse<any>;
-    } else {
-      resp = (response as AxiosError<any>).response;
-    }
+    const resp = getAxiosResponseFromResponse(response);
     return resp?.data?.status || resp?.status || 0;
   };
 
