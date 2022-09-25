@@ -42,8 +42,9 @@ let webpackClientConfig: any;
 let webpackServerConfig: any;
 
 const baseEnv = { IS_LOCAL: "true", IS_SERVER: "false", ENV: env };
+const isDev = env === "development" || env === "cypress";
 // webpack client build
-if (env === "development") {
+if (isDev) {
   webpackClientConfig = webpackDevConfig(baseEnv, {});
 } else {
   webpackClientConfig = webpackProdConfig(baseEnv, {});
@@ -54,7 +55,7 @@ const compiler = webpack(webpackClientConfig, () => {
 
 // webpack server build
 baseEnv.IS_SERVER = "true";
-if (env === "development") {
+if (isDev) {
   webpackServerConfig = webpackDevConfig(baseEnv, {});
 } else {
   webpackServerConfig = webpackProdConfig(baseEnv, {});

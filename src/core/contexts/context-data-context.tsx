@@ -17,14 +17,23 @@ export const ContextDataContext = React.createContext<ContextData | null>(null);
  */
 export const ContextProvider = (props: ContextProviderProps) => {
   const location = useLocation();
-
-  useEffect(() => {
+  /**
+   * Set params of context when page loads or location change
+   * @returns void
+   */
+  const setParams = () => {
     const route = getRoute(location.pathname);
     if (!route) {
       return;
     }
     const matchedRoute = matchPath(route.path, location.pathname);
     props.ctx.params = (matchedRoute?.params as Record<string, string>) || {};
+  };
+
+  setParams();
+
+  useEffect(() => {
+    setParams();
   }, [location.pathname]);
   return (
     <ContextDataContext.Provider value={props.ctx}>{props.children}</ContextDataContext.Provider>

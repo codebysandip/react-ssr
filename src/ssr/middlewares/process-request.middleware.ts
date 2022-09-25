@@ -70,7 +70,7 @@ export const processRequest = () => {
           sendResponse(html, resp, req);
         };
 
-        if (!route.isSSR) {
+        if (!route.isSSR || req.query.cypress) {
           if (ssrConfig.configureStore) {
             ssrConfig.configureStore(module, ctx);
           }

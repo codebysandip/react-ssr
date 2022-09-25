@@ -17,7 +17,7 @@ setTimeout(
     const metaJson = getWebpackBuildMetaJson();
     global.metaJson = metaJson;
   },
-  process.env.IS_LOCAL ? 1000 * 2 : 0,
+  process.env.IS_LOCAL ? 1000 * 5 : 0,
 );
 
 const chunkRegex = /[a-z-0-9]{2,}(\.chunk\.css)/;

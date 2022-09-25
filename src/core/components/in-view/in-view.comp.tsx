@@ -75,7 +75,7 @@ const InViewComp = (props: InViewProps & WithContextProps) => {
   const extra = extraProps || {};
 
   return (
-    <div ref={ref} id="in-view">
+    <div ref={ref} id="in-view" {...props.testIdAttribute}>
       {inView
         ? lazyComp && <lazyComp.default {...extra} {...data} />
         : skeleton && skeleton.default}
@@ -93,6 +93,9 @@ export const InView = withContext<InViewProps>(InViewComp) as (
   props: InViewProps,
 ) => React.ReactElement;
 
+InViewComp.defaultProps = {
+  testIdAttribute: {},
+};
 export interface InViewProps extends IntersectionObserverInit {
   /**
    * children should be a function and must return [skeleton](https://www.npmjs.com/package/react-loading-skeleton) when not in view (inView false)
@@ -106,6 +109,7 @@ export interface InViewProps extends IntersectionObserverInit {
    * extra props is the props your component will need when loads
    */
   extraProps?: Record<string, any>;
+  testIdAttribute?: Record<string, string>;
 }
 
 /**

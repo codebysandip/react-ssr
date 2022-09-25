@@ -25,7 +25,7 @@ class EditProduct extends Component<EditComponentProps> {
       return <h1>Data Loading...</h1>;
     }
     return (
-      <div>
+      <div data-test-id="edit-product-page">
         <h1>Edit Product</h1>
         <Formik
           initialValues={{
@@ -47,8 +47,11 @@ class EditProduct extends Component<EditComponentProps> {
                   id="editProductTitle"
                   placeholder="Enter title"
                   name="title"
+                  data-test-id="edit-product-title"
                 />
-                {errors.title && touched.title && <div className="invalid-feedback">{errors.title}</div>}
+                {errors.title && touched.title && (
+                  <div className="invalid-feedback">{errors.title}</div>
+                )}
               </div>
               <div className="form-group">
                 <label htmlFor="editProductPrice">Price</label>
@@ -59,7 +62,9 @@ class EditProduct extends Component<EditComponentProps> {
                   id="editProductPrice"
                   placeholder="Enter Price"
                 />
-                {errors.price && touched.price && <div className="invalid-feedback">{errors.price}</div>}
+                {errors.price && touched.price && (
+                  <div className="invalid-feedback">{errors.price}</div>
+                )}
               </div>
               <div className="form-group">
                 <label htmlFor="editProductDescription">Description</label>
@@ -83,7 +88,9 @@ class EditProduct extends Component<EditComponentProps> {
                   id="editProductCategory"
                   placeholder="Enter category"
                 />
-                {errors.category && touched.category && <div className="invalid-feedback">{errors.category}</div>}
+                {errors.category && touched.category && (
+                  <div className="invalid-feedback">{errors.category}</div>
+                )}
               </div>
               <button type="submit" className="btn btn-primary mt-3">
                 Submit

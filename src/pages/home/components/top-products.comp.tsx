@@ -9,7 +9,7 @@ const TopProducts = (props: TopProductsProps) => {
   return (
     <>
       <h1>Top Products</h1>
-      <div className="d-flex flex-row flex-wrap">
+      <div className="d-flex flex-row flex-wrap" data-test-id="top-products">
         {props.topProducts.map((product, idx) => {
           return (
             <div className={`card productCard`} key={idx}>
