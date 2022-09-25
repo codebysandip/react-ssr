@@ -1,19 +1,12 @@
 import { render } from "@testing-library/react";
-import { StaticRouter } from "react-router-dom/server.js";
-import ReactSsrApp from "src/index.js";
-import { createContextServer } from "src/core/functions/create-context.js";
+import { createContextClient } from "src/core/functions/create-context.js";
 import { getRoute } from "src/core/functions/get-route.js";
-import { processRequest } from "src/core/functions/process-request.js";
-import axios from "axios";
-import MockAdapter from "axios-mock-adapter";
-import HeaderData from "mocks/headers.json";
 import "@testing-library/jest-dom/extend-expect";
-import { Location } from "react-router";
 import { ContextData } from "src/core/models/context.model.js";
-import { getMockReq, getMockRes } from "@jest-mock/express";
-import { HttpClient } from "src/core/services/http-client.js";
-
-const mockAxios = new MockAdapter(axios);
+import { Provider } from "react-redux";
+import { AppStore, createStore } from "src/redux/create-store.js";
+import { ContextDataWithStore } from "src/core/models/context-with-store.model.js";
+import { matchPath, MemoryRouter } from "react-router";
 
 /**
  * renderPage will render a route page based on request url
@@ -26,42 +19,39 @@ const mockAxios = new MockAdapter(axios);
  * // testing code will go here
  */
 export async function renderPage(requestUrl: string) {
-  mockAxios.onGet(HttpClient.setUrl("/api/header")).replyOnce(200, HeaderData);
   const url = new URL(requestUrl);
-  const location: Location = {
-    pathname: url.pathname,
-    state: "",
-    hash: url.hash,
-    key: "default",
-    search: url.search,
-  };
-  const req = getMockReq({
-    path: url.pathname,
-    hostname: url.hostname,
-  });
 
-  const resp = getMockRes();
-
-  const ctx: ContextData = {
-    ...createContextServer(req, resp.res),
-  };
   const route = getRoute(url.pathname);
   if (!route) {
     throw new Error("requestUrl is not valid");
   }
+  const matchedPath = matchPath(route.path, url.pathname);
+
+  const location = {
+    hash: "",
+    pathname: url.pathname,
+    key: "default",
+    search: url.search,
+    state: {},
+  };
+  const ctx: ContextData = createContextClient(
+    location,
+    new URLSearchParams(url.search),
+    (matchedPath?.params as Record<string, string>) || {},
+  );
 
   const module = await route?.component();
-  const data = await processRequest(module, ctx, true);
-  if (data.isError) {
-    throw new Error("Error occurred while process request");
+  const store = createStore(module.reducer);
+  (ctx as ContextDataWithStore).store = store as AppStore;
+  const getInitialProps = module.getInitialProps || module.default.getInitialProps;
+  if (getInitialProps) {
+    await getInitialProps(ctx);
   }
-  global.metaJson = { mainJs: "", mainStyle: "", chunkCss: {} };
-
   render(
-    <StaticRouter location={location}>
-      <ReactSsrApp module={module} ctx={ctx} />
-    </StaticRouter>,
+    <Provider store={store}>
+      <MemoryRouter initialEntries={[location.pathname]}>
+        <module.default />
+      </MemoryRouter>
+    </Provider>,
   );
 }
-
-export { mockAxios };

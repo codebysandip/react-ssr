@@ -8,6 +8,7 @@ import { HttpClient, isOnline, retryPromise } from "src/core/services/http-clien
 import { getRoute } from "src/core/functions/get-route.js";
 import { Loader } from "../loader/loader.comp.js";
 import { useContextData } from "src/core/hook.js";
+import { useSearchParams } from "react-router-dom";
 
 /**
  * Lazy Load Route Component
@@ -22,13 +23,17 @@ export default function LazyRoute(props: LazyProps) {
   const [pageData, setPageData] = useState((ctx as any).store ? {} : window.__SSRDATA__ || {});
   const location = useLocation();
   const navigate = useNavigate();
+  const searchParams = useSearchParams();
 
   // if IRoute.isSSR will false then server will not process request for any api calls
   // in that case page data will not available on client. So need to fetch data on client for page
   let route: IRoute | undefined;
   if (!process.env.IS_SERVER && isFirstRendering.current && module) {
     route = getRoute(location.pathname);
-    if (!route?.isSSR) {
+    // if route is not to render on server then process rendering on client
+    // if query string will have cypress then all routes will render on client only
+    // this is important because of mocking not possible on SSR in case of cypress
+    if (!route?.isSSR || searchParams[0].has("cypress")) {
       if (props.module) {
         processRequest(props.module, ctx, isFirstRendering.current).then((data) => {
           // after process request mark isFirstRendering to false

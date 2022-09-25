@@ -15,16 +15,16 @@ export default class MetaInfoPlugin {
       this.constructor.name,
       (file, { content, source, outputPath, compilation, targetPath }) => {
         if (file.match(/(style).*(\.css)$/)) {
-          this.metaInfo.mainStyle = file;
+          this.metaInfo.mainStyle = "/" + file;
         } else if (file.match(/^(client).*(\.js)$/)) {
-          this.metaInfo.mainJs = file;
+          this.metaInfo.mainJs = "/" + file;
         } else if (file.match(/.*(.chunk.css)$/)) {
           if (!this.metaInfo.chunkCss) {
             this.metaInfo.chunkCss = {};
           }
           const splitted = file.split(".");
           const pathParts = splitted[0].split("/");
-          this.metaInfo.chunkCss[pathParts[pathParts.length - 1]] = file;
+          this.metaInfo.chunkCss[pathParts[pathParts.length - 1]] = "/" + file;
         }
       },
     );

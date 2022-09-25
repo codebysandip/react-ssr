@@ -1,5 +1,5 @@
 
-export {};
+export { };
 declare global {
     namespace NodeJS {
         interface ProcessEnv {
@@ -10,7 +10,7 @@ declare global {
              *  // code to execute on server
              * }
              * if (!process.env.IS_SERVER) {
-             *  // coden to execute on client/browser
+             *  // code to execute on client/browser
              * }
              */
             IS_SERVER: boolean;
@@ -22,7 +22,7 @@ declare global {
              * ENV to decide webpack to run in development or production mode
              * It can also use to load different environment variables based on env like staging etc.
              */
-            ENV: string;
+            ENV: "development" | "cypress" | "production";
             /**
              * WATCH enables to run webpack in watch mode
              * Use WATCH only you want to disable watch with value WATCH=false

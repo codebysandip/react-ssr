@@ -21,7 +21,7 @@ const Home = (props: HomeProps) => {
           {process.env.IS_SERVER && <link href={metaJson.chunkCss["home"]} rel="stylesheet" />}
         </Helmet>
       )}
-      <div className="d-flex flex-row flex-wrap" data-test-id="home-page">
+      <div className="d-flex flex-row flex-wrap min-vh-100" data-test-id="home-page">
         {pageData.products.map((product, idx) => {
           return (
             <div
@@ -46,7 +46,7 @@ const Home = (props: HomeProps) => {
         })}
       </div>
       {/* test code for InView */}
-      <InView>
+      <InView testIdAttribute={{ "data-test-id": "top-products-in-view" }}>
         {(inView) =>
           inView ? (
             import("./components/top-products.comp.js")

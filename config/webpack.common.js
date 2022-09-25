@@ -64,7 +64,7 @@ export default function (env, args, isProd = false) {
     }
   }
   if (isLocal && isServer) {
-    entry.testApi = getPath("test-api.ts");
+    entry.testApi = getPath("test-api/test-api.ts");
   }
   /**
    * Add webpack env key and value to webpack DefinePlugin.
@@ -135,14 +135,18 @@ export default function (env, args, isProd = false) {
         ],
       }),
       new MetaInfoPlugin({ path: getPath("build/meta.json") }),
-      new WorkboxPlugin.InjectManifest({
-        swSrc: getPath("src/service-worker.js"),
-        swDest: join(outFolder, "service-worker.js"),
-        mode: !isLocal ? "production" : "development",
-        maximumFileSizeToCacheInBytes: isLocal ? 10 * 1000 * 1000 : 500 * 1000,
-        exclude: [/.*(.hot-update.)(m?js)$/, /\.map$/],
-      }),
     );
+    if (env.ENV !== "cypress") {
+      plugins.push(
+        new WorkboxPlugin.InjectManifest({
+          swSrc: getPath("src/service-worker.js"),
+          swDest: join(outFolder, "service-worker.js"),
+          mode: !isLocal ? "production" : "development",
+          maximumFileSizeToCacheInBytes: isLocal ? 10 * 1000 * 1000 : 500 * 1000,
+          exclude: [/.*(.hot-update.)(m?js)$/, /\.map$/],
+        }),
+      );
+    }
   }
 
   if (isLocal) {

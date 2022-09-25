@@ -1,5 +1,4 @@
 import { hydrateRoot, createRoot } from "react-dom/client";
-// import { matchPath } from "react-router";
 import { BrowserRouter } from "react-router-dom";
 import { getRoute } from "./core/functions/get-route.js";
 import { CompModule } from "./core/models/route.model.js";

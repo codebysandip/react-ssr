@@ -60,6 +60,7 @@ class Login extends Component<LoginProps, LoginState> {
                   errors={errors}
                   touched={touched}
                   labelText="Email Address"
+                  data-test-id="login-email"
                 />
                 <FormGroup
                   name="password"
@@ -67,8 +68,9 @@ class Login extends Component<LoginProps, LoginState> {
                   errors={errors}
                   touched={touched}
                   labelText="Password"
+                  data-test-id="login-password"
                 />
-                <button type="submit" className="btn btn-primary mt-4">
+                <button type="submit" className="btn btn-primary mt-4" data-test-id="login-btn">
                   Login
                 </button>
               </Form>

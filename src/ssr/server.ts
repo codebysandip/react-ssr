@@ -37,8 +37,12 @@ app.get("*.(css|js|svg|jpg|woff|woff2|json)", StaticRoute);
 // Tell express for public folder
 app.use(express.static(join(process.cwd(), "build/public")));
 
+const API_URL = process.env.ENV === "cypress" ? process.env.LOCAL_API_SERVER : process.env.API_BASE_URL;
+if (!API_URL) {
+  throw new Error("Please add .env file if not available. Add LOCAL_API_SERVER and API_BASE_URL in .env file");
+}
 // proxy to api to tackle cors problem
-app.all("/api/*", proxyMiddleware(process.env.API_BASE_URL || ""));
+app.all("/api/*", proxyMiddleware(API_URL));
 
 // Get all request of node server
 app.get("*", processRequest());
