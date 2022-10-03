@@ -30,4 +30,4 @@ jobs:
       with:
         install: npm ci
         start: npm run start:cypress
-        command: npm test
+        command: npm run start:test-api & npm test
