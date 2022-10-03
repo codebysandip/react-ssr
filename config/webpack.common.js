@@ -204,13 +204,12 @@ export default function (env, args, isProd = false) {
             {
               loader: "swc-loader",
               options: {
-                parseMap: true,
+                parseMap: env.ENV === "cypress",
                 jsc: {
                   parser: {
                     syntax: "typescript",
                     dynamicImports: true,
                   },
-                  // target: "es2020",
                   transform: {
                     react: {
                       runtime: "automatic",
@@ -261,5 +260,6 @@ export default function (env, args, isProd = false) {
     // Add instrument code for code coverage
     config.module.rules[0].use.unshift("@jsdevtools/coverage-istanbul-loader");
   }
+  console.log("webpack!!", config.module.rules[0].use[0]);
   return config;
 }
