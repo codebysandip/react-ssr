@@ -7,6 +7,7 @@
   "scripts": {
     "start": "npm run verify && cross-env ENV=development nodemon --watch config/ scripts/build.ts --transpile-only",
     "start:cypress": "npm run verify && cross-env ENV=cypress nodemon --watch config/ scripts/build.ts --transpile-only",
+    "start:cypress:ci": "node build/server.js & node build/testApi.js",
     "build:cypress:client": "npx webpack --config ./config/webpack.dev.js --env IS_LOCAL=false --env IS_SERVER=false --env ENV=cypress",
     "build:cypress:server": "npx webpack --config ./config/webpack.dev.js --env IS_LOCAL=false --env IS_SERVER=true --env ENV=cypress",
     "build:cypress": "npm run build:cypress:server && npm run build:cypress:client",
