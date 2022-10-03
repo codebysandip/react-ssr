@@ -43,6 +43,7 @@ export default function (env, args, isProd = false) {
    */
   const outFolder = isServer ? getPath("build") : clientBuildPath;
   const isDev = env.ENV === "development";
+  const isCypress = env.ENV === "cypress";
 
   const entry = {};
   if (isServer) {
@@ -62,7 +63,7 @@ export default function (env, args, isProd = false) {
       );
     }
   }
-  if (isLocal && isServer) {
+  if ((isLocal || isCypress) && isServer) {
     entry.testApi = getPath("test-api/test-api.ts");
   }
   /**
@@ -77,8 +78,10 @@ export default function (env, args, isProd = false) {
       definePluginObj[`process.env.${key}`] = JSON.stringify(env[key]);
     }
   });
-  const miniCssFileName = !isLocal ? "assets/css/style.[contenthash].css" : "assets/css/style.css";
-  const miniCssChunkName = !isLocal
+  const miniCssFileName = !(isLocal || isCypress)
+    ? "assets/css/style.[contenthash].css"
+    : "assets/css/style.css";
+  const miniCssChunkName = !(isLocal || isCypress)
     ? "assets/css/[name].[contenthash].chunk.css"
     : "assets/css/[name].chunk.css";
   let slash = "/";
@@ -140,7 +143,7 @@ export default function (env, args, isProd = false) {
         new WorkboxPlugin.InjectManifest({
           swSrc: getPath("src/service-worker.js"),
           swDest: join(outFolder, "service-worker.js"),
-          mode: !isLocal ? "production" : "development",
+          mode: !(isLocal || isCypress) ? "production" : "development",
           maximumFileSizeToCacheInBytes: isLocal ? 10 * 1000 * 1000 : 500 * 1000,
           exclude: [/.*(.hot-update.)(m?js)$/, /\.map$/],
         }),
@@ -163,8 +166,10 @@ export default function (env, args, isProd = false) {
   const config = {
     entry,
     output: {
-      filename: `[name]${!isLocal && !isServer ? ".[contenthash]" : ""}.js`,
-      chunkFilename: `[name]${!isLocal && !isServer ? ".[contenthash]" : ""}.chunk.js`,
+      filename: `[name]${!(isLocal || isCypress) && !isServer ? ".[contenthash]" : ""}.js`,
+      chunkFilename: `[name]${
+        !(isLocal || isCypress) && !isServer ? ".[contenthash]" : ""
+      }.chunk.js`,
       path: outFolder,
       publicPath: "/",
       chunkFormat: isServer ? "module" : "array-push",
@@ -204,7 +209,7 @@ export default function (env, args, isProd = false) {
             {
               loader: "swc-loader",
               options: {
-                parseMap: env.ENV === "cypress",
+                parseMap: isCypress,
                 jsc: {
                   parser: {
                     syntax: "typescript",
@@ -218,8 +223,8 @@ export default function (env, args, isProd = false) {
                   },
                 },
                 isModule: true,
-                sourceMaps: isLocal,
-                inlineSourcesContent: isLocal,
+                sourceMaps: isLocal || isCypress,
+                inlineSourcesContent: isLocal || isCypress,
                 module: {
                   type: "es6",
                   lazy: true,
@@ -256,7 +261,7 @@ export default function (env, args, isProd = false) {
     },
     plugins,
   };
-  if (env.ENV === "cypress") {
+  if (isCypress) {
     // Add instrument code for code coverage
     config.module.rules[0].use.unshift("@jsdevtools/coverage-istanbul-loader");
   }

@@ -39,3 +39,4 @@ export const PASSWORD_REGEX = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6
 export const IS_DEV = process.env.ENV === "development";
 export const API_URL =
   process.env.ENV === "cypress" ? process.env.LOCAL_API_SERVER : process.env.API_BASE_URL;
+export const IS_CYPRESS = process.env.ENV === "cypress";

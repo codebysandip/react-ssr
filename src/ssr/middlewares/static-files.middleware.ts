@@ -2,7 +2,7 @@
 import { NextFunction, Request, Response } from "express";
 import { existsSync } from "fs";
 import { join } from "path";
-import { IS_DEV } from "src/const.js";
+import { IS_CYPRESS, IS_DEV } from "src/const.js";
 
 function changeUrlBasedOnEncoding(req: Request, resp: Response) {
   const encoding = req.headers["accept-encoding"];
@@ -40,7 +40,7 @@ export function StaticRoute(req: Request, res: Response, next: NextFunction) {
     res.status(404).send();
     return;
   }
-  if (!IS_DEV) {
+  if (!(IS_DEV || IS_CYPRESS)) {
     changeUrlBasedOnEncoding(req, res);
   }
   next();

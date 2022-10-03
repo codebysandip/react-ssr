@@ -56,7 +56,13 @@ const compiler = webpack(webpackClientConfig, () => {
   console.log("client file changed!!");
   if (!isClientBuildCompleted) {
     isClientBuildCompleted = true;
-    startAppNodeServer();
+    if (env === "development") {
+      setTimeout(() => {
+        startAppNodeServer();
+      }, 1000);
+    } else {
+      startAppNodeServer();
+    }
   }
 });
 

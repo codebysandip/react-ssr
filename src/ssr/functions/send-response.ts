@@ -1,5 +1,6 @@
 /* istanbul ignore file */
 import { Request, Response } from "express";
+import { IS_CYPRESS } from "src/const.js";
 import zlib from "zlib";
 
 /**
@@ -15,7 +16,7 @@ export function sendResponse(
   req: Request,
   contentType = "text/html",
 ) {
-  if (process.env.IS_LOCAL) {
+  if (process.env.IS_LOCAL || IS_CYPRESS) {
     res.send(response);
     return;
   }
