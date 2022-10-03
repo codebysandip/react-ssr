@@ -29,7 +29,7 @@ jobs:
       uses: cypress-io/github-action@v4.2.0
       with:
         install: npm ci
-        start: node build/server.js & node build/testApi.js
+        start: npm run start:cypress:ci
         build: npm run build:cypress
         wait-on: http://localhost:5000
         command: npm test
