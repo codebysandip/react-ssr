@@ -72,7 +72,7 @@ export default connect(mapStateToProps, {})(Home);
 
 export interface HomeProps extends ReturnType<typeof mapStateToProps> {}
 
-export async function getInitialProps(ctx: ContextDataWithStore) {
+export function getInitialProps(ctx: ContextDataWithStore) {
   return ctx.store.dispatch(fetchProducts());
 }
 

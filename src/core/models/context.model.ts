@@ -1,6 +1,4 @@
 import { Request, Response } from "express";
-import { ApiResponse } from "core/services/http-client.js";
-import { PageData } from "./page-data.js";
 
 export interface ContextData {
   location: {
@@ -28,10 +26,6 @@ export interface ContextData {
    * @see https://expressjs.com/en/api.html#res
    */
   res?: Response;
-  /**
-   * Dynamic page data returned from getInitialProps of Page component
-   */
-  pageData?: ApiResponse<PageData>;
   /**
    *
    */

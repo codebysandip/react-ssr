@@ -1,19 +1,17 @@
 /** @type {import("webpack").Configuration} */
 
-import webpack from "webpack";
-
-import nodeExternals from "webpack-node-externals";
 import { CleanWebpackPlugin } from "clean-webpack-plugin";
-import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import Dotenv from "dotenv-webpack";
-import ReactRefreshPlugin from "@pmmmwh/react-refresh-webpack-plugin";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import webpack from "webpack";
+import nodeExternals from "webpack-node-externals";
 import WorkboxPlugin from "workbox-webpack-plugin";
 import MetaInfoPlugin from "./plugins/meta-info.plugin.js";
 
-import { isServerFn, isLocalFn, getPath } from "./functions/helper-functions.js";
-import { join } from "path";
 import { readFileSync } from "fs";
+import { join } from "path";
+import { getPath, isLocalFn, isServerFn } from "./functions/helper-functions.js";
 
 /**
  * Common webpack config that will used for production as well as development env
@@ -44,6 +42,7 @@ export default function (env, args, isProd = false) {
    * Output folder for client as well as server
    */
   const outFolder = isServer ? getPath("build") : clientBuildPath;
+  const isDev = env.ENV === "development";
 
   const entry = {};
   if (isServer) {
@@ -56,7 +55,7 @@ export default function (env, args, isProd = false) {
      * entry.server will produce client.js in build/public folder
      */
     entry.client = [getPath("src/client.tsx")];
-    if (isLocal) {
+    if (isLocal && isDev) {
       entry.client.push(
         "webpack-hot-middleware/client?reload=true&noInfo=true&timeout=10000",
         "/node_modules/react-refresh/runtime.js",
@@ -151,7 +150,6 @@ export default function (env, args, isProd = false) {
 
   if (isLocal) {
     if (!isServer) {
-      plugins.push(new ReactRefreshPlugin());
     }
   }
 
@@ -161,15 +159,8 @@ export default function (env, args, isProd = false) {
     const aliasKey = key.replace("/*", "");
     alias[aliasKey] = getPath(aliasPaths[key][0].replace("/*", ""));
   });
-  const serverRules = !isServer
-    ? []
-    : [
-        {
-          test: /.*\.client\..*(ts|tsx)$/,
-          use: ["ignore-loader"],
-        },
-      ];
-  return {
+
+  const config = {
     entry,
     output: {
       filename: `[name]${!isLocal && !isServer ? ".[contenthash]" : ""}.js`,
@@ -206,7 +197,6 @@ export default function (env, args, isProd = false) {
     externalsPresets: { node: isServer },
     module: {
       rules: [
-        ...serverRules,
         {
           test: /.(ts|tsx)$/,
           exclude: /node_modules/,
@@ -214,6 +204,7 @@ export default function (env, args, isProd = false) {
             {
               loader: "swc-loader",
               options: {
+                parseMap: true,
                 jsc: {
                   parser: {
                     syntax: "typescript",
@@ -223,7 +214,7 @@ export default function (env, args, isProd = false) {
                   transform: {
                     react: {
                       runtime: "automatic",
-                      refresh: isLocal && !isServer,
+                      refresh: isLocal && !isServer && env.ENV !== "cypress",
                     },
                   },
                 },
@@ -266,4 +257,9 @@ export default function (env, args, isProd = false) {
     },
     plugins,
   };
+  if (env.ENV === "cypress") {
+    // Add instrument code for code coverage
+    config.module.rules[0].use.unshift("@jsdevtools/coverage-istanbul-loader");
+  }
+  return config;
 }

@@ -1,24 +1,11 @@
+import { Component } from "react";
 import { renderToString } from "react-dom/server";
-import { StaticRouter } from "react-router-dom/server.js";
-import { CompModule } from "../core/models/route.model.js";
 import { Helmet } from "react-helmet";
+import { StaticRouter } from "react-router-dom/server.js";
 import { ContextData } from "src/core/models/context.model.js";
 import ReactSsrApp from "src/index.js";
 import { ssrConfig } from "src/react-ssr.config.js";
-import { Component } from "react";
-import { getWebpackBuildMetaJson } from "./functions/get-webpack-build-meta-json.js";
-import jsBeautify from "js-beautify";
-import { Empty } from "core/components/empty/empty.component.js";
-
-// on development env met.json will not available until CSR build will not finish
-// so wait for few seconds to finish client build
-setTimeout(
-  () => {
-    const metaJson = getWebpackBuildMetaJson();
-    global.metaJson = metaJson;
-  },
-  process.env.IS_LOCAL ? 1000 * 5 : 0,
-);
+import { CompModule } from "../core/models/route.model.js";
 
 const chunkRegex = /[a-z-0-9]{2,}(\.chunk\.css)/;
 /**
@@ -36,7 +23,7 @@ export class HtmlTemplate extends Component<HtmlTemplateProps> {
     }
     const helmetBody = helmet.bodyAttributes.toComponent();
     return (
-      <html {...helmet.htmlAttributes.toComponent()}>
+      <html lang="en" {...helmet.htmlAttributes.toComponent()}>
         <head>
           <meta charSet="utf-8" />
           <meta
@@ -76,26 +63,23 @@ interface HtmlTemplateProps {
  * @returns
  */
 export function getHtml(module: CompModule, ctx: ContextData, url: string, isSSR = true) {
-  if (ssrConfig.getSsrData) {
+  if (isSSR && ssrConfig.getSsrData) {
     ctx.ssrData = ssrConfig.getSsrData(ctx);
   }
 
-  if (!isSSR) {
-    module = {
-      default: Empty,
-    };
+  let innerHtml = "";
+  if (isSSR) {
+    innerHtml = renderToString(
+      <StaticRouter location={url}>
+        <ReactSsrApp module={module} ctx={ctx} />
+      </StaticRouter>,
+    );
+  } else {
+    innerHtml = renderToString(<module.default />);
   }
-
-  const innerHtml = renderToString(
-    <StaticRouter location={url}>
-      <ReactSsrApp module={module} ctx={ctx} />
-    </StaticRouter>,
-  );
   let html = renderToString(
-    <HtmlTemplate ssrData={ctx.ssrData || ctx.pageData} html={innerHtml}></HtmlTemplate>,
+    <HtmlTemplate ssrData={ctx.ssrData || {}} html={innerHtml}></HtmlTemplate>,
   );
-  if (process.env.IS_LOCAL) {
-    html = jsBeautify.html_beautify(html);
-  }
+  html = `<!DOCTYPE html>${html}`;
   return html;
 }

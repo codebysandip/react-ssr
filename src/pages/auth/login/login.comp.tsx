@@ -1,20 +1,19 @@
+import { Form, Formik } from "formik";
 import { Component, ReactNode } from "react";
 import { connect } from "react-redux";
+import { PASSWORD_REGEX } from "src/const.js";
+import { FormGroup } from "src/core/components/form/FormGroup.js";
 import { withRouter, WithRouterProps } from "src/core/hoc/with-routes.hoc.js";
+import { FormValidation } from "src/core/services/form-validation.service.js";
 import { AppDispatch, RootState } from "src/redux/create-store.js";
+import * as Yup from "yup";
 import { LoginPayload } from "../auth.model.js";
 import { login } from "../auth.redux.js";
-import * as Yup from "yup";
-import { Formik, Form } from "formik";
-import { FormGroup } from "src/core/components/form/FormGroup.js";
-import { FormValidation } from "src/core/services/form-validation.service.js";
 
 class Login extends Component<LoginProps, LoginState> {
   private loginSchema = Yup.object().shape({
     email: Yup.string().required().email(),
-    password: Yup.string()
-      .required()
-      .matches(/^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/, { name: "password" }),
+    password: Yup.string().required().matches(PASSWORD_REGEX, { name: "password" }),
   });
 
   private navigateToHomeIfLoggedIn() {
@@ -60,7 +59,7 @@ class Login extends Component<LoginProps, LoginState> {
                   errors={errors}
                   touched={touched}
                   labelText="Email Address"
-                  data-test-id="login-email"
+                  testIdPrefix="login"
                 />
                 <FormGroup
                   name="password"
@@ -68,7 +67,7 @@ class Login extends Component<LoginProps, LoginState> {
                   errors={errors}
                   touched={touched}
                   labelText="Password"
-                  data-test-id="login-password"
+                  testIdPrefix="login"
                 />
                 <button type="submit" className="btn btn-primary mt-4" data-test-id="login-btn">
                   Login

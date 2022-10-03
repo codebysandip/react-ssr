@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { logout as logoutAction } from "pages/auth/auth.redux";
+import { logout as logoutAction } from "pages/auth/auth.redux.js";
 import { Component } from "react";
 import { ROUTE_LOGIN } from "src/const.js";
 import { AppDispatch, RootState } from "src/redux/create-store.js";
@@ -22,7 +22,7 @@ class HeaderComp extends Component<HeaderProps> {
 
   render() {
     return (
-      <nav className="navbar navbar-expand-lg navbar-light bg-light">
+      <nav className="navbar navbar-expand-lg navbar-light bg-light" data-test-id="header">
         <div className="container-fluid">
           <Link className="navbar-brand" to="/" data-test-id="navbar">
             Navbar

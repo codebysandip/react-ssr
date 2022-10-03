@@ -1,21 +1,21 @@
-import { Provider } from "react-redux";
-import { App } from "./app.js";
-import { CompModule } from "core/models/route.model.js";
 import { createContextClient } from "core/functions/create-context.js";
+import { CompModule } from "core/models/route.model.js";
+import { Provider } from "react-redux";
 import { useLocation } from "react-router";
-import { useSearchParams, useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { ssrConfig } from "src/react-ssr.config.js";
+import { App } from "./app.js";
 
+import { useRef } from "react";
+import { ContextProvider } from "./core/contexts/context-data-context.js";
+import { configureHttpClient } from "./core/functions/configure-http-client.js";
 import { ContextDataWithStore } from "./core/models/context-with-store.model.js";
 import { ContextData } from "./core/models/context.model.js";
 import { AppStore } from "./redux/create-store.js";
-import { configureHttpClient } from "./core/functions/configure-http-client.js";
-import { ContextProvider } from "./core/contexts/context-data-context.js";
-import { useRef } from "react";
+import "./style.scss";
 
 configureHttpClient();
 
-configureHttpClient();
 export default function ReactSsrApp(props: ReactSsrAppProps) {
   const isFirstRendering = useRef<boolean>(true);
   const store = useRef<AppStore | null>(null);
@@ -46,7 +46,7 @@ export default function ReactSsrApp(props: ReactSsrAppProps) {
   return (
     <Provider store={(props.ctx as ContextDataWithStore)?.store || store.current}>
       <ContextProvider ctx={ctx}>
-        <App module={props.module} />
+        {props.appComp ? props.appComp : <App module={props.module} />}
       </ContextProvider>
     </Provider>
   );
@@ -59,4 +59,8 @@ interface ReactSsrAppProps {
    * on client side it will always be undefined
    */
   ctx?: ContextData;
+  /**
+   * appComp used here for cypress component testing
+   */
+  appComp?: React.ReactNode;
 }

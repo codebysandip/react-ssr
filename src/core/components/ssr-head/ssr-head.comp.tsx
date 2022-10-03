@@ -1,5 +1,5 @@
-import { Helmet } from "react-helmet";
 import spinner from "assets/images/Spinner-1s-200px.svg";
+import { Helmet } from "react-helmet";
 
 /**
  * Use this component to set common head tags like meta, link and title

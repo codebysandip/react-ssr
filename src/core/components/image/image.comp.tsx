@@ -26,15 +26,7 @@ export function Image(props: ImageProps) {
     ref.current && observer.observe(ref.current);
   }, []);
 
-  return (
-    <img
-      data-src={src}
-      src={inView ? src : loadingSrc || spinner}
-      ref={ref}
-      {...rest}
-      data-test-id="lazy-image"
-    />
-  );
+  return <img data-src={src} src={inView ? src : loadingSrc || spinner} ref={ref} {...rest} />;
 }
 
 export interface ImageProps

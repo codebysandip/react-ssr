@@ -26,7 +26,16 @@ Page component should return IRedirect or ApiResponse object!!
 Reason: Api server can return other status than 200 in that case
 User should redirect to appropriate page base on status of api
 `;
-export const INTERNET_NOT_AVAILABLE = "Please check your network connection. Internet not available";
+export const INTERNET_NOT_AVAILABLE =
+  "Please check your network connection. Internet not available";
 
 /* ##### Events ##### */
 export const TOAST = "toast";
+
+/* ##### Regex ##### */
+export const PASSWORD_REGEX = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/;
+
+/* ##### Other ##### */
+export const IS_DEV = process.env.ENV === "development";
+export const API_URL =
+  process.env.ENV === "cypress" ? process.env.LOCAL_API_SERVER : process.env.API_BASE_URL;

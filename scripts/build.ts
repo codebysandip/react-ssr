@@ -1,40 +1,43 @@
 import express from "express";
+import { createRequire } from "node:module";
+import webpack from "webpack";
 import WebpackDevMiddleware from "webpack-dev-middleware";
 import WebpackHotMiddleware from "webpack-hot-middleware";
-import webpack from "webpack";
 import webpackDevConfig from "../config/webpack.dev.js";
 import webpackProdConfig from "../config/webpack.prod.js";
-import { log } from "./logger.js";
 import { proxyMiddleware } from "../src/ssr/middlewares/proxy-middleware.js";
-import { createRequire } from "node:module";
+import { log } from "./logger.js";
 
 const require = createRequire(import.meta.url);
-const shell = require('shelljs');
-
+const shell = require("shelljs");
 
 const app = express();
 /**
  * flag to check if server build completed for first time only
  */
-let isServerBuildCompleted = false;
+let isClientBuildCompleted = false;
 
 /**
  * start SSR app server with nodemon watch. Whenever their wil be change nodemon will restart
  * SSR node server
  */
 const startAppNodeServer = () => {
-  shell.exec(`nodemon --delay 2000ms --watch "build/server.js" --exec "node build/server.js"`, {
-    async: true,
-    cwd: process.cwd(),
-  }, (code: any, stdout: any, stderr: any) => {
-    console.log(code, stdout, stderr);
-  });
+  shell.exec(
+    `nodemon --delay 2000ms --watch "build/server.js" --exec "node build/server.js"`,
+    {
+      async: true,
+      cwd: process.cwd(),
+    },
+    (code: any, stdout: any, stderr: any) => {
+      console.log(code, stdout, stderr);
+    },
+  );
 
   // start server only after server build completed
   app.listen(5000, () => {
     log(`App listening on port 5000`);
   });
-}
+};
 
 const env = process.env.ENV;
 log(`environment: ${env}`);
@@ -51,6 +54,10 @@ if (isDev) {
 }
 const compiler = webpack(webpackClientConfig, () => {
   console.log("client file changed!!");
+  if (!isClientBuildCompleted) {
+    isClientBuildCompleted = true;
+    startAppNodeServer();
+  }
 });
 
 // webpack server build
@@ -61,10 +68,6 @@ if (isDev) {
   webpackServerConfig = webpackProdConfig(baseEnv, {});
 }
 webpack(webpackServerConfig, () => {
-  if (!isServerBuildCompleted) {
-    isServerBuildCompleted = true;
-    startAppNodeServer();
-  }
   console.log("server file changed!!");
 });
 
@@ -83,7 +86,5 @@ app.use(
   }),
 );
 
-
 // Redirect every request to SSR app
 app.all("*", proxyMiddleware("http://localhost:5001"));
-

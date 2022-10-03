@@ -12,6 +12,7 @@ export const proxyMiddleware = function (proxyUrl: string) {
     let reqBodyEncoding: string | null = "utf-8";
     // eslint-disable-next-line prefer-const
     let parseReqBody = true;
+    /* istanbul ignore if */
     if (isMultipartRequest(req)) {
       reqAsBuffer = true;
       reqBodyEncoding = null;
@@ -24,8 +25,8 @@ export const proxyMiddleware = function (proxyUrl: string) {
       proxyReqOptDecorator: (proxyReqOpts) => {
         return proxyReqOpts;
       },
-      // eslint-disable-next-line n/handle-callback-err
-      proxyErrorHandler: (err, res) => {
+
+      proxyErrorHandler: /* istanbul ignore next */ (err, res) => {
         // change response as per need
         // this should match the error response of API
         console.error(`Error in proxy request. Url:${req.url}!!`, err);

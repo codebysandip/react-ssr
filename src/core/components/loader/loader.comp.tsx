@@ -1,9 +1,6 @@
 import "./loader.scss";
 
-export function Loader(props: LoaderProps) {
-  if (!props.show) {
-    return null;
-  }
+export function Loader() {
   return (
     <div className="loader-container">
       <div className="lds-roller">
@@ -18,8 +15,4 @@ export function Loader(props: LoaderProps) {
       </div>
     </div>
   );
-}
-
-interface LoaderProps {
-  show?: boolean;
 }

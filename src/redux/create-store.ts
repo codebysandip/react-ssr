@@ -1,22 +1,22 @@
-import { HttpClient } from "src/core/services/http-client.js";
 import {
   AnyAction,
+  Dispatch,
   EnhancedStore,
   MiddlewareArray,
   ReducersMapObject,
   Store,
-  Dispatch,
   ThunkDispatch,
 } from "@reduxjs/toolkit";
-import { configureStore, combineReducers } from "./redux.imports.js";
-import { ThunkMiddleware } from "redux-thunk";
 import AuthReducer from "pages/auth/auth.redux";
-import { RootState as RootStateType } from "./root-state.js";
+import { ThunkMiddleware } from "redux-thunk";
 import AppReducer from "src/app.redux.js";
+import { HttpClient } from "src/core/services/http-client.js";
+import { combineReducers, configureStore } from "./redux.imports.js";
+import { RootState as RootStateType } from "./root-state.js";
 
 const reducer = {
   auth: AuthReducer,
-  app: AppReducer
+  app: AppReducer,
 };
 /**
  * All reducers will always hold all the reducers loaded
@@ -36,12 +36,19 @@ export const replaceReducer = (store: Store, lazyReducers: ReducersMapObject) =>
   store.replaceReducer(combineReducers(allReducers));
 };
 
-export function createStore(lazyReducers?: ReducersMapObject) {
+let store: AppStore;
+
+export function createStore(lazyReducers?: ReducersMapObject): AppStore {
+  if (!process.env.IS_SERVER) {
+    if (store) {
+      return store;
+    }
+  }
   if (!lazyReducers) {
     lazyReducers = {};
   }
   const preloadedState = !process.env.IS_SERVER ? window.__SSRDATA__ : {};
-  const store = configureStore({
+  const _store = configureStore({
     reducer: {
       ...allReducers,
       ...lazyReducers,
@@ -56,8 +63,8 @@ export function createStore(lazyReducers?: ReducersMapObject) {
     preloadedState,
     devTools: process.env.IS_LOCAL,
   });
-
-  return store;
+  store = _store as AppStore;
+  return store as AppStore;
 }
 
 export type RootState = RootStateType;

@@ -1,8 +1,9 @@
+import ReactRefreshPlugin from "@pmmmwh/react-refresh-webpack-plugin";
+import webpack from "webpack";
 import { merge } from "webpack-merge";
+import { getDevServerConfig } from "./functions/get-devServer-config.js";
 import { isServerFn } from "./functions/helper-functions.js";
 import commonConfig from "./webpack.common.js";
-import webpack from "webpack";
-import { getDevServerConfig } from "./functions/get-devServer-config.js";
 
 /**
  * Dev config for webpack. This build should not use for production.
@@ -14,7 +15,8 @@ import { getDevServerConfig } from "./functions/get-devServer-config.js";
 const devConfig = (env) => {
   const isServer = isServerFn(env);
   const plugins = [];
-  if (!isServer) {
+  if (!isServer && env.ENV === "development") {
+    plugins.push(new ReactRefreshPlugin());
     plugins.push(new webpack.HotModuleReplacementPlugin());
   }
   const config = {

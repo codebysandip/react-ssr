@@ -1,13 +1,15 @@
-import { hydrateRoot, createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { getRoute } from "./core/functions/get-route.js";
 import { CompModule } from "./core/models/route.model.js";
 import ReactSsrApp from "./index.js";
 
 const container = document.getElementById("root");
+/* istanbul ignore if  */
 if (!container) {
   throw new Error("root element not available!!");
 }
+const searchParams = new URLSearchParams(location.search);
 /**
  * Find route for Routes by matching current current location of browser
  */
@@ -30,6 +32,8 @@ const hydrateApp = (module: CompModule) => {
 // Don't delete below if condition. If you need to reload server type rs in same command window
 // of npm start and hit enter. nodemon will restart server
 // Below line will automatically get removed in production build
+// ignoring here istanbul because we don'y run cypress in hot mode
+/* istanbul ignore if  */
 if (process.env.IS_LOCAL && (module as any).hot) {
   console.log("updating app via reload or hot reload!!");
   const root = createRoot(container);
@@ -46,6 +50,11 @@ if (process.env.IS_LOCAL && (module as any).hot) {
    * again on client side. Re rendering of full page will decrease the performance
    */
   route?.component().then((module) => {
-    hydrateApp(module);
+    if (route.isSSR && !searchParams.get("cypress")) {
+      hydrateApp(module);
+    } else {
+      const root = createRoot(container);
+      root.render(createBrowserRouter(module));
+    }
   });
 }

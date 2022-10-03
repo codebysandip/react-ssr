@@ -1,10 +1,11 @@
+/* spell-checker: disable */
 import { Link } from "react-router-dom";
 import { ROUTE_HOME } from "src/const.js";
 import "./500.component.scss";
 
 export default function InternalServerError() {
   return (
-    <div className="main-error-page">
+    <div className="main-error-page" data-test-id="500-page">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         xmlnsXlink="http://www.w3.org/1999/xlink"
@@ -255,7 +256,10 @@ export default function InternalServerError() {
                   />
                 </g>
               </g>
-              <g className="torradeira" transform="translate(-448 -158) translate(448 157) translate(325.316 218.624)">
+              <g
+                className="torradeira"
+                transform="translate(-448 -158) translate(448 157) translate(325.316 218.624)"
+              >
                 <mask id="prefix__x" fill="#fff">
                   <use xlinkHref="#prefix__w" />
                 </mask>
@@ -303,7 +307,7 @@ export default function InternalServerError() {
         Something went wrong :(
       </h1>
       <h2 className="error-subtitle">Have you tried turning it off and on again?</h2>
-      <Link to={ROUTE_HOME} className="btn btn-light">
+      <Link to={ROUTE_HOME} className="btn btn-light" data-test-id="back-to-home">
         Back to Home
       </Link>
     </div>

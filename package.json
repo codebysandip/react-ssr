@@ -14,11 +14,20 @@
     "build:prod": "npm run verify && npm run build:server:prod && npm run build:client:prod",
     "build:prod:action": "cross-env GITHUB_ACTION=true npm run build:prod",
     "pm2:prod": "pm2 start ecosystem.config.cjs --env production",
-    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest",
+    "test": "npm run cypress:run && npm run jest:test && npm run gen:report",
+    "jest:test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest",
     "prepare": "husky install",
     "lint": "eslint \"src/**/*.{js,ts,tsx}\"",
     "lint:fix": "eslint \"src/**/*.{js,ts,tsx}\" --fix",
-    "verify": "ts-node-esm ./scripts/verify.ts"
+    "verify": "ts-node-esm ./scripts/verify.ts",
+    "copy:reports": "cp coverage/cypress/coverage-final.json coverage/from-cypress.json && cp coverage/jest/coverage-final.json coverage/from-jest.json",
+    "merge:reports": "npx nyc merge coverage && mv coverage.json .nyc_output/out.json",
+    "combine:report": "npx nyc report --reporter html --reporter text --reporter json-summary --report-dir reports",
+    "gen:report": "mkdir -p reports && rm -rf reports/* && npm run copy:reports && npm run merge:reports && npm run combine:report",
+    "cypress:run": "npx cypress run --e2e && npx cypress run --component",
+    "cypress:open": "npx cypress open -b chrome",
+    "cypress:open:comp": "npm run cypress:open -- --component",
+    "cypress:open:e2e": "npm run cypress:open -- --e2e"
   },
   "author": "Sandip",
   "license": "ISC",
@@ -47,12 +56,14 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@bahmutov/cypress-code-coverage": "^1.3.2",
+    "@cypress/code-coverage": "^3.10.0",
+    "@cypress/webpack-dev-server": "^2.3.0",
+    "@cypress/webpack-preprocessor": "^5.12.2",
+    "@jsdevtools/coverage-istanbul-loader": "^3.0.5",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.7",
     "@swc/core": "^1.2.244",
     "@swc/jest": "^0.2.22",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^14.4.3",
     "@types/etag": "^1.8.1",
     "@types/express": "^4.17.13",
     "@types/express-http-proxy": "^1.6.3",
@@ -112,6 +123,7 @@
     "webpack-bundle-analyzer": "^4.5.0",
     "webpack-cli": "^4.9.2",
     "webpack-dev-middleware": "^5.3.3",
+    "webpack-dev-server": "^4.11.1",
     "webpack-hot-middleware": "^2.25.2",
     "webpack-merge": "^5.8.0",
     "webpack-node-externals": "^3.0.0",
@@ -122,5 +134,21 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "nyc": {
+    "all": true,
+    "report-dir": "coverage/cypress",
+    "reporter": [
+      "lcov",
+      "json"
+    ],
+    "include": [
+      "src/**/*.ts",
+      "src/**/*.tsx"
+    ],
+    "exclude": [
+      "cypress"
+    ],
+    "excludeAfterRemap": true
+  }
 }

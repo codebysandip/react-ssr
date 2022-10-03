@@ -1,21 +1,39 @@
 {
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": true,
+    "source.organizeImports": true
   },
-  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnPaste": false, // required
+  "editor.formatOnType": false, // required
+  "editor.formatOnSave": true, // optional
+  "editor.formatOnSaveMode": "file", // required to format on save
   "editor.tabSize": 2,
   "javascript.preferences.importModuleSpecifierEnding": "js",
   "typescript.preferences.importModuleSpecifierEnding": "js",
   "cSpell.words": [
+    "bahmutov",
     "formik",
+    "glyphicon",
     "maxlength",
     "mddir",
-    "onmmesage",
     "pmmmwh",
+    "precache",
+    "precaching",
     "reduxjs",
     "Sandip",
     "SSRDATA",
     "toastify"
   ],
-  "jestrunner.jestCommand": "npm run test"
+  "jestrunner.jestCommand": "npm run jest:test",
+  "[typescript]": {
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+  },
+  "cSpell.enableFiletypes": ["!json"]
 }

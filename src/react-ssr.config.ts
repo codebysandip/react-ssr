@@ -1,21 +1,15 @@
+import { ApiResponse } from "core/services/http-client.js";
+import { AppStore, createStore, replaceReducer } from "src/redux/create-store";
+import { fetchHeader } from "./app.redux.js";
+import { PAGE_INVALID_RETURN_DATA, ROUTE_403, ROUTE_404, ROUTE_500, ROUTE_LOGIN } from "./const.js";
+import { getRoute } from "./core/functions/get-route.js";
 import { getAccessTokenData } from "./core/functions/get-token.js";
+import { ContextDataWithStore } from "./core/models/context-with-store.model.js";
+import { ContextData } from "./core/models/context.model.js";
 import { CompModule } from "./core/models/route.model.js";
 import { SSRConfig } from "./core/models/ssr-config.model.js";
-import { loginSuccess, logout } from "./pages/auth/auth.redux.js";
-import { AppStore, createStore, replaceReducer } from "src/redux/create-store";
-import { ContextData } from "./core/models/context.model.js";
-import { ContextDataWithStore } from "./core/models/context-with-store.model.js";
-import {
-  PAGE_INVALID_RETURN_DATA,
-  ROUTE_LOGIN,
-  ROUTE_500,
-  ROUTE_403,
-  ROUTE_404,
-} from "./const.js";
-import { ApiResponse } from "core/services/http-client.js";
 import { CommonService } from "./core/services/common.service.js";
-import { fetchHeader } from "./app.redux.js";
-import { getRoute } from "./core/functions/get-route.js";
+import { loginSuccess, logout } from "./pages/auth/auth.redux.js";
 
 export const ssrConfig: SSRConfig = {
   configureStore: (module: CompModule, ctx: ContextData) => {
@@ -49,6 +43,7 @@ export const ssrConfig: SSRConfig = {
     return (ctx as ContextDataWithStore).store.getState();
   },
   validateApiResponse: (response: ApiResponse<any>, ctx: ContextData) => {
+    /* istanbul ignore if */
     if (response.status === undefined) {
       throw new Error(PAGE_INVALID_RETURN_DATA);
     }
@@ -64,8 +59,6 @@ export const ssrConfig: SSRConfig = {
       return { path: ROUTE_500 };
     } else if (response.status === 404) {
       return { path: ROUTE_404 };
-    } else if (response.status.toString().startsWith("4")) {
-      return { path: ROUTE_500 };
     } else if (response.status === 600) {
       return { path: ROUTE_500 };
     } else {

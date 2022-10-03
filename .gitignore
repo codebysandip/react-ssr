@@ -2,3 +2,5 @@ node_modules
 build
 restart
 coverage
+reports
+.nyc_output

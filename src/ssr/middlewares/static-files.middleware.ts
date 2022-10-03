@@ -1,6 +1,8 @@
+/* istanbul ignore file */
 import { NextFunction, Request, Response } from "express";
 import { existsSync } from "fs";
 import { join } from "path";
+import { IS_DEV } from "src/const.js";
 
 function changeUrlBasedOnEncoding(req: Request, resp: Response) {
   const encoding = req.headers["accept-encoding"];
@@ -38,7 +40,7 @@ export function StaticRoute(req: Request, res: Response, next: NextFunction) {
     res.status(404).send();
     return;
   }
-  if (!process.env.IS_LOCAL) {
+  if (!IS_DEV) {
     changeUrlBasedOnEncoding(req, res);
   }
   next();

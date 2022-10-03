@@ -1,9 +1,9 @@
-import { Request, Response } from "express";
 import { ContextData } from "core/models/context.model.js";
+import { Request, Response } from "express";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Location, useParams, useLocation } from "react-router";
+import { Location, useLocation, useParams } from "react-router";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -41,7 +41,11 @@ export function createContextServer(req: Request, resp: Response) {
  * @param params Path params get from {@link useParams}
  * @returns ContextData {@link ContextData}
  */
-export function createContextClient(location: Location, searchParams: URLSearchParams, params: Record<string, string>) {
+export function createContextClient(
+  location: Location,
+  searchParams: URLSearchParams,
+  params: Record<string, string>,
+) {
   if (process.env.IS_SERVER) {
     throw new Error("createContextClient function can execute only on client!!");
   }

@@ -13,11 +13,6 @@ export const Routes: IRoute[] = [
     isSSR: true,
   },
   {
-    path: "/product",
-    component: () => import(/* webpackChunkName: "home" */ "src/pages/home/home.component.js"),
-    isSSR: true,
-  },
-  {
     path: "/product/edit/:id",
     component: () =>
       import(
@@ -42,12 +37,5 @@ export const Routes: IRoute[] = [
     path: ROUTE_500,
     component: () => import(/* webpackChunkName: "500" */ "src/pages/error/500/500.component.js"),
     isSSR: false,
-  },
-  // If no route will match 404 component will serve to client
-  {
-    path: "/*",
-    component: () => import(/* webpackChunkName: "404" */ "src/pages/error/404/404.component.js"),
-    static: true,
-    isSSR: true,
   },
 ];

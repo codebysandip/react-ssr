@@ -14,7 +14,7 @@ const InViewComp = (props: InViewProps & WithContextProps) => {
   });
   // lazy component to render when inView
   const [lazyComp, setLazyComp] = useState<LazyComp | null>(null);
-  const [data, setData] = useState<Record<string, string>>({});
+  const [data, setData] = useState<Record<string, any>>({});
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -23,22 +23,28 @@ const InViewComp = (props: InViewProps & WithContextProps) => {
           ref.current && observer.unobserve(ref.current);
           setIntersected(true);
           const compOrLazyComp = children(true);
-          if (compOrLazyComp instanceof Promise) {
-            compOrLazyComp.then((m) => {
+          /* istanbul ignore else */
+          if (compOrLazyComp && compOrLazyComp.constructor.name === "Promise") {
+            (compOrLazyComp as Promise<LazyComp>).then((m) => {
               if (m.loadData && typeof m.loadData === "function") {
+                /* istanbul ignore if */
                 if (!props.ctx) {
                   return;
                 }
                 const loadDataPromise = m.loadData(props.ctx);
-                if (!(loadDataPromise instanceof Promise)) {
-                  throw new Error(
+                if (loadDataPromise?.constructor?.name !== "Promise") {
+                  console.error(
                     `loadData of component ${m.default.constructor.name} must return Promise`,
                   );
+                  setInView(true);
+                  setSkeleton({ default: null });
+                  return;
                 }
                 loadDataPromise
                   .then((apiData) => {
                     setInView(true);
                     setLazyComp({ default: m.default });
+                    /* istanbul ignore else */
                     if (typeof apiData === "object") {
                       setData(apiData);
                     } else {
@@ -48,12 +54,12 @@ const InViewComp = (props: InViewProps & WithContextProps) => {
                     }
                   })
                   .catch((err) => {
+                    setInView(true);
+                    setSkeleton({ default: null });
                     console.error(
                       `Error in load data of ${m.default.constructor.name}. Error: `,
                       err,
                     );
-                    setInView(true);
-                    setSkeleton({ default: null });
                   });
               } else {
                 setInView(true);
@@ -61,9 +67,11 @@ const InViewComp = (props: InViewProps & WithContextProps) => {
               }
             });
           } else {
-            throw new Error(
+            console.error(
               "When inView true then returned component should be lazy loaded via import syntax only",
             );
+            setInView(true);
+            setSkeleton({ default: null });
           }
         }
       },
@@ -116,6 +124,6 @@ export interface InViewProps extends IntersectionObserverInit {
  * Lazy Comp
  */
 export interface LazyComp {
-  default: React.ComponentType;
+  default: React.ComponentType<Record<string, any>> | React.FunctionComponent<any>;
   loadData?: (ctx: ContextDataWithStore) => Promise<Record<string, any>>;
 }

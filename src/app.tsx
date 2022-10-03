@@ -1,17 +1,14 @@
-import { useEffect, useState } from "react";
 import { Header } from "core/components/header/header.js";
-import { Route, Routes } from "react-router-dom";
-import LazyRoute from "./core/components/lazy-route/lazy-route.component.js";
-import { matchPath, useLocation } from "react-router";
-import { Routes as PageRoutes } from "./routes.js";
-import { NO_HEADER_PATHS } from "./const.js";
-import { CompModule } from "./core/models/route.model.js";
 import { SsrHead } from "core/components/ssr-head/ssr-head.comp.js";
-import "./style.scss";
-import { Loader } from "core/components/loader/loader.comp.js";
+import { useEffect, useState } from "react";
+import { matchPath, useLocation } from "react-router";
+import { Route, Routes } from "react-router-dom";
+import { NO_HEADER_PATHS } from "./const.js";
+import LazyRoute from "./core/components/lazy-route/lazy-route.component.js";
 import { Toaster } from "./core/components/toaster/toaster.comp.js";
 import { useAppDispatch } from "./core/hook.js";
-import { SHOW_LOADER } from "./core/services/http-client.js";
+import { CompModule } from "./core/models/route.model.js";
+import { Routes as PageRoutes } from "./routes.js";
 
 export function App(props: AppProps) {
   const dispatch = useAppDispatch();
@@ -27,7 +24,6 @@ export function App(props: AppProps) {
     return isHeaderVisible;
   };
   const [showHeader, setShowHeader] = useState(checkHeader());
-  const [showLoader, setShowLoader] = useState(false);
 
   useEffect(() => {
     const isHeaderVisible = checkHeader();
@@ -37,8 +33,10 @@ export function App(props: AppProps) {
   }, [location.pathname]);
 
   useEffect(() => {
+    // ignoring if statement for code coverage as we don't include PWA while testing cypress
+    /* istanbul ignore if  */
     if ("serviceWorker" in navigator) {
-      // listening onmmesage event to receive message from service worker
+      // listening onmessage event to receive message from service worker
       navigator.serviceWorker.onmessage = function (evt) {
         const message = JSON.parse(evt.data);
 
@@ -58,14 +56,6 @@ export function App(props: AppProps) {
         }
       };
     }
-
-    window.addEventListener(SHOW_LOADER, (e) => {
-      setShowLoader(e.detail);
-    });
-    return function () {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      window.removeEventListener(SHOW_LOADER, () => {});
-    };
   }, []);
 
   return (
@@ -90,7 +80,6 @@ export function App(props: AppProps) {
           })}
         </Routes>
       </div>
-      <Loader show={showLoader} />
       <Toaster />
     </>
   );

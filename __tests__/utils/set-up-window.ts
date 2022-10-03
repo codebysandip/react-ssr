@@ -12,7 +12,7 @@ Object.defineProperty(window.document, "cookie", {
   set(cookieValue: string) {
     const cookies = cookieData.split("; ");
     const parts = cookieValue.split("; ");
-    const expirePart = parts.find(p => p.startsWith("expires"));
+    const expirePart = parts.find((p) => p.startsWith("expires"));
     let isExpired = false;
     if (expirePart) {
       const expire = expirePart.split("=")[1];
@@ -46,19 +46,3 @@ Object.defineProperty(window.document, "cookie", {
     cookieData = cookies.join("; ").trim();
   },
 });
-
-Object.defineProperty(window, "IntersectionObserver", {
-  get() {
-    function IntersectionObserver() {
-      return {
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        observe: () => { },
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        unobserve: () => { },
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        disconnect: () => { }
-      }
-    }
-    return IntersectionObserver;
-  },
-})

@@ -1,9 +1,19 @@
-import { AxiosResponse, AxiosError } from "axios";
-import { COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN, INTERNET_NOT_AVAILABLE, URL_REFRESH_TOKEN } from "src/const.js";
+import { AxiosError, AxiosResponse } from "axios";
+import {
+  COOKIE_ACCESS_TOKEN,
+  COOKIE_REFRESH_TOKEN,
+  INTERNET_NOT_AVAILABLE,
+  URL_REFRESH_TOKEN,
+} from "src/const.js";
 import { AuthResponse } from "src/pages/auth/auth.model.js";
 import { CommonService } from "../services/common.service.js";
 import { CookieService } from "../services/cookie.service.js";
-import { ApiResponse, getDefaultApiResponseObj, HttpClient, HttpClientOptions } from "../services/http-client.js";
+import {
+  ApiResponse,
+  getDefaultApiResponseObj,
+  HttpClient,
+  HttpClientOptions,
+} from "../services/http-client.js";
 import { setAccessAndRefreshToken } from "./get-token.js";
 
 export function getAxiosResponseFromResponse(response: AxiosResponse<any> | AxiosError<any>) {
@@ -23,9 +33,9 @@ export function configureHttpClient() {
   };
 
   /**
- * To process message by your own replace this function code
- * with your own code
- */
+   * To process message by your own replace this function code
+   * with your own code
+   */
   HttpClient.processMessage = (response: AxiosResponse<any> | AxiosError<any>) => {
     const resp = getAxiosResponseFromResponse(response);
 
@@ -77,7 +87,7 @@ export function configureHttpClient() {
   };
 
   HttpClient.onResponse = (apiResponse, options) => {
-    if (apiResponse.isError && apiResponse.message.length && options.showLoader) {
+    if (apiResponse.isError && apiResponse.message.length && options.showNotificationMessage) {
       CommonService.toast({
         type: "error",
         message: apiResponse.message[0],
@@ -105,12 +115,9 @@ export function configureHttpClient() {
       apiResponse.message = ["Refresh Token not available"];
       return Promise.resolve(apiResponse);
     }
-    return HttpClient.post<AuthResponse>(URL_REFRESH_TOKEN, { refreshToken }).then(resp => {
+    return HttpClient.post<AuthResponse>(URL_REFRESH_TOKEN, { refreshToken }).then((resp) => {
       if (!resp.isError && resp.data) {
-        setAccessAndRefreshToken(
-          resp as ApiResponse<AuthResponse>,
-          options.nodeRespObj,
-        )
+        setAccessAndRefreshToken(resp as ApiResponse<AuthResponse>, options.nodeRespObj);
         return HttpClient.sendRequest(options.url || "/", options.method || "GET", options);
       }
       // if unable to generate token from refresh token then mark request as 401 unAuthorized
@@ -119,9 +126,9 @@ export function configureHttpClient() {
       apiResponse.message = resp.message;
       return apiResponse;
     });
-  }
+  };
 
   HttpClient.setUrl = (url) => {
-    return `${process.env.IS_SERVER ? process.env.API_BASE_URL : ""}${url}`
+    return `${process.env.IS_SERVER ? process.env.API_BASE_URL : ""}${url}`;
   };
 }

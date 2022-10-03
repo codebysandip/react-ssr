@@ -1,5 +1,6 @@
+/* istanbul ignore file */
+import { clientsClaim, setCacheNameDetails } from "workbox-core";
 import { cleanupOutdatedCaches, precacheAndRoute, PrecacheEntry } from "workbox-precaching";
-import { setCacheNameDetails, clientsClaim } from "workbox-core";
 
 declare let self: ServiceWorkerGlobalScope;
 

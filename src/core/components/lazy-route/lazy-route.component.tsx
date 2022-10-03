@@ -1,14 +1,14 @@
+import { processRequest } from "core/functions/process-request.js";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { CompModule, CompModuleImport, IRoute } from "src/core/models/route.model.js";
-import { processRequest } from "core/functions/process-request.js";
+import { useSearchParams } from "react-router-dom";
 import { INTERNET_NOT_AVAILABLE, TOAST } from "src/const.js";
+import { getRoute } from "src/core/functions/get-route.js";
+import { useContextData } from "src/core/hook.js";
+import { CompModule, CompModuleImport, IRoute } from "src/core/models/route.model.js";
 import { Toaster } from "src/core/models/toaster.model.js";
 import { HttpClient, isOnline, retryPromise } from "src/core/services/http-client.js";
-import { getRoute } from "src/core/functions/get-route.js";
 import { Loader } from "../loader/loader.comp.js";
-import { useContextData } from "src/core/hook.js";
-import { useSearchParams } from "react-router-dom";
 
 /**
  * Lazy Load Route Component
@@ -17,10 +17,13 @@ import { useSearchParams } from "react-router-dom";
  */
 export default function LazyRoute(props: LazyProps) {
   let module = props.module;
+  /* istanbul ignore next */
   const [Comp, setComp] = useState<CompModule | null>(props.module || null);
   const isFirstRendering = useRef<boolean>(true);
   const ctx = useContextData();
-  const [pageData, setPageData] = useState((ctx as any).store ? {} : window.__SSRDATA__ || {});
+  const [pageData, setPageData] = useState(
+    (ctx as any).store ? {} : /* istanbul ignore next */ window.__SSRDATA__ || {},
+  );
   const location = useLocation();
   const navigate = useNavigate();
   const searchParams = useSearchParams();
@@ -69,7 +72,7 @@ export default function LazyRoute(props: LazyProps) {
               });
             } else {
               setComp(moduleObj);
-              setPageData((ctx as any).store ? {} : data.apiResponse?.data);
+              setPageData((ctx as any).store ? {} : /* istanbul ignore next */ data.pageData);
             }
           });
         });
@@ -92,7 +95,7 @@ export default function LazyRoute(props: LazyProps) {
   if (Comp) {
     return <Comp.default {...pageData} />;
   }
-  return <Loader show={true} />;
+  return <Loader />;
 }
 
 export interface LazyProps {

@@ -1,11 +1,11 @@
 import { PayloadAction } from "@reduxjs/toolkit";
-import { createSlice } from "src/redux/redux.imports.js";
+import { ApiResponse } from "core/services/http-client.js";
+import { AuthResponse } from "pages/auth/auth.model.js";
 import { getAccessTokenData, setAccessAndRefreshToken } from "src/core/functions/get-token.js";
 import { GetState, ThunkApi } from "src/core/models/common.model.js";
-import { AuthResponse } from "pages/auth/auth.model.js";
 import { AppDispatch } from "src/redux/create-store.js";
+import { createSlice } from "src/redux/redux.imports.js";
 import { LoginPayload, TokenData } from "./auth.model.js";
-import { ApiResponse } from "core/services/http-client.js";
 
 export interface AuthState {
   isLoggedIn: boolean;
@@ -23,18 +23,18 @@ const initialState: AuthState = {
 };
 
 export const login = (payload: LoginPayload) => {
-  return async (dispath: AppDispatch, _getState: GetState, api: ThunkApi) => {
+  return async (dispatch: AppDispatch, _getState: GetState, api: ThunkApi) => {
     const apiResponse = await api.post<AuthResponse>("/api/login", payload);
     if (apiResponse.data) {
       setAccessAndRefreshToken(apiResponse as ApiResponse<AuthResponse>);
-      dispath(
+      dispatch(
         loginSuccess({
           isLoggedIn: true,
           user: getAccessTokenData() as TokenData,
         }),
       );
     } else {
-      dispath(loginError(apiResponse.message[0]));
+      dispatch(loginError(apiResponse.message[0]));
     }
   };
 };

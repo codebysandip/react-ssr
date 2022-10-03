@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { Request, Response } from "express";
 import zlib from "zlib";
 
@@ -14,6 +15,10 @@ export function sendResponse(
   req: Request,
   contentType = "text/html",
 ) {
+  if (process.env.IS_LOCAL) {
+    res.send(response);
+    return;
+  }
   const acceptEncoding = req.headers["accept-encoding"] as string;
   res.set("Content-Type", contentType);
   if (/\bbr\b/.test(acceptEncoding)) {
