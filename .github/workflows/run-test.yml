@@ -1,17 +1,13 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
-
 name: Node.js CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -19,17 +15,21 @@ jobs:
         node-version: [16.x]
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Run test with Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - name: Cypress.io
-      uses: cypress-io/github-action@v4.2.0
-      with:
-        install: npm ci
-        start: npm run start:cypress:ci
-        build: npm run build:cypress
-        wait-on: http://localhost:5000
-        command: npm test
+      - uses: actions/checkout@v3
+      - name: Run test with Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+      - name: Cypress.io
+        uses: cypress-io/github-action@v4.2.0
+        with:
+          install: npm ci
+          start: npm run start:cypress:ci
+          build: npm run build:cypress
+          wait-on: http://localhost:5000
+          command: npm test
+      - name: Codecov upload coverage
+        uses: codecov/codecov-action@v3.1.1
+        with:
+          name: Cypress with Jest Coverage
