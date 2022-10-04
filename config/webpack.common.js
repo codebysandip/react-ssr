@@ -19,6 +19,7 @@ import { getPath, isLocalFn, isServerFn } from "./functions/helper-functions.js"
  * @returns webpack common config
  */
 export default function (env, args, isProd = false) {
+  console.log("with api!!", process.env.WITH_API);
   const packageJson = JSON.parse(
     readFileSync(join(process.cwd(), "package.json"), { encoding: "utf-8" }),
   );
@@ -63,7 +64,7 @@ export default function (env, args, isProd = false) {
       );
     }
   }
-  if ((isLocal || isCypress) && isServer) {
+  if ((isLocal || isCypress || process.env.WITH_API) && isServer) {
     entry.testApi = getPath("test-api/test-api.ts");
   }
   /**
