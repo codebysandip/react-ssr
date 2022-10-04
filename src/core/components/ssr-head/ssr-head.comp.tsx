@@ -19,25 +19,31 @@ export function SsrHead() {
     });
   }`;
 
-  const webVitalScript = `
-  (function() {
-    var script = document.createElement('script');
-    script.src = 'https://unpkg.com/web-vitals@3/dist/web-vitals.attribution.iife.js';
-    script.onload = function() {
-      // When loading web-vitals using a classic script, all the public
-      // methods can be found on the webVitals global namespace.
-      webVitals.onCLS(console.log);
-      webVitals.onFID(console.log);
-      webVitals.onLCP(console.log);
-    }
-    document.head.appendChild(script);
-  }())`;
+  // const webVitalScript = `
+  // (function() {
+  //   var script = document.createElement('script');
+  //   script.src = 'https://unpkg.com/web-vitals@3/dist/web-vitals.attribution.iife.js';
+  //   script.onload = function() {
+  //     // When loading web-vitals using a classic script, all the public
+  //     // methods can be found on the webVitals global namespace.
+  //     webVitals.onCLS(console.log);
+  //     webVitals.onFID(console.log);
+  //     webVitals.onLCP(console.log);
+  //   }
+  //   document.head.appendChild(script);
+  // }())`;
   return (
     <Helmet>
       <title>Default Title</title>
       <script>{`${serviceWorker}`}</script>
-      <script>{`${webVitalScript}`}</script>
+      {/* <script>{`${webVitalScript}`}</script> */}
       <link href={spinner} rel="preload" as="image" />
+      <meta name="description" content="A sample meta description" />
+      <meta charSet="utf-8" />
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=5, user-scalable=0"
+      />
     </Helmet>
   );
 }

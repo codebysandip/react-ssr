@@ -1,16 +1,20 @@
-import express from "express";
 import bodyParser from "body-parser";
-import { URL_REFRESH_TOKEN } from "src/const.js";
+import express from "express";
 import { existsSync, readFileSync } from "fs";
-import { join } from "path";
 import ProductsData from "mocks/api/product.json";
+import { join } from "path";
+import { URL_REFRESH_TOKEN } from "src/const.js";
 import { loginApi, refreshTokenApi, validateTokenMiddleware } from "./auth-api.js";
 import { etagMiddleware } from "./etag.middleware.js";
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
+app.use((req, res, next) => {
+  setTimeout(() => {
+    next();
+  }, 50);
+});
 app.use(etagMiddleware);
 
 // this should be first route always
@@ -18,14 +22,14 @@ app.use(etagMiddleware);
 app.get("/*", (req, res, next) => {
   const sendResponse = () => {
     const data = JSON.parse(readFileSync(jsonPath, { encoding: "utf-8" }));
-    res.json(data)
-  }
+    res.json(data);
+  };
   const jsonPath = join(process.cwd(), "mocks", `${req.path.substring(1)}.json`);
   if (existsSync(jsonPath)) {
     const token = req.headers.authorization;
     if (token) {
       validateTokenMiddleware(req, res, () => {
-        sendResponse()
+        sendResponse();
       });
     }
     sendResponse();

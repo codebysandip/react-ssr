@@ -25,11 +25,6 @@ export class HtmlTemplate extends Component<HtmlTemplateProps> {
     return (
       <html lang="en" {...helmet.htmlAttributes.toComponent()}>
         <head>
-          <meta charSet="utf-8" />
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1.0, user-scalable=0"
-          />
           <link rel="shortcut icon" href="/favicon.ico" />
           <link href={metaJson.mainStyle} rel="stylesheet" />
           {helmet.style.toComponent()}

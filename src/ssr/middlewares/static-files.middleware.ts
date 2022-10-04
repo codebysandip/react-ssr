@@ -36,7 +36,7 @@ function changeUrlBasedOnEncoding(req: Request, resp: Response) {
 }
 
 export function StaticRoute(req: Request, res: Response, next: NextFunction) {
-  if (!existsSync(join(process.cwd(), "/build/public", req.path))) {
+  if (!existsSync(join(process.cwd(), "build/public", req.path))) {
     res.status(404).send();
     return;
   }

@@ -134,6 +134,15 @@ export default function (env, args, isProd = false) {
             to: join(clientBuildPath, "favicon.ico"),
             force: true,
           },
+          {
+            from: getPath("robots.txt"),
+            to: join(clientBuildPath, "robots.txt"),
+          },
+          {
+            from: getPath("src/assets/images/home"),
+            to: join(clientBuildPath, "assets/images/home"),
+            toType: "dir",
+          },
         ],
       }),
       new MetaInfoPlugin({ path: getPath("build/meta.json") }),
@@ -168,6 +177,7 @@ export default function (env, args, isProd = false) {
       path: outFolder,
       publicPath: "/",
       chunkFormat: isServer ? "module" : "array-push",
+      assetModuleFilename: `assets/images/[name].[hash][ext]`,
     },
     experiments: {
       outputModule: true,
