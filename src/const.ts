@@ -33,7 +33,7 @@ export const INTERNET_NOT_AVAILABLE =
 export const TOAST = "toast";
 
 /* ##### Regex ##### */
-export const PASSWORD_REGEX = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/;
+export const PASSWORD_REGEX = /^(?=.*\d)(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/;
 
 /* ##### Other ##### */
 export const IS_DEV = process.env.ENV === "development";

@@ -151,11 +151,6 @@ export default function (env, args, isProd = false) {
     }
   }
 
-  if (isLocal) {
-    if (!isServer) {
-    }
-  }
-
   const alias = {};
   const aliasPaths = tsconfigJson.compilerOptions.paths;
   Object.keys(aliasPaths).forEach((key) => {

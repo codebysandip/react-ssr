@@ -64,7 +64,7 @@ export function createStore(lazyReducers?: ReducersMapObject): AppStore {
     devTools: process.env.IS_LOCAL,
   });
   store = _store as AppStore;
-  return store as AppStore;
+  return store;
 }
 
 export type RootState = RootStateType;

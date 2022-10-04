@@ -29,7 +29,7 @@ describe("Header", () => {
   });
 
   it("Should show login when logout button click", function () {
-    (this as any).store.dispatch(loginSuccess({ isLoggedIn: true }));
+    this.store.dispatch(loginSuccess({ isLoggedIn: true }));
     cy.dataCy("logout-btn").should("exist");
     cy.dataCy("logout-btn").click();
     cy.dataCy("login-link").should("exist");

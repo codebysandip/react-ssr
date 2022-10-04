@@ -1,5 +1,5 @@
 import { ApiResponse } from "core/services/http-client.js";
-import { AppStore, createStore, replaceReducer } from "src/redux/create-store";
+import { createStore, replaceReducer } from "src/redux/create-store";
 import { fetchHeader } from "./app.redux.js";
 import { PAGE_INVALID_RETURN_DATA, ROUTE_403, ROUTE_404, ROUTE_500, ROUTE_LOGIN } from "./const.js";
 import { getRoute } from "./core/functions/get-route.js";
@@ -14,7 +14,7 @@ import { loginSuccess, logout } from "./pages/auth/auth.redux.js";
 export const ssrConfig: SSRConfig = {
   configureStore: (module: CompModule, ctx: ContextData) => {
     const store = createStore(module.reducer);
-    (ctx as ContextDataWithStore).store = store as AppStore;
+    (ctx as ContextDataWithStore).store = store;
   },
   preInitialProps: (ctx: ContextData, moduleObj, isFirstRendering) => {
     // inject lazy loaded reducer into store
