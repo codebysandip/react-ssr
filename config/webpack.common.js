@@ -270,6 +270,5 @@ export default function (env, args, isProd = false) {
     // Add instrument code for code coverage
     config.module.rules[0].use.unshift("@jsdevtools/coverage-istanbul-loader");
   }
-  console.log("webpack!!", config.module.rules[0].use[0]);
   return config;
 }

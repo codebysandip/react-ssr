@@ -12,9 +12,9 @@ describe("Edit Product Page", () => {
     cy.visit(url);
     cy.login(UsersData.users[0].email, UsersData.users[0].password);
 
-    cy.visit(url);
+    const product = ProductsData.products[0];
+    cy.dataCy(`home-edit-btn-${product.id}`).click();
     cy.dataCy("edit-product-page").should("exist");
-    const product = ProductsData.products.find((p) => p.id === 2);
     cy.dataCy("edit-product-title").should("have.value", product?.title);
   });
 });
