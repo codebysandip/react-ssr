@@ -1,3 +1,4 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sandip12081992_react-ssr&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=sandip12081992_react-ssr) [![codecov](https://codecov.io/github/codebysandip/react-ssr/branch/main/graph/badge.svg?token=77XQDFXBUL)](https://codecov.io/github/codebysandip/react-ssr)
 # React Server Side Rendering With Nodejs
 
   These are following features out of box supported to reduce initial development time:
