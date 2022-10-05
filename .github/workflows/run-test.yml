@@ -33,3 +33,9 @@ jobs:
         uses: codecov/codecov-action@v3.1.1
         with:
           name: Cypress with Jest Coverage
+      - name: Heroku Deploy
+        uses: AkhileshNS/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: codebysandip-react-ssr
+          heroku_email: sandip12081992@gmail.com
