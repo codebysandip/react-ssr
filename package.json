@@ -19,7 +19,7 @@
     "build": "cross-env WITH_API=true npm run build:prod",
     "build:prod:action": "cross-env GITHUB_ACTION=true npm run build:prod",
     "pm2:prod": "pm2 start ecosystem.config.cjs --env production",
-    "start": "pm2 start ecosystem.config.cjs --env production --only 'React-SSR,Test-API'",
+    "start": "npx pm2 start ecosystem.config.cjs --env production --only 'React-SSR,Test-API'",
     "test": "npm run clean:reports && npm run cypress:run && npm run jest:test && npm run gen:report",
     "jest:test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest",
     "prepare": "husky install",
