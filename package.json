@@ -20,17 +20,12 @@
     "build:prod:action": "cross-env GITHUB_ACTION=true npm run build:prod",
     "pm2:prod": "pm2 start ecosystem.config.cjs --env production",
     "start": "node build/server.js & node build/testApi.js",
-    "test": "npm run clean:reports && npm run cypress:run && npm run jest:test && npm run gen:report",
+    "test": "npm run cypress:run && npm run jest:test",
     "jest:test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest",
     "prepare": "husky install",
     "lint": "eslint \"src/**/*.{js,ts,tsx}\"",
     "lint:fix": "eslint \"src/**/*.{js,ts,tsx}\" --fix",
     "verify": "ts-node-esm ./scripts/verify.ts",
-    "copy:reports": "cp coverage/cypress/coverage-final.json coverage/from-cypress.json && cp coverage/jest/coverage-final.json coverage/from-jest.json",
-    "merge:reports": "npx nyc merge coverage && rm coverage/from-cypress.json coverage/from-jest.json && mv coverage.json .nyc_output/out.json",
-    "combine:report": "npx nyc report --reporter html --reporter text --reporter json --report-dir coverage",
-    "clean:reports": "rm -rf coverage/*",
-    "gen:report": "npm run copy:reports && npm run merge:reports && rm -rf coverage && npm run combine:report",
     "cypress:run": "npx cypress run --e2e && npx cypress run --component",
     "cypress:open": "npx cypress open -b chrome",
     "cypress:open:comp": "npm run cypress:open -- --component",
@@ -155,7 +150,8 @@
       "src/**/*.tsx"
     ],
     "exclude": [
-      "cypress"
+      "cypress",
+      "src/**/*.model.ts"
     ],
     "excludeAfterRemap": true
   },
