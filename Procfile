@@ -1,1 +1,1 @@
-web: npm run build:prod:heroku
+web: npm run build
