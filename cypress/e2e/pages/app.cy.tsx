@@ -120,4 +120,10 @@ describe("App shell", () => {
     cy.dataCy("home-edit-btn-1").click();
     cy.dataCy("edit-product-page").should("exist");
   });
+
+  it.only("Should redirect to 403 page when api will return 403", () => {
+    cy.intercept("/api/product", { statusCode: 403, body: {} });
+    cy.visit("/?cypress=true");
+    cy.url().should("contain", 403);
+  });
 });

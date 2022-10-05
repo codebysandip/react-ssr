@@ -1,7 +1,5 @@
 import { Reducer } from "@reduxjs/toolkit";
-import { ApiResponse } from "core/services/http-client.js";
-import { ContextDataWithStore } from "./context-with-store.model.js";
-import { PageData } from "./page-data.js";
+import { GetInitialProps } from "./common.model.js";
 
 export interface IRoute {
   /**
@@ -27,7 +25,7 @@ export interface IRoute {
 
 export type CompModule = {
   default: any;
-  getInitialProps?: (ctx: ContextDataWithStore) => Promise<ApiResponse<PageData | null>>;
+  getInitialProps?: GetInitialProps;
   reducer?: { [key: string]: Reducer<any> };
 };
 export type CompModuleImport = () => Promise<CompModule>;

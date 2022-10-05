@@ -100,8 +100,9 @@ export function processRequest(module: CompModule, ctx: ContextData, isFirstRend
         }
       })
       .catch((err) => {
-        console.error(`Error in getInitialProps of ${Component.constructor.name}. Error: ${err}`);
-        console.error(err.stack);
+        console.error(
+          `Error in getInitialProps/preInitialProps of ${Component.constructor.name}.Error: ${err}`,
+        );
         resolve({
           redirect: { path: ROUTE_500 },
           isError: true,
