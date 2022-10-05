@@ -16,7 +16,7 @@ const jestConfig: Config = {
 
   // The directory where Jest should output its coverage files
   coverageDirectory: "coverage/jest",
-  coverageReporters: ["lcov", "text", "json"],
+  coverageReporters: ["lcov", "html", "json", "text"],
 
   // Indicates which provider should be used to instrument code for coverage
   coverageProvider: "v8",

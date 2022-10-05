@@ -1,8 +1,14 @@
-import { getAccessToken, getAccessTokenData, getRefreshToken, setAccessAndRefreshToken } from "core/functions/get-token.js";
+import {
+  decodeToken,
+  getAccessToken,
+  getAccessTokenData,
+  getRefreshToken,
+  setAccessAndRefreshToken,
+} from "core/functions/get-token.js";
 import { COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN } from "src/const.js";
 import { CookieService } from "src/core/services/cookie.service.js";
 import { ApiResponse } from "src/core/services/http-client.js";
-import { AuthResponse } from "src/pages/auth/auth.model.js";
+import { AuthResponse, TokenData } from "src/pages/auth/auth.model.js";
 import { EXPIRED_JWT_TOKEN, LONG_EXPIRY_JWT_TOKEN } from "../../utils/const.js";
 
 describe("Get Token", () => {
@@ -13,8 +19,8 @@ describe("Get Token", () => {
   });
 
   afterEach(() => {
-    process.env = OLD_ENV
-  })
+    process.env = OLD_ENV;
+  });
   it("Should get Access Token", () => {
     CookieService.set(COOKIE_ACCESS_TOKEN, LONG_EXPIRY_JWT_TOKEN);
     expect(getAccessToken()).toBe(LONG_EXPIRY_JWT_TOKEN);
@@ -69,10 +75,20 @@ describe("Get Token", () => {
       data: { accessToken: LONG_EXPIRY_JWT_TOKEN, refreshToken: EXPIRED_JWT_TOKEN },
       errorCode: -1,
       message: [],
-      isError: false
+      isError: false,
     };
     setAccessAndRefreshToken(authResponse);
 
     expect(CookieService.get(COOKIE_ACCESS_TOKEN)).toBe(authResponse.data.accessToken);
-  })
-})
+  });
+
+  it("Should decode token on SSR", () => {
+    process.env.IS_SERVER = true;
+    const tokenData = decodeToken<TokenData>(LONG_EXPIRY_JWT_TOKEN);
+    expect(tokenData?.username).toBe("react-ssr");
+  });
+
+  it("Should return null when token not available", () => {
+    expect(getAccessTokenData()).toBeNull();
+  });
+});

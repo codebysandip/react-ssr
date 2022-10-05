@@ -47,8 +47,6 @@ export function configureHttpClient() {
       const successMessage = data && data.message;
       if (typeof successMessage === "string") {
         message.push(successMessage);
-      } else if (Array.isArray(successMessage) && typeof successMessage[0] === "string") {
-        message = successMessage;
       }
     } else {
       const errorMessage = data && data.message;

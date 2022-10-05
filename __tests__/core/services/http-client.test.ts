@@ -17,7 +17,9 @@ const mock = new MockAdapter(axios);
 const request = {
   success: {
     url: "/api/test-api",
-    responseBody: {},
+    responseBody: {
+      message: "Success",
+    },
   },
   badRequest: {
     url: "/api/400-response",
@@ -33,6 +35,12 @@ const request = {
     url: "/api/with-auth",
     responseBody: {},
   },
+  badRequestWithMultipleResponseMessage: {
+    url: "/api/400-response-with-multiple-message",
+    responseBody: {
+      message: ["This is test error message", "This is another test error message"],
+    },
+  },
 };
 
 configureHttpClient();
@@ -40,6 +48,7 @@ configureHttpClient();
 describe("HttpClient", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mock.reset();
     navigatorOnline(true);
     configureHttpClient();
   });
@@ -124,5 +133,22 @@ describe("HttpClient", () => {
       await retryPromise(obj.promiseFn, 100, maxRetries);
     } catch {}
     expect(spyPromiseFn).toBeCalledTimes(maxRetries);
+  });
+
+  it("Should return message when api will return message", async () => {
+    mock.onGet(request.success.url).replyOnce(200, request.success.responseBody);
+    const apiResponse = await HttpClient.get<Record<string, any>>(request.success.url);
+    expect(apiResponse.message).toEqual([request.success.responseBody.message]);
+  });
+
+  it("Should return multiple error message when api will return", async () => {
+    mock
+      .onGet(request.badRequestWithMultipleResponseMessage.url)
+      .replyOnce(400, request.badRequestWithMultipleResponseMessage.responseBody);
+    const apiResponse = await HttpClient.get(request.badRequestWithMultipleResponseMessage.url);
+    expect(apiResponse.status).toEqual(400);
+    expect(JSON.stringify(apiResponse.message)).toStrictEqual(
+      JSON.stringify(request.badRequestWithMultipleResponseMessage.responseBody.message),
+    );
   });
 });
