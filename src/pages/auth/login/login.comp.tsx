@@ -38,7 +38,11 @@ class Login extends Component<LoginProps, LoginState> {
     return (
       <div className="d-flex flex-column align-items-center" data-test-id="login-page">
         <h1>Login</h1>
-        {this.props.errorMessage && <h3 className="invalid-feedback">{this.props.errorMessage}</h3>}
+        {this.props.errorMessage && (
+          <h3 className="invalid-feedback" data-test-id="login-error-message">
+            {this.props.errorMessage}
+          </h3>
+        )}
         <Formik
           validationSchema={this.loginSchema}
           initialValues={{

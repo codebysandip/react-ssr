@@ -1,4 +1,5 @@
 import { createContextClient, createContextServer } from "core/functions/create-context.js";
+import { Request } from "express";
 
 describe("Create Context for server and client", () => {
   const OLD_ENV = process.env;
@@ -21,6 +22,19 @@ describe("Create Context for server and client", () => {
     }
   });
 
+  it("Should return contextData for server", () => {
+    process.env.IS_SERVER = true;
+    const url = new URL("http://localhost:5000");
+    const req: Partial<Request> = {
+      path: url.pathname,
+      hostname: url.hostname,
+      query: {},
+      params: {},
+    };
+    const contextData = createContextServer(req as any, {} as any);
+    expect(contextData.location.pathname).toBe(url.pathname);
+  });
+
   it("Should throw error when createContextClient called on server", () => {
     process.env.IS_SERVER = true;
     expect.assertions(1);
@@ -31,5 +45,21 @@ describe("Create Context for server and client", () => {
         "createContextClient function can execute only on client!!",
       );
     }
+  });
+
+  it("Should return contextData for client", () => {
+    const url = new URL("http://localhost:5000/?cypress=true");
+    const contextData = createContextClient(
+      {
+        pathname: url.pathname,
+        hash: "",
+        key: "default",
+        search: url.search,
+        state: "",
+      },
+      new URLSearchParams(url.search),
+      {},
+    );
+    expect(contextData.location.pathname).toBe(url.pathname);
   });
 });

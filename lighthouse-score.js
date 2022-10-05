@@ -5,9 +5,6 @@ import { writeFileSync } from "node:fs";
 const require = createRequire(import.meta.url);
 const lighthouse = require("lighthouse");
 
-// const config = {
-//   extends: "lighthouse:default",
-// };
 (async () => {
   const chrome = await chromeLauncher.launch({ chromeFlags: ["--headless"] });
   const options = {
