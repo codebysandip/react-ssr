@@ -23,8 +23,6 @@ if (process.env.ENV === "cypress") {
   require("@cypress/code-coverage/middleware/express")(app);
 }
 
-require("dotenv").config();
-
 configureHttpClient();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
