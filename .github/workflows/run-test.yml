@@ -34,6 +34,7 @@ jobs:
       #   with:
       #     name: Cypress with Jest Coverage
       - name: Lighthouse Score
+        run: npm ci
         run: node lighthouse/lighthouse-score.js
 
       - name: Commit Lighthouse score
