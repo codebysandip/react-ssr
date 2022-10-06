@@ -42,4 +42,4 @@ jobs:
           commit_message: Lighthouse score badge auto commit
           branch: main
           commit_options: "--no-verify --signoff"
-          token: ${{ secrets.PAT }}
+          push_options: --force
