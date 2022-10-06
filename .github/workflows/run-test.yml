@@ -21,20 +21,20 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
-      - name: Cypress.io
-        uses: cypress-io/github-action@v4.2.0
-        with:
-          install: npm ci
-          start: npm run start:cypress:ci
-          build: npm run build:cypress
-          wait-on: http://localhost:5000
-          command: npm test
-      - name: Codecov upload coverage
-        uses: codecov/codecov-action@v3.1.1
-        with:
-          name: Cypress with Jest Coverage
-      - name: Lighthouse Score
-        run: node lighthouse/lighthouse-score.js
+      # - name: Cypress.io
+      #   uses: cypress-io/github-action@v4.2.0
+      #   with:
+      #     install: npm ci
+      #     start: npm run start:cypress:ci
+      #     build: npm run build:cypress
+      #     wait-on: http://localhost:5000
+      #     command: npm test
+      # - name: Codecov upload coverage
+      #   uses: codecov/codecov-action@v3.1.1
+      #   with:
+      #     name: Cypress with Jest Coverage
+      # - name: Lighthouse Score
+      #   run: node lighthouse/lighthouse-score.js
 
       - name: Commit Lighthouse score
         uses: stefanzweifel/git-auto-commit-action@v4.15.0
@@ -42,4 +42,5 @@ jobs:
           commit_message: Lighthouse score badge auto commit
           branch: main
           commit_options: "--no-verify --signoff"
+          token: ${{ secrets.PAT }}
           push_options: --force
