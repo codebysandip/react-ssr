@@ -24,20 +24,20 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
-      # - name: Cypress.io
-      #   uses: cypress-io/github-action@v4.2.0
-      #   with:
-      #     install: npm ci
-      #     start: npm run start:cypress:ci
-      #     build: npm run build:cypress
-      #     wait-on: http://localhost:5000
-      #     command: npm test
-      # - name: Codecov upload coverage
-      #   uses: codecov/codecov-action@v3.1.1
-      #   with:
-      #     name: Cypress with Jest Coverage
+      - name: Cypress.io
+        uses: cypress-io/github-action@v4.2.0
+        with:
+          install: npm ci
+          start: npm run start:cypress:ci
+          build: npm run build:cypress
+          wait-on: http://localhost:5000
+          command: npm test
+      - name: Codecov upload coverage
+        uses: codecov/codecov-action@v3.1.1
+        with:
+          name: Cypress with Jest Coverage
       - name: Lighthouse Score
-        run: npm ci && node lighthouse/lighthouse-score.js
+        run: node lighthouse/lighthouse-score.js
 
       - name: Commit Lighthouse score
         uses: stefanzweifel/git-auto-commit-action@v4.15.0
@@ -46,3 +46,11 @@ jobs:
           branch: main
           commit_options: "--no-verify --signoff"
           push_options: --force
+      - uses: actions/checkout@v3
+      - name: Upload lighthouse score as gist
+        uses: exuanbo/actions-deploy-gist@v1
+        with:
+          token: ${{ secrets.PAT }}
+          gist_id: 431d33b9aa603674249d0561301c93c9
+          file_path: lighthouse/report.json
+          file_type: json

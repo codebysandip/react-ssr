@@ -6,7 +6,13 @@
 
 ![lighthouse score](./lighthouse/pagespeed.svg)
 
-# React Server Side Rendering With Nodejs
+#### [Full Lighthouse Report](https://googlechrome.github.io/lighthouse/viewer/?gist=431d33b9aa603674249d0561301c93c9)
+
+# Demo
+
+Demo is more than thosands of words. Please click [here](https://codebysandip-react-ssr.herokuapp.com/) to see demo.
+
+# React Server Side Rendering Architecture With Nodejs
 
 These are following features out of box supported to reduce initial development time:
 

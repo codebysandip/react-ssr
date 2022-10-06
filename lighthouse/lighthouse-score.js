@@ -18,8 +18,8 @@ function startLighthouse() {
     const chrome = await chromeLauncher.launch({ chromeFlags: ["--headless"] });
     const options = {
       logLevel: "info",
-      output: "html",
-      outputPath: "./lighthouse/report.html",
+      output: "json",
+      outputPath: "./lighthouse/report.json",
       port: chrome.port,
       // onlyCategories: ["performance", "seo"],
       screenEmulation: { width: 1280, height: 720 },
