@@ -41,8 +41,9 @@ jobs:
           heroku_email: sandip12081992@gmail.com
       - name: Lighthouse Score
         run: node lighthouse/lighthouse-score.js
+
       - name: Commit Lighthouse score
-        uses: tefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v4.15.0
         with:
           commit_message: Lighthouse score badge auto commit
           branch: main
