@@ -39,3 +39,11 @@ jobs:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: codebysandip-react-ssr
           heroku_email: sandip12081992@gmail.com
+      - name: Lighthouse Score
+        -run: node lighthouse/lighthouse-score.js
+      - name: Commit Lighthouse score
+        uses: tefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Lighthouse score badge auto commit
+          branch: main
+          commit_options: "--no-verify --signoff"

@@ -1,11 +1,11 @@
-import { Link } from "react-router-dom";
 import { logout as logoutAction } from "pages/auth/auth.redux.js";
 import { Component } from "react";
-import { ROUTE_LOGIN } from "src/const.js";
-import { AppDispatch, RootState } from "src/redux/create-store.js";
 import { connect } from "react-redux";
+import { Link } from "react-router-dom";
+import { ROUTE_LOGIN } from "src/const.js";
 import { withRouter, WithRouterProps } from "src/core/hoc/with-routes.hoc.js";
 import { CommonService } from "src/core/services/common.service.js";
+import { AppDispatch, RootState } from "src/redux/create-store.js";
 
 class HeaderComp extends Component<HeaderProps> {
   public logout() {
@@ -27,7 +27,7 @@ class HeaderComp extends Component<HeaderProps> {
           <Link className="navbar-brand" to="/" data-test-id="navbar">
             Navbar
           </Link>
-          <button className="navbar-toggler" type="button">
+          <button className="navbar-toggler" type="button" name="Hamburger menu">
             <span className="navbar-toggler-icon"></span>
           </button>
           <div className="collapse navbar-collapse">
