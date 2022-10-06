@@ -36,5 +36,5 @@
   "[html]": {
     "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
   },
-  "cSpell.enableFiletypes": ["!json"]
+  "cSpell.enableFiletypes": ["!json", "!yaml"]
 }

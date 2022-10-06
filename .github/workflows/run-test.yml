@@ -39,14 +39,14 @@ jobs:
       - name: Lighthouse Score
         run: node lighthouse/lighthouse-score.js
 
-      - name: Commit Lighthouse score
-        uses: stefanzweifel/git-auto-commit-action@v4.15.0
+      - name: Upload lighthouse score svg as gist
+        uses: exuanbo/actions-deploy-gist@v1
         with:
-          commit_message: Lighthouse score badge auto commit
-          branch: main
-          commit_options: "--no-verify --signoff"
-          push_options: --force
-      - name: Upload lighthouse score as gist
+          token: ${{ secrets.PAT }}
+          gist_id: 9b7d7703eec1c6d1352ac9a437aa5f10
+          file_path: lighthouse/pagespeed.svg
+          file_type: svg
+      - name: Upload lighthouse score json as gist
         uses: exuanbo/actions-deploy-gist@v1
         with:
           token: ${{ secrets.PAT }}

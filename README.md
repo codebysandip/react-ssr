@@ -4,7 +4,7 @@
 
 # Lighthouse Score
 
-![lighthouse score](./lighthouse/pagespeed.svg)
+![lighthouse score](https://gist.githubusercontent.com/codebysandip/9b7d7703eec1c6d1352ac9a437aa5f10/raw/c3a9d2e4c4d8405be9ed7df5cbd6f17ceef56400/lighthouse-report.svg)
 
 #### [Full Lighthouse Report](https://googlechrome.github.io/lighthouse/viewer/?gist=431d33b9aa603674249d0561301c93c9)
 
