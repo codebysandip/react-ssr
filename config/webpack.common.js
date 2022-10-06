@@ -19,7 +19,6 @@ import { getPath, isLocalFn, isServerFn } from "./functions/helper-functions.js"
  * @returns webpack common config
  */
 export default function (env, args, isProd = false) {
-  console.log("with api!!", process.env.WITH_API);
   const packageJson = JSON.parse(
     readFileSync(join(process.cwd(), "package.json"), { encoding: "utf-8" }),
   );
@@ -140,8 +139,17 @@ export default function (env, args, isProd = false) {
             to: join(clientBuildPath, "robots.txt"),
           },
           {
+            from: getPath("src/manifest.json"),
+            to: join(clientBuildPath, "manifest.json"),
+          },
+          {
             from: getPath("src/assets/images/home"),
             to: join(clientBuildPath, "assets/images/home"),
+            toType: "dir",
+          },
+          {
+            from: getPath("src/assets/icons"),
+            to: join(clientBuildPath, "assets/icons"),
             toType: "dir",
           },
         ],

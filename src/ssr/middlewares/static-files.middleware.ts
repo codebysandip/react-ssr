@@ -40,7 +40,10 @@ export function StaticRoute(req: Request, res: Response, next: NextFunction) {
     res.status(404).send();
     return;
   }
-  if (!(IS_DEV || IS_CYPRESS)) {
+  if (
+    !(IS_DEV || IS_CYPRESS) &&
+    existsSync(join(process.cwd(), "build/public", `${req.path}.gz`))
+  ) {
     changeUrlBasedOnEncoding(req, res);
   }
   next();

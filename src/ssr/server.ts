@@ -36,7 +36,7 @@ if (process.env.IS_LOCAL) {
   app.get("/api/products", proxyMiddleware(process.env.LOCAL_API_SERVER));
 }
 
-app.get("*.(css|js|svg|jpg|woff|woff2|json)", StaticRoute);
+app.get("*.(css|js|svg|jpg|jpeg|png|woff|woff2)", StaticRoute);
 
 // Tell express for public folder
 app.use(express.static(join(process.cwd(), "build/public")));

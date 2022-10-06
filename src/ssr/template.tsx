@@ -26,6 +26,7 @@ export class HtmlTemplate extends Component<HtmlTemplateProps> {
       <html lang="en" {...helmet.htmlAttributes.toComponent()}>
         <head>
           <link rel="shortcut icon" href="/favicon.ico" />
+          <link href="/manifest.json" rel="manifest" />
           <link href={metaJson.mainStyle} rel="stylesheet" />
           {helmet.style.toComponent()}
           {helmet.title.toComponent()}

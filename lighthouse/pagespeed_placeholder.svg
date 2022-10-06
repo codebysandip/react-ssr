@@ -59,34 +59,34 @@
 				stroke: #616161
 			}
 		</style>
-		<svg class="guage-div guage-perf guage-green" viewBox="0 0 200 200" width="200" height="200" x="0" y="0">
+		<svg class="guage-div guage-perf guage-{performance_gauge_color}" viewBox="0 0 200 200" width="200" height="200" x="0" y="0">
 			<circle class="gauge-base" r="56" cx="100" cy="60" stroke-width="8"></circle>
-			<circle class="gauge-arc guage-arc-1" r="56" cx="100" cy="60" stroke-width="8" style="stroke-dasharray: 351.858, 351.858;"></circle>
-			<text class="guage-text" x="100px" y="60px" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">performance_score</text>
+			<circle class="gauge-arc guage-arc-1" r="56" cx="100" cy="60" stroke-width="8" style="stroke-dasharray: {performance_stroke};"></circle>
+			<text class="guage-text" x="100px" y="60px" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">{performance_score}</text>
 			<text class="guage-title" x="100px" y="160px" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">Performance</text>
 		</svg>
-		<svg class="guage-div guage-acc guage-green" viewBox="0 0 200 200" width="200" height="200" x="200" y="0">
+		<svg class="guage-div guage-acc guage-{accessibility_gauge_color}" viewBox="0 0 200 200" width="200" height="200" x="200" y="0">
 			<circle class="gauge-base" r="56" cx="100" cy="60" stroke-width="8"></circle>
-			<circle class="gauge-arc guage-arc-2" r="56" cx="100" cy="60" stroke-width="8" style="stroke-dasharray: 337.78368, 351.858;"></circle>
-			<text class="guage-text" x="100px" y="60px" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">accessibility_score</text>
+			<circle class="gauge-arc guage-arc-2" r="56" cx="100" cy="60" stroke-width="8" style="stroke-dasharray: {accessibility_stroke};"></circle>
+			<text class="guage-text" x="100px" y="60px" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">{accessibility_score}</text>
 			<text class="guage-title" x="100px" y="160px" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">Accessibility</text>
 		</svg>
-		<svg class="guage-div guage-best guage-orange" viewBox="0 0 200 200" width="200" height="200" x="400" y="0">
+		<svg class="guage-div guage-best guage-{best_practices_gauge_color}" viewBox="0 0 200 200" width="200" height="200" x="400" y="0">
 			<circle class="gauge-base" r="56" cx="100" cy="60" stroke-width="8"></circle>
-			<circle class="gauge-arc guage-arc-3" r="56" cx="100" cy="60" stroke-width="8" style="stroke-dasharray: 306.11646, 351.858;"></circle>
-			<text class="guage-text" x="100px" y="60px" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">best_practices_score</text>
+			<circle class="gauge-arc guage-arc-3" r="56" cx="100" cy="60" stroke-width="8" style="stroke-dasharray: {best_practices_stroke};"></circle>
+			<text class="guage-text" x="100px" y="60px" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">{best_practices_score}</text>
 			<text class="guage-title" x="100px" y="160px" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">Best Practices</text>
 		</svg>
-		<svg class="guage-div guage-seo guage-orange" viewBox="0 0 200 200" width="200" height="200" x="600" y="0">
+		<svg class="guage-div guage-seo guage-{seo_gauge_color}" viewBox="0 0 200 200" width="200" height="200" x="600" y="0">
 			<circle class="gauge-base" r="56" cx="100" cy="60" stroke-width="8"></circle>
-			<circle class="gauge-arc guage-arc-4" r="56" cx="100" cy="60" stroke-width="8" style="stroke-dasharray: 260.37492000000003, 351.858;"></circle>
-			<text class="guage-text" x="100px" y="60px" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">seo_score</text>
+			<circle class="gauge-arc guage-arc-4" r="56" cx="100" cy="60" stroke-width="8" style="stroke-dasharray: {seo_stroke};"></circle>
+			<text class="guage-text" x="100px" y="60px" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">{seo_score}</text>
 			<text class="guage-title" x="100px" y="160px" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">SEO</text>
 		</svg>
-		<svg class="guage-div guage-pwa guage-green" viewBox="0 0 200 200" width="200" height="200" x="800" y="0">
+		<svg class="guage-div guage-pwa guage-{pwa_gauge_color}" viewBox="0 0 200 200" width="200" height="200" x="800" y="0">
 			<circle class="gauge-base" r="56" cx="100" cy="60" stroke-width="8"></circle>
-			<circle class="gauge-arc guage-arc-4" r="56" cx="100" cy="60" stroke-width="8" style="stroke-dasharray: 323.70936, 351.858;"></circle>
-			<text class="guage-text" x="100px" y="60px" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">pwa_score</text>
+			<circle class="gauge-arc guage-arc-4" r="56" cx="100" cy="60" stroke-width="8" style="stroke-dasharray: {pwa_stroke};"></circle>
+			<text class="guage-text" x="100px" y="60px" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">{pwa_score}</text>
 			<text class="guage-title" x="100px" y="160px" alignment-baseline="central" dominant-baseline="central" text-anchor="middle">PWA</text>
 		</svg>
 		<svg width="604" height="76" x="200" y="210">

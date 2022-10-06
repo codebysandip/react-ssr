@@ -37,13 +37,15 @@ export function SsrHead() {
       <title>Default Title</title>
       <script>{`${serviceWorker}`}</script>
       {/* <script>{`${webVitalScript}`}</script> */}
-      <link href={spinner} rel="preload" as="image" />
       <meta name="description" content="A sample meta description" />
       <meta charSet="utf-8" />
+      <meta name="theme-color" content="#f8f9fa" />
       <meta
         name="viewport"
-        content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=5, user-scalable=0"
+        content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=5"
       />
+      <link href={spinner} rel="preload" as="image" />
+      <link rel="apple-touch-icon" href="/assets/icons/ios/192.png" />
     </Helmet>
   );
 }
