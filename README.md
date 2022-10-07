@@ -4,9 +4,11 @@
 
 # Lighthouse Score
 
-![lighthouse score](https://gist.githubusercontent.com/codebysandip/9b7d7703eec1c6d1352ac9a437aa5f10/raw/c3a9d2e4c4d8405be9ed7df5cbd6f17ceef56400/lighthouse-report.svg)
+![lighthouse score](https://gist.githubusercontent.com/codebysandip/9b7d7703eec1c6d1352ac9a437aa5f10/raw/87347b0bd841ba2a6f57d1e8bd7708ca6c950657/pagespeed.svg)
 
 #### [Full Lighthouse Report](https://googlechrome.github.io/lighthouse/viewer/?gist=431d33b9aa603674249d0561301c93c9)
+
+Note: Actual Score of performance is 100 but sometimes github CI machine generates reports with lower values. Best Practices score is lower because of Image used of lower resolution
 
 # Demo
 
