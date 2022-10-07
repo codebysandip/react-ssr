@@ -27,7 +27,13 @@ class HeaderComp extends Component<HeaderProps> {
           <Link className="navbar-brand" to="/" data-test-id="navbar">
             Navbar
           </Link>
-          <button className="navbar-toggler" type="button" name="Hamburger menu">
+          <button
+            className="navbar-toggler"
+            type="button"
+            id="mobileMenuButton"
+            aria-label="Hamburger menu"
+            role="button"
+          >
             <span className="navbar-toggler-icon"></span>
           </button>
           <div className="collapse navbar-collapse">

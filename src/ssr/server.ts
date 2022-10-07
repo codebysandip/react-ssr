@@ -2,6 +2,7 @@ import express from "express";
 import { join } from "path";
 
 import bodyParser from "body-parser";
+import helmet from "helmet";
 import NodeCache from "node-cache";
 import { createRequire } from "node:module";
 import { API_URL } from "src/const.js";
@@ -19,6 +20,16 @@ const require = createRequire(import.meta.url);
 global.metaJson = getWebpackBuildMetaJson();
 
 const app = express();
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        "script-src": "'self' 'nonce-react-ssr' 'unsafe-inline'",
+      },
+    },
+  }),
+);
 if (process.env.ENV === "cypress") {
   require("@cypress/code-coverage/middleware/express")(app);
 }

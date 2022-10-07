@@ -35,7 +35,7 @@ export function SsrHead() {
   return (
     <Helmet>
       <title>Default Title</title>
-      <script>{`${serviceWorker}`}</script>
+      <script nonce="react-ssr">{`${serviceWorker}`}</script>
       {/* <script>{`${webVitalScript}`}</script> */}
       <meta name="description" content="A sample meta description" />
       <meta charSet="utf-8" />

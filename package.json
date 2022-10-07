@@ -43,6 +43,7 @@
     "express": "^4.18.1",
     "express-http-proxy": "^1.6.3",
     "formik": "^2.2.9",
+    "helmet": "^6.0.0",
     "http": "0.0.1-security",
     "https": "^1.0.0",
     "js-beautify": "^1.14.6",
