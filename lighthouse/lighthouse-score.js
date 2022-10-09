@@ -1,3 +1,4 @@
+import { spawnSync } from "child_process";
 import chromeLauncher from "chrome-launcher";
 import { createRequire } from "module";
 import { readFileSync, writeFileSync } from "node:fs";
@@ -5,10 +6,18 @@ import { join } from "path";
 import { cwd, exit } from "process";
 const require = createRequire(import.meta.url);
 
-const shell = require("shelljs");
-
-shell.exec("npm run build");
-shell.exec("npm run pm2:prod:heroku");
+const build = spawnSync("npm run build", { stdio: "inherit", encoding: "utf-8", shell: true });
+if (build.status) {
+  exit(build.status);
+}
+const deploy = spawnSync("npm run pm2:prod:heroku", {
+  stdio: "inherit",
+  encoding: "utf-8",
+  shell: true,
+});
+if (deploy.status) {
+  exit(deploy.status);
+}
 let count = 0;
 startLighthouse();
 
@@ -60,13 +69,13 @@ function startLighthouse() {
         isError = true;
         console.error(`PWA score ${pwaScore} is less than 90`);
       }
-      shell.exec("npx pm2 delete all");
+      spawnSync("npx pm2 delete all", { stdio: "inherit", encoding: "utf-8", shell: true });
       if (isError) {
         throw new Error(`Lighthouse score should be greater than 90 for each category`);
       }
     }
     if (perfScore < 90 || seoScore < 90 || pwaScore < 90) {
-      console.log("Restarting lighthouse test. Because score is below 90");
+      console.warn("Restarting lighthouse test. Because score is below 90");
       startLighthouse();
       return;
     }
@@ -122,7 +131,7 @@ function startLighthouse() {
     console.log("Seo score was", seoScore);
     console.log("PWA score was", pwaScore);
     await chrome.kill();
-    shell.exec("npx pm2 delete all");
+    spawnSync("npx pm2 delete all", { stdio: "inherit", encoding: "utf-8", shell: true });
     exit();
   })();
 }

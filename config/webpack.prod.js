@@ -1,11 +1,12 @@
 import CompressionPlugin from "compression-webpack-plugin";
+import { join } from "path";
 import TerserPlugin from "terser-webpack-plugin";
 import webpack from "webpack";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import { merge } from "webpack-merge";
 import WorkboxPlugin from "workbox-webpack-plugin";
 import { getDevServerConfig } from "./functions/get-devServer-config.js";
-import { isLocalFn, isServerFn } from "./functions/helper-functions.js";
+import { getPath, isLocalFn, isServerFn } from "./functions/helper-functions.js";
 import commonConfig from "./webpack.common.js";
 
 /**
@@ -14,9 +15,13 @@ import commonConfig from "./webpack.common.js";
  * @param {*} args args
  * @returns prod env webpack config
  */
-const prodConfig = (env) => {
+const prodConfig = (env, outFolder) => {
   const isServer = isServerFn(env);
   const plugins = [];
+  /**
+   * Is Build running for local development
+   */
+  const isLocal = isLocalFn(env);
 
   // on github action don't compress to save build time
   if (!isServer && process.env.GITHUB_ACTION !== "true") {
@@ -46,7 +51,7 @@ const prodConfig = (env) => {
       new WorkboxPlugin.InjectManifest({
         swSrc: getPath("src/service-worker.js"),
         swDest: join(outFolder, "service-worker.js"),
-        mode: !(isLocal || isCypress) ? "production" : "development",
+        mode: "production",
         maximumFileSizeToCacheInBytes: isLocal ? 10 * 1000 * 1000 : 500 * 1000,
         exclude: [/.*(.hot-update.)(m?js)$/, /\.map$/],
       }),
@@ -88,7 +93,8 @@ const prodConfig = (env) => {
 };
 
 const config = (env, args) => {
-  return merge(commonConfig(env, args, true), prodConfig(env));
+  const commonWebpackConfig = commonConfig(env, args, true);
+  return merge(commonWebpackConfig, prodConfig(env, commonWebpackConfig.output.path));
 };
 
 export default config;

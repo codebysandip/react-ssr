@@ -26,7 +26,7 @@ app.use(
       useDefaults: true,
       directives: {
         "script-src": "'self' 'nonce-react-ssr' 'unsafe-inline' 'unsafe-eval'",
-        "img-src": "'self' https://fakestoreapi.com",
+        "img-src": "'self' data: https://fakestoreapi.com",
       },
     },
     crossOriginEmbedderPolicy: false,

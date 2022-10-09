@@ -1,5 +1,5 @@
 import express from "express";
-import { createRequire } from "node:module";
+import { spawn } from "node:child_process";
 import webpack from "webpack";
 import WebpackDevMiddleware from "webpack-dev-middleware";
 import WebpackHotMiddleware from "webpack-hot-middleware";
@@ -7,9 +7,6 @@ import webpackDevConfig from "../config/webpack.dev.js";
 import webpackProdConfig from "../config/webpack.prod.js";
 import { proxyMiddleware } from "../src/ssr/middlewares/proxy-middleware.js";
 import { log } from "./logger.js";
-
-const require = createRequire(import.meta.url);
-const shell = require("shelljs");
 
 const app = express();
 /**
@@ -23,18 +20,15 @@ const PORT = parseInt(process.env.PORT || "5000");
  * SSR node server
  */
 const startAppNodeServer = () => {
-  shell.exec(
-    `nodemon --delay 2000ms --watch "build/server.js" --exec "node build/server.js"`,
-    {
-      async: true,
-      cwd: process.cwd(),
-    },
-    (code: any, stdout: any, stderr: any) => {
-      console.log(code, stdout, stderr);
-    },
-  );
+  spawn(`nodemon --delay 2000ms --watch "build/server.js" --exec "node build/server.js"`, {
+    stdio: "inherit",
+    shell: true,
+  });
 
-  shell.exec("nodemon --watch build/testApi.js build/testApi.js", { async: true });
+  spawn("nodemon --watch build/testApi.js build/testApi.js", {
+    stdio: "inherit",
+    shell: true,
+  });
 
   // start server only after server build completed
   app.listen(PORT, () => {
@@ -85,7 +79,7 @@ app.use(
   WebpackDevMiddleware(compiler, {
     publicPath: webpackClientConfig.output.publicPath,
     serverSideRender: true,
-    writeToDisk: true,
+    writeToDisk: false,
   }),
 );
 
