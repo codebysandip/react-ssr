@@ -6,7 +6,6 @@ import Dotenv from "dotenv-webpack";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import webpack from "webpack";
 import nodeExternals from "webpack-node-externals";
-import WorkboxPlugin from "workbox-webpack-plugin";
 import MetaInfoPlugin from "./plugins/meta-info.plugin.js";
 
 import { readFileSync } from "fs";
@@ -156,17 +155,6 @@ export default function (env, args, isProd = false) {
       }),
       new MetaInfoPlugin({ path: getPath("build/meta.json") }),
     );
-    if (env.ENV !== "cypress") {
-      plugins.push(
-        new WorkboxPlugin.InjectManifest({
-          swSrc: getPath("src/service-worker.js"),
-          swDest: join(outFolder, "service-worker.js"),
-          mode: !(isLocal || isCypress) ? "production" : "development",
-          maximumFileSizeToCacheInBytes: isLocal ? 10 * 1000 * 1000 : 500 * 1000,
-          exclude: [/.*(.hot-update.)(m?js)$/, /\.map$/],
-        }),
-      );
-    }
   }
 
   const alias = {};
@@ -193,7 +181,7 @@ export default function (env, args, isProd = false) {
     },
     watch: isLocal,
     watchOptions: {
-      ignored: ["**/node_modules", "**/config"],
+      ignored: ["**/node_modules", "**/config", "cypress"],
     },
     resolve: {
       alias: {

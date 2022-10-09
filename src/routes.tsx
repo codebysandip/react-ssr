@@ -9,14 +9,14 @@ import { IRoute } from "./core/models/route.model.js";
 export const Routes: IRoute[] = [
   {
     path: "/",
-    component: () => import(/* webpackChunkName: "home" */ "src/pages/home/home.component.js"),
+    component: () => import(/* webpackChunkName: "home" */ "../examples/home/home.component.js"),
     isSSR: true,
   },
   {
-    path: "/product/edit/:id",
+    path: "/product/detail/:id",
     component: () =>
       import(
-        /* webpackChunkName: "edit-product" */ "src/pages/home/edit/edit-product.component.js"
+        /* webpackChunkName: "product-detail" */ "../examples/home/product-detail/product-detail.comp.js"
       ),
     isSSR: false,
   },

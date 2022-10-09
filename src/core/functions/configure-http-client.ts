@@ -1,5 +1,6 @@
 import { AxiosError, AxiosResponse } from "axios";
 import {
+  API_URL,
   COOKIE_ACCESS_TOKEN,
   COOKIE_REFRESH_TOKEN,
   INTERNET_NOT_AVAILABLE,
@@ -106,6 +107,7 @@ export function configureHttpClient() {
   HttpClient.internetNotAvailableMsg = INTERNET_NOT_AVAILABLE;
 
   HttpClient.handleRefreshTokenFlow = (options: HttpClientOptions) => {
+    CookieService.delete(COOKIE_ACCESS_TOKEN, options.nodeRespObj);
     const refreshToken = CookieService.get(COOKIE_REFRESH_TOKEN, options.nodeReqObj);
     const apiResponse = getDefaultApiResponseObj();
     if (!refreshToken) {
@@ -118,6 +120,7 @@ export function configureHttpClient() {
         setAccessAndRefreshToken(resp as ApiResponse<AuthResponse>, options.nodeRespObj);
         return HttpClient.sendRequest(options.url || "/", options.method || "GET", options);
       }
+      CookieService.delete(COOKIE_REFRESH_TOKEN, options.nodeRespObj);
       // if unable to generate token from refresh token then mark request as 401 unAuthorized
       apiResponse.status = 401;
       apiResponse.isError = true;
@@ -127,6 +130,6 @@ export function configureHttpClient() {
   };
 
   HttpClient.setUrl = (url) => {
-    return `${process.env.IS_SERVER ? process.env.API_BASE_URL : ""}${url}`;
+    return `${process.env.IS_SERVER ? API_URL : ""}${url}`;
   };
 }

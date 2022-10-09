@@ -37,17 +37,17 @@ describe("Home Page", () => {
     });
   });
 
-  it("Should redirect to login page on click of edit button", () => {
+  it("Should redirect to login page on click of view button", () => {
     cy.visit(homePage);
-    cy.dataCy(`home-edit-btn-${ProductsData.products[0].id}`).click();
+    cy.dataCy(`home-view-btn-${ProductsData.products[0].id}`).click();
     cy.dataCy("login-page").should("exist");
   });
 
   it("Should redirect to product edit on click if edit button when logged in", () => {
     cy.visit(homePage);
     cy.login(UsersData.users[0].email, UsersData.users[0].password);
-    cy.dataCy(`home-edit-btn-${ProductsData.products[0].id}`).click();
-    cy.dataCy("edit-product-page").should("exist");
+    cy.dataCy(`home-view-btn-${ProductsData.products[0].id}`).click();
+    cy.dataCy("product-detail-page").should("exist");
   });
 
   it("Should render home page with products on CSR", () => {

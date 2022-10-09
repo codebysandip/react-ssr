@@ -12,9 +12,9 @@ Note: Actual Score of performance is 100 but sometimes github CI machine generat
 
 # Demo
 
-Demo is more than thosands of words. Please click [here](https://codebysandip-react-ssr.herokuapp.com/) to see demo.
+Demo is more than thousands of words. Please click [here](https://codebysandip-react-ssr.herokuapp.com/) to see demo.
 
-# React Server Side Rendering Architecture With Nodejs
+# React Server Side Rendering Architecture
 
 These are following features out of box supported to reduce initial development time:
 

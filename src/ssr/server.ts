@@ -5,7 +5,7 @@ import bodyParser from "body-parser";
 import helmet from "helmet";
 import NodeCache from "node-cache";
 import { createRequire } from "node:module";
-import { API_URL } from "src/const.js";
+import { API_URL, LOCAL_API_SERVER } from "src/const.js";
 import { configureHttpClient } from "src/core/functions/configure-http-client.js";
 import { proxyMiddleware } from "src/ssr/middlewares/proxy-middleware.js";
 import { getWebpackBuildMetaJson } from "./functions/get-webpack-build-meta-json.js";
@@ -25,8 +25,13 @@ app.use(
     contentSecurityPolicy: {
       useDefaults: true,
       directives: {
-        "script-src": "'self' 'nonce-react-ssr' 'unsafe-inline'",
+        "script-src": "'self' 'nonce-react-ssr' 'unsafe-inline' 'unsafe-eval'",
+        "img-src": "'self' https://fakestoreapi.com",
       },
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: {
+      policy: "cross-origin",
     },
   }),
 );
@@ -44,7 +49,7 @@ if (process.env.IS_LOCAL) {
   // If api is not available and you want to return dummy response
   // create a test api in test-api.ts and add here
   // Don't forget to remove proxy otherwise response will always come from test api
-  app.get("/api/products", proxyMiddleware(process.env.LOCAL_API_SERVER));
+  app.get("/api/products", proxyMiddleware(LOCAL_API_SERVER));
 }
 
 app.get("*.(css|js|svg|jpg|jpeg|png|woff|woff2)", StaticRoute);
@@ -62,7 +67,8 @@ app.all("/api/*", proxyMiddleware(API_URL));
 
 // Get all request of node server
 app.get("*", processRequest());
-const PORT = process.env.IS_LOCAL ? 5001 : process.env.PORT || 5000;
+let PORT = parseInt(process.env.PORT || "5000");
+PORT = process.env.IS_LOCAL ? PORT + 1 : PORT;
 
 const startServer = () => {
   app.listen(PORT, () => {

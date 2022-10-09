@@ -47,4 +47,5 @@ app.get("/api/product/:id", validateTokenMiddleware, (req, res) => {
   res.status(product ? 200 : 204).json(product || {});
 });
 
-app.listen(3002, () => console.log("App listening on port 3002"));
+const PORT = process.env.TEST_API_PORT || 3002;
+app.listen(PORT, () => console.log(`Test Api listening on port ${PORT}`));

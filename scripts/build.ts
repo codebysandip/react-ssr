@@ -16,6 +16,7 @@ const app = express();
  * flag to check if server build completed for first time only
  */
 let isClientBuildCompleted = false;
+const PORT = parseInt(process.env.PORT || "5000");
 
 /**
  * start SSR app server with nodemon watch. Whenever their wil be change nodemon will restart
@@ -33,9 +34,11 @@ const startAppNodeServer = () => {
     },
   );
 
+  shell.exec("nodemon --watch build/testApi.js build/testApi.js", { async: true });
+
   // start server only after server build completed
-  app.listen(5000, () => {
-    log(`App listening on port 5000`);
+  app.listen(PORT, () => {
+    log(`App listening on port ${PORT}`);
   });
 };
 
@@ -91,6 +94,5 @@ app.use(
     heartbeat: 10000,
   }),
 );
-
 // Redirect every request to SSR app
-app.all("*", proxyMiddleware("http://localhost:5001"));
+app.all("*", proxyMiddleware(`http://localhost:${PORT + 1}`));

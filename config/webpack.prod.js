@@ -3,13 +3,14 @@ import TerserPlugin from "terser-webpack-plugin";
 import webpack from "webpack";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import { merge } from "webpack-merge";
+import WorkboxPlugin from "workbox-webpack-plugin";
 import { getDevServerConfig } from "./functions/get-devServer-config.js";
 import { isLocalFn, isServerFn } from "./functions/helper-functions.js";
 import commonConfig from "./webpack.common.js";
 
 /**
  * Prod config for webpack. This build will use for production.
- * @param {[key:string]: string} env environment key value pair provided when running webpack command
+ * @param env  {[key:string]: string} environment key value pair provided when running webpack command
  * @param {*} args args
  * @returns prod env webpack config
  */
@@ -39,6 +40,15 @@ const prodConfig = (env) => {
       new BundleAnalyzerPlugin({
         analyzerMode: "static",
         openAnalyzer: false,
+      }),
+    );
+    plugins.push(
+      new WorkboxPlugin.InjectManifest({
+        swSrc: getPath("src/service-worker.js"),
+        swDest: join(outFolder, "service-worker.js"),
+        mode: !(isLocal || isCypress) ? "production" : "development",
+        maximumFileSizeToCacheInBytes: isLocal ? 10 * 1000 * 1000 : 500 * 1000,
+        exclude: [/.*(.hot-update.)(m?js)$/, /\.map$/],
       }),
     );
   }

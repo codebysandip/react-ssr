@@ -1,5 +1,5 @@
 import { Reducer } from "@reduxjs/toolkit";
-import { GetInitialProps } from "./common.model.js";
+import { GetInitialPropsWithStore } from "./common.model.js";
 
 export interface IRoute {
   /**
@@ -25,7 +25,7 @@ export interface IRoute {
 
 export type CompModule = {
   default: any;
-  getInitialProps?: GetInitialProps;
+  getInitialProps?: GetInitialPropsWithStore;
   reducer?: { [key: string]: Reducer<any> };
 };
 export type CompModuleImport = () => Promise<CompModule>;

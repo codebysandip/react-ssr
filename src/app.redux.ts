@@ -10,23 +10,23 @@ export interface AppState {
 
 const initialState: AppState = {
   header: {
-    links: []
-  }
+    links: [],
+  },
 };
 
 export const fetchHeader = () => {
   return async (dispatch: AppDispatch, _getState: GetState, api: ThunkApi) => {
-    return api.get<HeaderData>("/api/header").then(apiResponse => {
+    return api.get<HeaderData>("/api/header").then((apiResponse) => {
       if (!apiResponse.isError && apiResponse.data) {
-        dispatch(fetchHeaderSuccess(apiResponse.data))
+        dispatch(fetchHeaderSuccess(apiResponse.data));
         apiResponse.data = {
-          header: apiResponse.data
+          header: apiResponse.data,
         } as any;
       }
       return apiResponse;
-    })
-  }
-}
+    });
+  };
+};
 
 const appSlice = createSlice({
   name: "app",
@@ -34,8 +34,8 @@ const appSlice = createSlice({
   reducers: {
     fetchHeaderSuccess: (state, action: PayloadAction<HeaderData>) => {
       state.header = action.payload;
-    }
-  }
+    },
+  },
 });
 
 export const { fetchHeaderSuccess } = appSlice.actions;

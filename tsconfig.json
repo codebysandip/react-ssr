@@ -26,7 +26,8 @@
       "core/*": ["src/core/*"],
       "assets/*": ["src/assets/*"],
       "mocks/*": ["mocks/*"],
-      "tests/*": ["__tests__/*"]
+      "tests/*": ["__tests__/*"],
+      "examples/*": ["examples/*"]
     },
     "downlevelIteration": true,
     "skipLibCheck": true,

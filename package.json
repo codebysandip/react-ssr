@@ -20,7 +20,7 @@
     "build:prod:action": "cross-env GITHUB_ACTION=true npm run build:prod",
     "pm2:prod": "pm2 start ecosystem.config.cjs --env production --only React-SSR",
     "pm2:prod:heroku": "pm2 start ecosystem.config.cjs --env production --only 'React-SSR,Test-API'",
-    "test": "npm run cypress:run && npm run jest:test",
+    "test": "npx ts-node-esm scripts/test-run.ts",
     "jest:test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest",
     "prepare": "husky install",
     "lint": "eslint \"src/**/*.{js,ts,tsx}\"",

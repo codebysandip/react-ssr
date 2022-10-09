@@ -16,9 +16,11 @@ const getConfig = () => {
   webpackClientConfig.devServer = {};
   return webpackClientConfig;
 };
+const PORT = parseInt(process.env.PORT || "5000");
+const baseUrl = `http://localhost:${PORT}`;
 export default defineConfig({
   e2e: {
-    baseUrl: "http://localhost:5000",
+    baseUrl,
     video: false,
     setupNodeEvents(on, config) {
       require("@cypress/code-coverage/task")(on, config);
@@ -48,7 +50,7 @@ export default defineConfig({
   },
   env: {
     codeCoverage: {
-      url: "http://localhost:5000/__coverage__",
+      url: `${baseUrl}/__coverage__`,
     },
     LONG_EXPIRY_JWT_TOKEN:
       /* cSpell:disable-next-line */

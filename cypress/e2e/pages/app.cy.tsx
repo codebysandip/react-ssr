@@ -117,8 +117,8 @@ describe("App shell", () => {
     };
     cy.intercept(/\/api\/refresh-token/, authResp);
     cy.intercept(/\/api\/product\/1/, ProductData.products[0]);
-    cy.dataCy("home-edit-btn-1").click();
-    cy.dataCy("edit-product-page").should("exist");
+    cy.dataCy("home-view-btn-1").click();
+    cy.dataCy("product-detail-page").should("exist");
   });
 
   it("Should redirect to 403 page when api will return 403", () => {

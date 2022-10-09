@@ -240,5 +240,8 @@
         "count": 145
       }
     }
-  ]
+  ],
+  "seo": {
+    "title": "Open Source React SSR High Peformance Architecture"
+  }
 }

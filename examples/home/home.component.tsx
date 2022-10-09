@@ -1,13 +1,12 @@
-import { connect } from "react-redux";
-import { RootState } from "src/redux/create-store.js";
-import { fetchProducts } from "./home.redux.js";
-import { Link } from "react-router-dom";
-import HomeReducer from "pages/home/home.redux";
 import { Helmet } from "react-helmet";
-import { ContextDataWithStore } from "src/core/models/context-with-store.model.js";
-import "./home.comp.scss";
+import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 import { Image } from "src/core/components/image/image.comp.js";
 import { InView } from "src/core/components/in-view/in-view.comp.js";
+import { ContextDataWithStore } from "src/core/models/context-with-store.model.js";
+import { RootState } from "src/redux/create-store.js";
+import "./home.comp.scss";
+import HomeReducer, { fetchProducts } from "./home.redux.js";
 
 const Home = (props: HomeProps) => {
   const pageData = props.pageData;
@@ -34,11 +33,11 @@ const Home = (props: HomeProps) => {
                 <h5 className="card-title">{product.title}</h5>
                 <p className="card-text">{product.description}</p>
                 <Link
-                  to={`/product/edit/${product.id}`}
+                  to={`/product/detail/${product.id}`}
                   className="btn btn-primary"
-                  data-test-id={`home-edit-btn-${product.id}`}
+                  data-test-id={`home-view-btn-${product.id}`}
                 >
-                  Edit
+                  View
                 </Link>
               </div>
             </div>

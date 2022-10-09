@@ -19,25 +19,19 @@ export function SsrHead() {
     });
   }`;
 
-  // const webVitalScript = `
-  // (function() {
-  //   var script = document.createElement('script');
-  //   script.src = 'https://unpkg.com/web-vitals@3/dist/web-vitals.attribution.iife.js';
-  //   script.onload = function() {
-  //     // When loading web-vitals using a classic script, all the public
-  //     // methods can be found on the webVitals global namespace.
-  //     webVitals.onCLS(console.log);
-  //     webVitals.onFID(console.log);
-  //     webVitals.onLCP(console.log);
-  //   }
-  //   document.head.appendChild(script);
-  // }())`;
   return (
     <Helmet>
       <title>Default Title</title>
       <script nonce="react-ssr">{`${serviceWorker}`}</script>
-      {/* <script>{`${webVitalScript}`}</script> */}
-      <meta name="description" content="A sample meta description" />
+      <meta
+        name="description"
+        content="Open Source React SSR High Performance Architecture.
+      Goal of this architecture to saves month of initial phase development"
+      />
+      <meta
+        name="keywords"
+        content="React, ReactJs, ReactJs Server Side Rendering, SSR, React SSR"
+      />
       <meta charSet="utf-8" />
       <meta name="theme-color" content="#f8f9fa" />
       <meta

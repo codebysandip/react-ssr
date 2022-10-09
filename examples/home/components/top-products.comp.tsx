@@ -1,8 +1,8 @@
-import { connect } from "react-redux";
-import { RootState } from "src/redux/create-store.js";
 import { Image } from "core/components/image/image.comp.js";
+import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { ContextDataWithStore } from "src/core/models/context-with-store.model.js";
+import { RootState } from "src/redux/create-store.js";
 import { fetchTopProducts } from "../home.redux.js";
 
 const TopProducts = (props: TopProductsProps) => {
@@ -17,8 +17,8 @@ const TopProducts = (props: TopProductsProps) => {
               <div className="card-body">
                 <h5 className="card-title">{product.title}</h5>
                 <p className="card-text">{product.description}</p>
-                <Link to={`/product/edit/${product.id}`} className="btn btn-primary">
-                  Edit
+                <Link to={`/product/detail/${product.id}`} className="btn btn-primary">
+                  View
                 </Link>
               </div>
             </div>
