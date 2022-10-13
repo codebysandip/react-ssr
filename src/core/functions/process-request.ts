@@ -6,6 +6,7 @@ import { GetInitialProps } from "../models/common.model.js";
 import { ContextData } from "../models/context.model.js";
 import { IRedirect, PageData, PageRedirect } from "../models/page-data.js";
 import { CompModule } from "../models/route.model.js";
+import { PreInitialProps } from "../models/ssr-config.model.js";
 
 /**
  * processRequest process request on client as we well as server
@@ -33,12 +34,12 @@ export function processRequest(module: CompModule, ctx: ContextData, isFirstRend
       | GetInitialProps
       | undefined;
 
-    let headerFooterPromise: Promise<ApiResponse<any>> | void;
+    let headerFooterPromise: ReturnType<PreInitialProps>;
     if (ssrConfig.preInitialProps) {
       headerFooterPromise = ssrConfig.preInitialProps(ctx, module, isFirstRendering);
     }
 
-    const promiseArr: Promise<ApiResponse<any> | IRedirect>[] = [];
+    const promiseArr: Promise<ApiResponse<any> | IRedirect | ApiResponse<any>[]>[] = [];
     // get page data
     if (getInitialProps) {
       // call page/route getInitialProps static method to get async data to render page
@@ -66,23 +67,33 @@ export function processRequest(module: CompModule, ctx: ContextData, isFirstRend
         let pageData: any = {};
         let redirect: PageRedirect = { path: "" };
         // check for every api response object for error
-        for (let index = 0; index < result.length; index++) {
-          const apiResponse = result[index];
-          if ((apiResponse as IRedirect).redirect) {
-            redirect = (apiResponse as IRedirect).redirect;
-            break;
-          }
-          const resp = apiResponse as ApiResponse<any>;
-          const redirectObj = ssrConfig.validateApiResponse(resp, ctx);
-          if (redirectObj.path) {
-            redirect = redirectObj;
-            break;
-          }
-          if (typeof resp.data === "object") {
-            pageData = {
-              ...pageData,
-              ...resp.data,
-            };
+        for (const data of result) {
+          const validate = (apiResponse: ApiResponse<any> | IRedirect) => {
+            if ((apiResponse as IRedirect).redirect) {
+              redirect = (apiResponse as IRedirect).redirect;
+              return false;
+            }
+            const resp = apiResponse as ApiResponse<any>;
+            const redirectObj = ssrConfig.validateApiResponse(resp, ctx);
+            if (redirectObj.path) {
+              redirect = redirectObj;
+              return false;
+            }
+            if (typeof resp.data === "object") {
+              pageData = {
+                ...pageData,
+                ...resp.data,
+              };
+              return true;
+            }
+            /* istanbul ignore next */
+            return false;
+          };
+          const dataToValidate = Array.isArray(data) ? data : [data];
+          for (const apiResponse of dataToValidate) {
+            if (!validate(apiResponse)) {
+              break;
+            }
           }
         }
 
