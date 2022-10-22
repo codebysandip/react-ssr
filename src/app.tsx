@@ -61,7 +61,7 @@ export function App(props: AppProps) {
   return (
     <>
       {/* Use SsrHead component to set common Head tags */}
-      {process.env.IS_SERVER && <SsrHead />}
+      <SsrHead />
       {/* Header and footer should not visible on error page if header/footer is dynamic.
       Why? because may be error page coming because of Header/Footer api */}
       {showHeader && <Header />}

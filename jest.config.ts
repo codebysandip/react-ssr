@@ -20,7 +20,7 @@ const jestConfig: Config = {
 
   // Indicates which provider should be used to instrument code for coverage
   coverageProvider: "v8",
-  coveragePathIgnorePatterns: ["/__tests__/.*", "/node_modules/.*"],
+  coveragePathIgnorePatterns: ["/__tests__/.*", "/node_modules/.*", "/examples/.*"],
 
   // Make calling deprecated APIs throw helpful error messages
   errorOnDeprecated: true,

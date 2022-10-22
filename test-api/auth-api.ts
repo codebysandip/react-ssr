@@ -1,7 +1,7 @@
+import { TokenData } from "examples/auth/auth.model.js";
 import { NextFunction, Request, Response } from "express";
-import UsersData from "mocks/api/user.json";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { TokenData } from "src/pages/auth/auth.model.js";
+import UsersData from "mocks/api/user.json";
 
 const secretKey = "react-ssr";
 const accessTokenExpTime = "5m";
@@ -74,14 +74,13 @@ const validateToken = (token?: string): { message: string } | JwtPayload => {
       message: (error as Error).message,
     };
   }
-
-}
+};
 
 export const validateTokenMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers.authorization;
   const validationResult = validateToken(token);
   if (validationResult.message) {
-    res.status(401).json(validationResult)
+    res.status(401).json(validationResult);
   } else {
     res.locals.user = validationResult;
     next();

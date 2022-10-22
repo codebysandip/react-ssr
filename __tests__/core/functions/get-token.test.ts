@@ -5,10 +5,10 @@ import {
   getRefreshToken,
   setAccessAndRefreshToken,
 } from "core/functions/get-token.js";
+import { AuthResponse, TokenData } from "examples/auth/auth.model.js";
 import { COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN } from "src/const.js";
 import { CookieService } from "src/core/services/cookie.service.js";
 import { ApiResponse } from "src/core/services/http-client.js";
-import { AuthResponse, TokenData } from "src/pages/auth/auth.model.js";
 import { EXPIRED_JWT_TOKEN, LONG_EXPIRY_JWT_TOKEN } from "../../utils/const.js";
 
 describe("Get Token", () => {

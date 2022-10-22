@@ -20,21 +20,7 @@ const require = createRequire(import.meta.url);
 global.metaJson = getWebpackBuildMetaJson();
 
 const app = express();
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      useDefaults: true,
-      directives: {
-        "script-src": "'self' 'nonce-react-ssr' 'unsafe-inline' 'unsafe-eval'",
-        "img-src": "'self' data: https://fakestoreapi.com",
-      },
-    },
-    crossOriginEmbedderPolicy: false,
-    crossOriginResourcePolicy: {
-      policy: "cross-origin",
-    },
-  }),
-);
+
 if (process.env.ENV === "cypress") {
   require("@cypress/code-coverage/middleware/express")(app);
 }
@@ -62,9 +48,25 @@ if (!API_URL) {
     "Please add .env file if not available. Add LOCAL_API_SERVER and API_BASE_URL in .env file",
   );
 }
+
 // proxy to api to tackle cors problem
 app.all("/api/*", proxyMiddleware(API_URL));
 
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        "script-src": "'self' 'unsafe-inline' 'unsafe-eval'",
+        "img-src": "'self' data: https://fakestoreapi.com",
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: {
+      policy: "cross-origin",
+    },
+  }),
+);
 // Get all request of node server
 app.get("*", processRequest());
 let PORT = parseInt(process.env.PORT || "5000");

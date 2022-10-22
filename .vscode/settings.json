@@ -17,6 +17,7 @@
     "glyphicon",
     "maxlength",
     "mddir",
+    "middlewares",
     "pagespeed",
     "pmmmwh",
     "precache",
@@ -37,5 +38,8 @@
   "[html]": {
     "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
   },
-  "cSpell.enableFiletypes": ["!json", "!yaml"]
+  "cSpell.enableFiletypes": [
+    "!json",
+    "!yaml"
+  ]
 }

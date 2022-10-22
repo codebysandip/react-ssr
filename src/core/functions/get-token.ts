@@ -1,9 +1,8 @@
+import { ApiResponse } from "core/services/http-client.js";
+import { AuthResponse, JwtToken, TokenData } from "examples/auth/auth.model.js";
 import { Request, Response } from "express";
 import { COOKIE_ACCESS_TOKEN, COOKIE_REFRESH_TOKEN } from "src/const.js";
-import { JwtToken, TokenData } from "src/pages/auth/auth.model.js";
-import { ApiResponse } from "core/services/http-client.js";
 import { CookieService } from "../services/cookie.service.js";
-import { AuthResponse } from "pages/auth/auth.model.js";
 
 function getToken(key: string, req?: Request) {
   if (process.env.IS_SERVER && !req) {
@@ -17,8 +16,8 @@ function getToken(key: string, req?: Request) {
   if (isValidJwtToken(tokenData)) {
     return {
       token: accessToken,
-      tokenData
-    }
+      tokenData,
+    };
   }
   return null;
 }

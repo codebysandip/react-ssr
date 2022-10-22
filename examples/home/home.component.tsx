@@ -12,14 +12,12 @@ const Home = (props: HomeProps) => {
   const pageData = props.pageData;
   return (
     <>
-      {process.env.IS_SERVER && (
-        <Helmet>
-          <title>{pageData.seo?.title || "My Title"}</title>
-          <body className="my-class" />
-          {/* metaJson will available only on server side */}
-          {process.env.IS_SERVER && <link href={metaJson.chunkCss["home"]} rel="stylesheet" />}
-        </Helmet>
-      )}
+      <Helmet>
+        <title>{pageData.seo?.title || "My Title"}</title>
+        <body className="my-class" />
+        {/* metaJson will available only on server side */}
+        {process.env.IS_SERVER && <link href={metaJson["home"]} rel="stylesheet" />}
+      </Helmet>
       <div className="d-flex flex-row flex-wrap min-vh-100" data-test-id="home-page">
         {pageData.products.map((product, idx) => {
           return (

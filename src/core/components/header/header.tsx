@@ -1,4 +1,4 @@
-import { logout as logoutAction } from "pages/auth/auth.redux.js";
+import { logout as logoutAction } from "examples/auth/auth.redux.js";
 import { Component } from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";

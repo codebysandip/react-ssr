@@ -1,6 +1,6 @@
 import { PayloadAction } from "@reduxjs/toolkit";
 import { ApiResponse } from "core/services/http-client.js";
-import { AuthResponse } from "pages/auth/auth.model.js";
+import { AuthResponse } from "examples/auth/auth.model.js";
 import { getAccessTokenData, setAccessAndRefreshToken } from "src/core/functions/get-token.js";
 import { GetState, ThunkApi } from "src/core/models/common.model.js";
 import { AppDispatch } from "src/redux/create-store.js";

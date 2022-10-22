@@ -2,7 +2,7 @@ import { ROUTE_500 } from "src/const.js";
 import { ssrConfig } from "src/react-ssr.config.js";
 
 import { ApiResponse } from "core/services/http-client.js";
-import { GetInitialProps } from "../models/common.model.js";
+import { GetInitialProps, PromiseApiResponseWithRedirect } from "../models/common.model.js";
 import { ContextData } from "../models/context.model.js";
 import { IRedirect, PageData, PageRedirect } from "../models/page-data.js";
 import { CompModule } from "../models/route.model.js";
@@ -39,7 +39,7 @@ export function processRequest(module: CompModule, ctx: ContextData, isFirstRend
       headerFooterPromise = ssrConfig.preInitialProps(ctx, module, isFirstRendering);
     }
 
-    const promiseArr: Promise<ApiResponse<any> | IRedirect | ApiResponse<any>[]>[] = [];
+    const promiseArr: PromiseApiResponseWithRedirect[] = [];
     // get page data
     if (getInitialProps) {
       // call page/route getInitialProps static method to get async data to render page
@@ -53,13 +53,17 @@ export function processRequest(module: CompModule, ctx: ContextData, isFirstRend
         return;
       }
 
-      if (initialProps instanceof Promise) {
+      if (Array.isArray(initialProps)) {
+        promiseArr.push(...initialProps);
+      } else if (initialProps instanceof Promise) {
         promiseArr.push(initialProps);
       } else {
         throw new Error("getInitialProps must return Promise");
       }
     }
-    if (headerFooterPromise instanceof Promise) {
+    if (Array.isArray(headerFooterPromise)) {
+      promiseArr.push(...headerFooterPromise);
+    } else if (headerFooterPromise instanceof Promise) {
       promiseArr.push(headerFooterPromise);
     }
     Promise.all(promiseArr)
@@ -86,7 +90,7 @@ export function processRequest(module: CompModule, ctx: ContextData, isFirstRend
               };
               return true;
             }
-            /* istanbul ignore next */
+            /* c8 ignore next */
             return false;
           };
           const dataToValidate = Array.isArray(data) ? data : [data];
@@ -96,7 +100,6 @@ export function processRequest(module: CompModule, ctx: ContextData, isFirstRend
             }
           }
         }
-
         if (redirect.path) {
           resolve({
             redirect,

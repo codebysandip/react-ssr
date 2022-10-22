@@ -7,7 +7,7 @@ import {
   Store,
   ThunkDispatch,
 } from "@reduxjs/toolkit";
-import AuthReducer from "pages/auth/auth.redux";
+import AuthReducer from "examples/auth/auth.redux";
 import { ThunkMiddleware } from "redux-thunk";
 import AppReducer from "src/app.redux.js";
 import { HttpClient } from "src/core/services/http-client.js";

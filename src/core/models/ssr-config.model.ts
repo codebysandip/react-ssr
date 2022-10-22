@@ -1,4 +1,5 @@
 import { ApiResponse } from "core/services/http-client.js";
+import { GetInitialPropsReturnBase } from "./common.model.js";
 import { ContextData } from "./context.model.js";
 import { PageRedirect } from "./page-data.js";
 import { CompModule } from "./route.model.js";
@@ -48,4 +49,4 @@ export type PreInitialProps = (
   ctx: ContextData,
   moduleObj: CompModule,
   isFirstRendering: boolean,
-) => Promise<ApiResponse<any>> | Promise<ApiResponse<any>[]> | void;
+) => GetInitialPropsReturnBase | void;

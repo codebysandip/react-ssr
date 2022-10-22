@@ -1,4 +1,5 @@
 import { AxiosError, AxiosResponse } from "axios";
+import { AuthResponse } from "examples/auth/auth.model.js";
 import {
   API_URL,
   COOKIE_ACCESS_TOKEN,
@@ -6,7 +7,6 @@ import {
   INTERNET_NOT_AVAILABLE,
   URL_REFRESH_TOKEN,
 } from "src/const.js";
-import { AuthResponse } from "src/pages/auth/auth.model.js";
 import { CommonService } from "../services/common.service.js";
 import { CookieService } from "../services/cookie.service.js";
 import {
@@ -107,6 +107,7 @@ export function configureHttpClient() {
   HttpClient.internetNotAvailableMsg = INTERNET_NOT_AVAILABLE;
 
   HttpClient.handleRefreshTokenFlow = (options: HttpClientOptions) => {
+    /* c8 ignore start */
     CookieService.delete(COOKIE_ACCESS_TOKEN, options.nodeRespObj);
     const refreshToken = CookieService.get(COOKIE_REFRESH_TOKEN, options.nodeReqObj);
     const apiResponse = getDefaultApiResponseObj();
@@ -127,9 +128,12 @@ export function configureHttpClient() {
       apiResponse.message = resp.message;
       return apiResponse;
     });
+    /* c8 ignore stop */
   };
 
   HttpClient.setUrl = (url) => {
     return `${process.env.IS_SERVER ? API_URL : ""}${url}`;
   };
+
+  HttpClient.retryTime = process.env.ENV === "cypress" ? 10 : 1000;
 }

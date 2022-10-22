@@ -8,12 +8,17 @@ import axios, {
   ResponseType,
 } from "axios";
 import { Request, Response } from "express";
+
 export class HttpClient {
   /**
    * set maxRetryCount to retry HttpClient to defined number of times
    * HttpClient retry request in case of internet not available or api will respond 5xx status
    */
   public static maxRetryCount = 3;
+  /**
+   * set retryTime when HttpClient will retry
+   */
+  public static retryTime = 1000;
   /**
    * HttpClient uses isAuthDefault to set default value for {@link HttpClientOptions.isAuth}
    */
@@ -102,10 +107,7 @@ export class HttpClient {
     return this.sendRequest<T>(url, "DELETE", options);
   }
 
-  private static setDefaultHttpClientOptions<T>(options?: HttpClientOptions) {
-    if (!options) {
-      options = {};
-    }
+  private static setDefaultHttpClientOptions<T>(options: HttpClientOptions) {
     if (!options.headers) {
       options.headers = {};
     }
@@ -128,6 +130,7 @@ export class HttpClient {
     if (options.doCache === undefined) {
       options.doCache = false;
     }
+
     if (options.doCache) {
       options.headers["doCache"] = true;
     } else {
@@ -172,7 +175,7 @@ export class HttpClient {
     const maxRetryCount = options.maxRetryCount || this.maxRetryCount;
     const requestConfig: AxiosRequestConfig = options;
     return (
-      retryPromise(isOnline, 1000, maxRetryCount)
+      retryPromise(isOnline, this.retryTime, maxRetryCount)
         .then(() => {
           return (
             axios(requestConfig)
@@ -187,10 +190,8 @@ export class HttpClient {
               })
               // this catch will catch any unknown error
               .catch((error: Error) => {
-                console.error("Unknown Error!!", error);
-                // [TODO] this error should log in database to get client side errors
-                console.error(error);
                 const response = getDefaultApiResponseObj<null>();
+                response.message = [error.message];
                 response.status = 600;
                 return response;
               })
@@ -208,7 +209,7 @@ export class HttpClient {
                         return this.handleResponse<T>(res, options);
                       });
                     },
-                    1000,
+                    this.retryTime,
                     maxRetryCount,
                   )
                     .then((apiResponse) => {
@@ -335,6 +336,7 @@ export class HttpClient {
           if (err.status === undefined) {
             throw new Error("handleRefreshTokenFlow should return object of ApiResponse");
           }
+          /* c8 ignore next */
           return err as ApiResponse<T>;
         });
     } else {

@@ -1,5 +1,6 @@
 import { ApiResponse } from "core/services/http-client.js";
 import { createStore, replaceReducer } from "src/redux/create-store";
+import { loginSuccess, logout } from "../examples/auth/auth.redux.js";
 import { fetchHeader } from "./app.redux.js";
 import { PAGE_INVALID_RETURN_DATA, ROUTE_403, ROUTE_404, ROUTE_500, ROUTE_LOGIN } from "./const.js";
 import { getRoute } from "./core/functions/get-route.js";
@@ -9,7 +10,6 @@ import { ContextData } from "./core/models/context.model.js";
 import { CompModule } from "./core/models/route.model.js";
 import { SSRConfig } from "./core/models/ssr-config.model.js";
 import { CommonService } from "./core/services/common.service.js";
-import { loginSuccess, logout } from "./pages/auth/auth.redux.js";
 
 export const ssrConfig: SSRConfig = {
   configureStore: (module: CompModule, ctx: ContextData) => {

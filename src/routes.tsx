@@ -9,20 +9,20 @@ import { IRoute } from "./core/models/route.model.js";
 export const Routes: IRoute[] = [
   {
     path: "/",
-    component: () => import(/* webpackChunkName: "home" */ "../examples/home/home.component.js"),
+    component: () => import(/* webpackChunkName: "home" */ "examples/home/home.component.js"),
     isSSR: true,
   },
   {
     path: "/product/detail/:id",
     component: () =>
       import(
-        /* webpackChunkName: "product-detail" */ "../examples/home/product-detail/product-detail.comp.js"
+        /* webpackChunkName: "product-detail" */ "examples/home/product-detail/product-detail.comp.js"
       ),
     isSSR: false,
   },
   {
     path: ROUTE_LOGIN,
-    component: () => import(/* webpackChunkName: "login" */ "pages/auth/login/login.comp.js"),
+    component: () => import(/* webpackChunkName: "login" */ "examples/auth/login/login.comp.js"),
     isSSR: false,
   },
   // Replace 404 component code with own code

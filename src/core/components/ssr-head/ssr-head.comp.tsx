@@ -22,7 +22,7 @@ export function SsrHead() {
   return (
     <Helmet>
       <title>Default Title</title>
-      <script nonce="react-ssr">{`${serviceWorker}`}</script>
+      {process.env.ENV === "production" && <script>{`${serviceWorker}`}</script>}
       <meta
         name="description"
         content="Open Source React SSR High Performance Architecture.
