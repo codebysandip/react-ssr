@@ -162,7 +162,7 @@ export class HttpClient {
     url: string,
     method: Method | string,
     options: HttpClientOptions = {},
-  ): Promise<ApiResponse<T | null>> {
+  ): Promise<ApiResponse<T | undefined>> {
     const newOptions = this.setDefaultHttpClientOptions<T>(options);
     if (newOptions instanceof Promise) {
       return newOptions;
@@ -190,7 +190,7 @@ export class HttpClient {
               })
               // this catch will catch any unknown error
               .catch((error: Error) => {
-                const response = getDefaultApiResponseObj<null>();
+                const response = getDefaultApiResponseObj<undefined>();
                 response.message = [error.message];
                 response.status = 600;
                 return response;
@@ -233,9 +233,9 @@ export class HttpClient {
         // this catch will only when internet not available
         .catch(() => {
           // show toast message of internet not available
-          const apiResponse: ApiResponse<null> = {
+          const apiResponse: ApiResponse<undefined> = {
             status: 0,
-            data: null,
+            data: undefined,
             message: [this.internetNotAvailableMsg],
             errorCode: -1,
             isError: true,
@@ -316,7 +316,7 @@ export class HttpClient {
   }
 
   private static handleErrorServerResponse<T>(
-    apiResponse: ApiResponse<T | null>,
+    apiResponse: ApiResponse<T | undefined>,
     options: HttpClientOptions,
   ) {
     if (apiResponse.status === 401) {
@@ -341,7 +341,7 @@ export class HttpClient {
         });
     } else {
       if (!options.sendResponseWhenError) {
-        apiResponse.data = null;
+        apiResponse.data = undefined;
       }
       return apiResponse;
     }
@@ -400,9 +400,9 @@ export interface HttpClientOptions extends AxiosRequestConfig {
 }
 
 export function getDefaultApiResponseObj<T>(data?: T) {
-  const response: ApiResponse<T | null> = {
+  const response: ApiResponse<T | undefined> = {
     status: 200,
-    data: data || null,
+    data: data || undefined,
     message: [],
     errorCode: -1,
     isError: false,

@@ -27,7 +27,6 @@ describe("Create Redux Store", () => {
       reducers: {},
     });
     const store = createStore({ test: testSlice.reducer });
-    console.log(store.getState());
     expect((store.getState() as any).test).not.toBeUndefined();
   });
 

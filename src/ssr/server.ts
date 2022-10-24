@@ -43,6 +43,7 @@ app.get("*.(css|js|svg|jpg|jpeg|png|woff|woff2)", StaticRoute);
 // Tell express for public folder
 app.use(express.static(join(process.cwd(), "build/public")));
 
+/* istanbul ignore if */
 if (!API_URL) {
   throw new Error(
     "Please add .env file if not available. Add LOCAL_API_SERVER and API_BASE_URL in .env file",

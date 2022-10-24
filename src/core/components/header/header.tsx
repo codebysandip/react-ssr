@@ -38,7 +38,7 @@ class HeaderComp extends Component<HeaderProps> {
           </button>
           <div className="collapse navbar-collapse">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-              {this.props.header.links.map((link, idx) => (
+              {this.props.header?.links.map((link, idx) => (
                 <li className="nav-item" key={idx}>
                   <Link className="nav-link active" to={link.url} data-test-id={link.url}>
                     {link.text}

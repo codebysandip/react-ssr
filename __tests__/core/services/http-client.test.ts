@@ -69,11 +69,11 @@ describe("HttpClient", () => {
     expect(apiResponse.status).toEqual(0);
   });
 
-  it("Should return ApiResponse.status 400 when api will return 400 status and data should be null", async () => {
+  it("Should return ApiResponse.status 400 when api will return 400 status and data should be undefined", async () => {
     mock.onGet(request.badRequest.url).replyOnce(400, request.badRequest.responseBody);
     const apiResponse = await HttpClient.get(request.badRequest.url);
     expect(apiResponse.status).toEqual(400);
-    expect(apiResponse.data).toStrictEqual(null);
+    expect(apiResponse.data).toStrictEqual(undefined);
   });
 
   it("Should return response body in ApiResponse.data when HttpClientOptions.sendResponseWhenError true", async () => {

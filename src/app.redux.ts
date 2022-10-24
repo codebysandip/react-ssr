@@ -5,14 +5,10 @@ import { AppDispatch } from "./redux/create-store.js";
 import { createSlice } from "./redux/redux.imports.js";
 
 export interface AppState {
-  header: HeaderData;
+  header?: HeaderData;
 }
 
-const initialState: AppState = {
-  header: {
-    links: [],
-  },
-};
+const initialState: AppState = {};
 
 export const fetchHeader = () => {
   return async (dispatch: AppDispatch, _getState: GetState, api: ThunkApi) => {
